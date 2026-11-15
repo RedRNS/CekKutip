@@ -1,5 +1,7 @@
 import { z } from 'zod'
 
+export { normalizeText, stripDiacritics, tokenize } from './normalize.js'
+
 export const VerdictSchema = z.enum(['verified', 'mismatch', 'suspect', 'out_of_index'])
 export type Verdict = z.infer<typeof VerdictSchema>
 

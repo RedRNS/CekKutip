@@ -1,0 +1,21 @@
+@media print {
+  body {
+    background: #fff;
+    color: #000;
+  }
+  .skip-link,
+  .dev-banner,
+  .site-header,
+  .site-footer,
+  .button-row,
+  .check-bar {
+    display: none !important;
+  }
+  .panel {
+    border-color: #999;
+    break-inside: avoid;
+  }
+  a {
+    color: inherit;
+  }
+}

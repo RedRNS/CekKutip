@@ -1,0 +1,72 @@
+/* Design tokens. Source of truth: docs/DESIGN.md. Do not add colors outside this file. */
+:root {
+  /* Neutrals (95% of every surface) */
+  --paper: #f6f8f7;
+  --surface: #ffffff;
+  --ink: #12232e;
+  --ink-muted: #4b5b66;
+  --rule: #c9d4d1;
+  --rule-strong: #6b7c78;
+
+  /* Brand and interaction: used only for wordmark, primary button, links, focus */
+  --brand: #12343b;
+  --accent: #0b6b63;
+  --accent-tint: #e3f0ee;
+  --brand-hover: #0c262c; /* primary button hover */
+  --dev-warn: #fff8d6; /* development banner only */
+
+  /* Verdict colors. solid = lines, bars, graphics. ink = text. tint = background. */
+  --verified-solid: #2e7d32;
+  --verified-ink: #1e6b2a;
+  --verified-tint: #e7f3e8;
+  --mismatch-solid: #c27d0e; /* graphics only (3.4:1), never text */
+  --mismatch-ink: #8a5300;
+  --mismatch-tint: #fbf0dc;
+  --suspect-solid: #c0392b;
+  --suspect-ink: #a32a1e;
+  --suspect-tint: #f9e4e1;
+  --oui-solid: #5f6b7a;
+  --oui-ink: #465160;
+  --oui-tint: #e9ecef;
+
+  /* Typefaces (self-hosted via @fontsource, Latin subset) */
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-ui:
+    'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, 'Courier New', monospace;
+
+  /* Type scale (px): 14, 16, 18, 22, 30, 44 */
+  --fs-14: 0.875rem;
+  --fs-16: 1rem;
+  --fs-18: 1.125rem;
+  --fs-22: 1.375rem;
+  --fs-30: 1.875rem;
+  --fs-44: 2.75rem;
+
+  /* Spacing scale (px): 4, 8, 12, 16, 24, 32, 48, 72 */
+  --s-4: 0.25rem;
+  --s-8: 0.5rem;
+  --s-12: 0.75rem;
+  --s-16: 1rem;
+  --s-24: 1.5rem;
+  --s-32: 2rem;
+  --s-48: 3rem;
+  --s-72: 4.5rem;
+
+  --r-control: 2px;
+  --r-panel: 4px;
+
+  --measure: 68ch;
+  --page-max: 1180px;
+  --gutter: 24px;
+  --target: 44px;
+
+  --motion-fast: 150ms;
+}
+
+@media (max-width: 600px) {
+  :root {
+    --gutter: 16px;
+  }
+}
