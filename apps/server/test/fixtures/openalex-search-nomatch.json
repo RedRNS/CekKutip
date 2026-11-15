@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "count": 0,
+    "db_response_time_ms": 21,
+    "page": 1,
+    "per_page": 5,
+    "groups_count": null,
+    "x_query": {
+      "oql": "get works with (Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh) in the title",
+      "x_new_oql": "get works with (Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh) in the title",
+      "oqo": {
+        "get_rows": "works",
+        "filter_rows": [
+          {
+            "column_id": "display_name.search",
+            "value": "Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh",
+            "operator": "has"
+          }
+        ]
+      },
+      "url": "/works?filter=display_name.search:Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh&per_page=5",
+      "order": "best matches first",
+      "order_default": true
+    },
+    "cost_usd": 0.001
+  },
+  "results": [],
+  "group_by": []
+}

@@ -25,6 +25,24 @@ Format: tanggal, keputusan, alasan. Ambang final dan hash commit dicatat di bagi
 16. **Tombol Check belum tersambung** (dinonaktifkan) sampai M4. "N found" memakai hitungan sementara berbasis baris kosong (`lib/count.ts`) sampai pemisah bersama dibuat di M2.
 17. **Contoh di How it works** memakai referensi Walters & Wilder (2023) dengan tahun dan jurnal sengaja diubah. Sisi record ditulis dari ingatan atas entri Crossref asli dan belum dijalankan lewat pipeline. Wajib dikonfirmasi di M4.
 
+## 2026-11-16 (M2)
+
+18. **`CROSSREF_MAILTO`:** alamat diberikan pengguna pada 16 Nov 2026 dan disimpan hanya di `.env` lokal (diabaikan git). Alamat itu tidak ditulis di repo, dokumentasi, atau perintah. Kode membacanya dari variabel lingkungan dan mengirimkannya ke Crossref sebagai parameter `mailto` dan di User-Agent.
+19. **Konkurensi Crossref = 3, bukan 4.** Dokumentasi Crossref (dibaca 16 Nov 2026): pool polite 10 permintaan per detik dan 3 bersamaan, pool publik 5 per detik dan 1 bersamaan. Respons nyata pool publik mengiklankan `x-rate-limit-limit: 5`, `x-rate-limit-interval: 1s`, `x-concurrency-limit: 1`. Angka "10/detik untuk satu record dan 3/detik untuk daftar" di brief tidak ditemukan di dokumentasi. Klien memakai batas pool (polite bila ada `mailto`, publik bila tidak) dan menyesuaikan diri dari header, tidak pernah melebihi batas pool.
+20. **doiRA:** DOI tak terdaftar dijawab HTTP 200 dengan `{"status":"DOI does not exist"}`, bukan 404. `Invalid DOI` diperlakukan sama. Status lain (misalnya `Unknown`) dianggap respons buruk, jadi `check_failed`, bukan verdict.
+21. **OpenAlex berbiaya.** Satu pencarian sekitar $0,001. Anggaran gratis: $0,10 per hari per IP tanpa kunci (dibagi dengan semua pengguna di IP yang sama), $1 per hari dengan kunci gratis. Klien tidak pernah melampaui anggaran gratis: 429 dengan Retry-After panjang gagal cepat (`rate_limited`). **Saran: buat kunci gratis OpenAlex** dan isi `OPENALEX_API_KEY`. OpenAlex hanya cadangan Crossref, jadi pemakaiannya kecil.
+22. **Pencarian OpenAlex memakai `search.title`**, bukan filter `title.search` (sudah usang, dan koma dalam judul memecah sintaks filter). Pencarian mencocokkan semua kata, sehingga judul dengan kata keliru dapat mengembalikan nol hasil. Rekaman nyata untuk judul karangan mengembalikan nol, sedangkan Crossref mengembalikan lima karya mirip.
+23. **Kegagalan cadangan = `check_failed` (diterapkan di M3).** Bila Crossref tidak punya kandidat lolos skor tetapi OpenAlex gagal dijangkau, hasilnya `check_failed`, bukan `suspect`. Alasan: bukti yang hilang karena layanan gagal tidak boleh menjadi verdict (prinsip 2).
+24. **Nama penulis OpenAlex** hanya punya `display_name`. Nama keluarga diambil sebagai kata terakhir (`authors`), nama lengkap disimpan di `authorsFull`. Pencocok penulis di M3 harus juga memeriksa token di `authorsFull` agar nama keluarga majemuk ("van der Berg") tidak salah.
+25. **`MatchedRecord.authorsFull`** (opsional) ditambahkan ke skema bersama untuk tampilan dan format APA (P1).
+26. **Subjudul Crossref** digabung ke judul record (`Judul: Subjudul`) bila belum ada di dalamnya. Pencocok judul memakai bagian sebelum titik dua bila kutipan tanpa subjudul (brief 6.4).
+27. **Pemisah referensi ada di `packages/shared`**, bukan hanya di server, supaya angka "N found" di browser sama dengan yang diperiksa server. Klien mengimpor subpath `@cekkutip/shared/split` agar zod tidak ikut ke bundel.
+28. **Larik `references` dari klien dianggap sudah terpisah.** Tiap item hanya dibersihkan (karakter tak terlihat, spasi, nomor daftar, NFC), tidak dipisah lagi. Item yang berisi beberapa referensi akan digabung menjadi satu.
+29. **Cache:** LRU 24 jam di memori, dengan cache berkas opsional (`RETRIEVAL_CACHE_DIR`) untuk harness evaluasi. Kunci adalah SHA-256 dari kueri ternormalisasi, nilai hanya metadata publik. Hasil "tidak ditemukan" (404, DOI tak terdaftar, nol kandidat) ikut di-cache. Kegagalan layanan tidak pernah di-cache.
+30. **Redirect** diikuti manual (maksimum 3) dengan pemeriksaan daftar putih host pada setiap lompatan.
+31. **Fixture** direkam dari layanan nyata dengan `scripts/record-fixtures.ts` (pool publik, tanpa email). Daftar referensi Crossref dibuang agar kecil. Respons 429, 5xx, dan timeout bersifat sintetis di tes karena tidak bisa direkam dengan wajar.
+32. **Uji langsung:** `scripts/smoke-live.ts` memanggil klien terhadap Crossref, OpenAlex, dan doi.org sungguhan. Dijalankan 16 Nov 2026 tanpa email dan tanpa kunci: sembilan langkah berhasil.
+
 ## Ambang final
 
 Belum dituning. Nilai sementara: `TAU_T` 0,90, `TAU_A` 0,60, `TAU_L` 0,60, `TAU_V` 0,40. Diisi setelah `npm run eval:tune` pada dev set (M5): ambang, hash commit, tanggal.

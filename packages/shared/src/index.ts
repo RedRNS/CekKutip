@@ -1,6 +1,12 @@
 import { z } from 'zod'
 
+import { DOI_PATTERN } from './patterns.js'
+
 export { normalizeText, stripDiacritics, tokenize } from './normalize.js'
+export { DOI_PATTERN, MIN_YEAR } from './patterns.js'
+export { extractDoi, normalizeDoi } from './doi.js'
+export { checkLimits, splitReferences } from './split.js'
+export type { LimitError, Limits } from './split.js'
 
 export const VerdictSchema = z.enum(['verified', 'mismatch', 'suspect', 'out_of_index'])
 export type Verdict = z.infer<typeof VerdictSchema>
@@ -41,11 +47,6 @@ export const ReasonCodeSchema = z.enum([
 ])
 export type ReasonCode = z.infer<typeof ReasonCodeSchema>
 
-/** DOI pattern from Crossref guidance; case-insensitive. */
-export const DOI_PATTERN = /^10\.\d{4,9}\/\S+$/i
-
-export const MIN_YEAR = 1400
-
 export const ParsedReferenceSchema = z.object({
   raw: z.string(),
   authors: z.array(z.string()),
@@ -67,7 +68,10 @@ export const MatchedRecordSchema = z.object({
   doi: z.string().nullable(),
   url: z.string().nullable(),
   title: z.string(),
+  /** Family names (or organisation names), in order. The matcher compares these. */
   authors: z.array(z.string()),
+  /** Full display names ("William H. Walters"), same order. Used for display and APA output. */
+  authorsFull: z.array(z.string()).optional(),
   year: z.number().int().nullable(),
   venue: z.string().nullable(),
   volume: z.string().nullable(),

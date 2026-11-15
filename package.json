@@ -18,7 +18,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "smoke:live": "tsx --env-file=.env scripts/smoke-live.ts",
+    "fixtures:record": "tsx scripts/record-fixtures.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

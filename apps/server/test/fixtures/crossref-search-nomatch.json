@@ -1,0 +1,196 @@
+{
+  "status": "ok",
+  "message-type": "work-list",
+  "message-version": "1.0.0",
+  "message": {
+    "facets": {},
+    "total-results": 307691,
+    "items": [
+      {
+        "issue": "3",
+        "DOI": "10.26858/edustudent.v1i3.32890",
+        "type": "journal-article",
+        "page": "188",
+        "title": ["Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa"],
+        "volume": "1",
+        "author": [
+          {
+            "given": "Fathimah Az.zahra",
+            "family": "Nasiruddin",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          },
+          {
+            "given": "Lisa Gabriella",
+            "family": "Rapa’",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          }
+        ],
+        "container-title": ["EDUSTUDENT: Jurnal Ilmiah Pendidikan dan Pembelajaran"],
+        "score": 56.220802,
+        "issued": {
+          "date-parts": [[2022, 4, 30]]
+        },
+        "URL": "https://doi.org/10.26858/edustudent.v1i3.32890"
+      },
+      {
+        "issue": "1",
+        "DOI": "10.35706/jpi.v1i1.325",
+        "type": "journal-article",
+        "page": "66",
+        "title": [
+          "PENGARUH SOSIAL MEDIA  (FACEBOOK) TERHADAP PRESTASI  BELAJAR MAHASISWA ILMU KOMUNIKASI UNIVERSITAS  SINGAPERBANGSA (UNSIKA) KARAWANG"
+        ],
+        "volume": "1",
+        "author": [
+          {
+            "given": "Muhamad",
+            "family": "Ramdhani",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          }
+        ],
+        "container-title": ["Jurnal Politikom Indonesiana"],
+        "score": 55.59676,
+        "issued": {
+          "date-parts": [[2016, 7, 27]]
+        },
+        "URL": "https://doi.org/10.35706/jpi.v1i1.325"
+      },
+      {
+        "issue": "1",
+        "DOI": "10.47668/edusaintek.v7i1.45",
+        "type": "journal-article",
+        "page": "1-10",
+        "title": ["DAMPAK MEDIA SOSIAL TERHADAP PRESTASI BELAJAR PESERTA DIDIK"],
+        "volume": "7",
+        "author": [
+          {
+            "given": "Anik",
+            "family": "Suryaningsih",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          }
+        ],
+        "container-title": ["EDUSAINTEK : JURNAL PENDIDIKAN, SAINS DAN TEKNOLOGI"],
+        "score": 52.348713,
+        "issued": {
+          "date-parts": [[2020, 5, 20]]
+        },
+        "URL": "https://doi.org/10.47668/edusaintek.v7i1.45"
+      },
+      {
+        "issue": "3",
+        "DOI": "10.36312/ej.v7i3.5798",
+        "type": "journal-article",
+        "page": "2501-2512",
+        "title": [
+          "Dampak Media Sosial Telegram Terhadap Terjadinya Friend With Benefit (FWB) Pada Mahasiswa FKIP Universitas Mataram"
+        ],
+        "volume": "7",
+        "author": [
+          {
+            "given": "Dwi Yuliatul",
+            "family": "Aulia",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "Syafruddin",
+            "family": "Syafruddin",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          },
+          {
+            "given": "Agung",
+            "family": "Firmansyah",
+            "sequence": "additional",
+            "affiliation": [],
+            "role": [
+              {
+                "vocabulary": "crossref",
+                "role": "author"
+              }
+            ]
+          }
+        ],
+        "container-title": ["Empiricism Journal"],
+        "score": 51.917458,
+        "issued": {
+          "date-parts": [[2026, 7, 17]]
+        },
+        "URL": "https://doi.org/10.36312/ej.v7i3.5798"
+      },
+      {
+        "issue": "3",
+        "DOI": "10.31851/wahanadidaktika.v17i3.3752",
+        "type": "journal-article",
+        "page": "335",
+        "title": ["DAMPAK MEDIA SOSIAL TERHADAP PRESTASI BELAJAR PESERTA DIDIK"],
+        "volume": "17",
+        "author": [
+          {
+            "given": "Anik",
+            "family": "Suryaningsih",
+            "sequence": "first",
+            "affiliation": [],
+            "role": [
+              {
+                "role": "author",
+                "vocabulary": "crossref"
+              }
+            ]
+          }
+        ],
+        "container-title": ["Wahana Didaktika : Jurnal Ilmu Kependidikan"],
+        "score": 50.79562,
+        "issued": {
+          "date-parts": [[2019, 9, 28]]
+        },
+        "URL": "https://doi.org/10.31851/wahanadidaktika.v17i3.3752"
+      }
+    ],
+    "items-per-page": 5,
+    "query": {
+      "start-index": 0,
+      "search-terms": null
+    }
+  }
+}

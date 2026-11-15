@@ -2,11 +2,11 @@ import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { PLACEHOLDER_EXAMPLES } from '../data/example-list'
 import { useI18n } from '../i18n'
-import { roughCount } from '../lib/count'
+import { countReferences } from '../lib/count'
 import { Legend } from './Legend'
 
 /**
- * M1: static shell. Input works, the Check button is not wired yet (M4).
+ * Static shell until M4: input and the live count work, the Check button is not wired yet.
  * Left: input. Right: results (empty state with the legend).
  */
 export function Workbench() {
@@ -15,7 +15,7 @@ export function Workbench() {
   const [noAi, setNoAi] = useState(false)
   const inputId = useId()
   const noteId = useId()
-  const count = roughCount(text)
+  const count = countReferences(text)
   const hasText = text.trim() !== ''
 
   return (

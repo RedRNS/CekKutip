@@ -28,11 +28,15 @@ npm test               # vitest, semua workspace
 npm run typecheck
 npm run lint
 npm run build
+npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)
+npm run fixtures:record   # rekam ulang fixture tes dari layanan nyata
 npm run eval -- --split test --system cekkutip --out eval/results   # M5
 npm run eval:tune | eval:kappa | eval:report                         # M5
 ```
 
-Catatan shell: di alat Bash, heredoc besar berisi kutip bisa gagal diparse. Untuk berkas panjang pakai alat Write.
+Catatan alat: di alat Bash, heredoc besar berisi kutip bisa gagal diparse, jadi untuk berkas panjang pakai alat Write. Di Write dan Bash, escape Unicode (garis miring terbalik, huruf u, empat digit heksadesimal) diubah menjadi karakter aslinya sebelum sampai ke berkas, dan karakter tak terlihat lolos ke kode sumber. Untuk escape semacam itu di kode, bangun lewat skrip yang memakai `String.fromCharCode(92)`, lalu pastikan tidak ada karakter tak terlihat yang tersisa di sumber (ESLint `no-irregular-whitespace` menangkapnya).
+
+`CROSSREF_MAILTO` ada di `.env` lokal (diabaikan git). Jangan menaruh alamat itu di perintah, URL, atau berkas yang di-commit. Probe langsung ke layanan dilakukan tanpa alamat itu (pool publik), kecuali pengguna menjalankannya sendiri (`npm run smoke:live`).
 
 ## Struktur
 

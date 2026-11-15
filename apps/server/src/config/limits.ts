@@ -22,7 +22,7 @@ export function loadLimits(env: NodeJS.ProcessEnv = process.env): Limits {
     maxBodyBytes: 64 * 1024,
     rateLimitWindowMs: intFromEnv(env.RATE_LIMIT_WINDOW_MS, 10 * 60 * 1000),
     rateLimitMax: intFromEnv(env.RATE_LIMIT_MAX, 10),
-    retrievalConcurrency: 4,
+    retrievalConcurrency: 3, // Crossref polite pool allows 3 at a time
     requestTimeoutMs: 8000,
     parseBatchSize: 8,
   }
