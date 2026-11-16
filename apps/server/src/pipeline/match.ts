@@ -180,12 +180,15 @@ export function pickBest(
   parsed: ParsedReference,
   candidates: MatchedRecord[],
   opts: MatchOptions,
+  /** Candidates for which this returns true are preferred over the rest, whatever their scores. */
+  prefer: (s: Scored) => boolean = () => true,
 ): Scored | null {
   const scored = candidates.map((c) => scoreCandidate(parsed, c, opts))
   if (scored.length === 0) return null
   const EPS = 1e-9
   const yd = (s: Scored) => s.scores.yearDiff ?? Number.POSITIVE_INFINITY
   return scored.reduce((best, cur) => {
+    if (prefer(cur) !== prefer(best)) return prefer(cur) ? cur : best
     if (Math.abs(cur.scores.title - best.scores.title) > EPS) {
       return cur.scores.title > best.scores.title ? cur : best
     }

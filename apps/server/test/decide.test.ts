@@ -65,7 +65,11 @@ function run(
   })
 }
 
-const candidates = (): Retrieval => ({ kind: 'candidates', candidates: [record] })
+const candidates = (): Retrieval => ({
+  kind: 'candidates',
+  candidates: [record],
+  openAlexUsed: false,
+})
 const doiRecord = (): Retrieval => ({ kind: 'doi_record', record })
 
 interface Row {
@@ -132,7 +136,7 @@ const TABLE: Row[] = [
     rule: 5,
     status: 'mismatch',
     reasons: ['mismatch_authors', 'mismatch_year', 'mismatch_venue'],
-    input: () => run(candidates(), scored({ authors: 0, yearDiff: 5, venue: 0 })),
+    input: () => run(candidates(), scored({ authors: 0.2, yearDiff: 5, venue: 0 })),
   },
   {
     name: 'row 6: journal article, no record close enough',
@@ -140,7 +144,11 @@ const TABLE: Row[] = [
     status: 'suspect',
     reasons: ['suspect_no_record_journal'],
     input: () =>
-      run({ kind: 'candidates', candidates: [] }, null, parsed({ type: 'journal_article' })),
+      run(
+        { kind: 'candidates', candidates: [], openAlexUsed: false },
+        null,
+        parsed({ type: 'journal_article' }),
+      ),
   },
   {
     name: 'row 6: a venue name alone makes it journal-like',
@@ -149,7 +157,7 @@ const TABLE: Row[] = [
     reasons: ['suspect_no_record_journal'],
     input: () =>
       run(
-        { kind: 'candidates', candidates: [] },
+        { kind: 'candidates', candidates: [], openAlexUsed: false },
         null,
         parsed({ type: 'other', venue: 'Some Journal' }),
       ),
@@ -161,7 +169,7 @@ const TABLE: Row[] = [
     reasons: ['suspect_no_record_journal'],
     input: () =>
       run(
-        { kind: 'candidates', candidates: [] },
+        { kind: 'candidates', candidates: [], openAlexUsed: false },
         null,
         parsed({ type: 'other', venue: null, volume: '12' }),
       ),
@@ -172,7 +180,11 @@ const TABLE: Row[] = [
     status: 'out_of_index',
     reasons: ['out_of_index_type'],
     input: () =>
-      run({ kind: 'candidates', candidates: [] }, null, parsed({ type: 'thesis', venue: null })),
+      run(
+        { kind: 'candidates', candidates: [], openAlexUsed: false },
+        null,
+        parsed({ type: 'thesis', venue: null }),
+      ),
   },
   {
     name: 'row 8: not enough detail to search',
@@ -199,7 +211,7 @@ describe('decision table, brief section 6.5', () => {
   for (const type of ['book', 'book_chapter', 'thesis', 'report', 'web_page', 'other'] as const) {
     it(`row 7 applies to type ${type} without journal signals`, () => {
       const d = run(
-        { kind: 'candidates', candidates: [] },
+        { kind: 'candidates', candidates: [], openAlexUsed: false },
         null,
         parsed({ type, venue: null, volume: null }),
       )
@@ -209,7 +221,7 @@ describe('decision table, brief section 6.5', () => {
 
   it('row 7: a conference paper with no venue is abstained on too', () => {
     const d = run(
-      { kind: 'candidates', candidates: [] },
+      { kind: 'candidates', candidates: [], openAlexUsed: false },
       null,
       parsed({ type: 'conference_paper', venue: null }),
     )
@@ -242,14 +254,71 @@ describe('rules are evaluated in order', () => {
     expect(d.rule).toBe(3)
   })
 
-  it('journal-like (row 6) wins over thesis-like (row 7) when both signals are present', () => {
+  it('a volume makes even a thesis journal-like (row 6 before row 7)', () => {
     const d = run(
-      { kind: 'candidates', candidates: [] },
+      { kind: 'candidates', candidates: [], openAlexUsed: false },
       null,
-      parsed({ type: 'thesis', venue: 'Jurnal X' }),
+      parsed({ type: 'thesis', venue: null, volume: '3' }),
     )
     expect(d.rule).toBe(6)
   })
+})
+
+describe('T1: a matching title with none of the cited authors is another work', () => {
+  const collision = () => scored({ title: 1, authors: 0 })
+
+  it('is not a mismatch: a journal-like reference falls to row 6', () => {
+    expect(run(candidates(), collision())).toEqual({
+      rule: 6,
+      status: 'suspect',
+      reasons: ['suspect_no_record_journal'],
+    })
+  })
+
+  it('a web page with a common title falls to row 7 and is abstained on', () => {
+    const d = run(candidates(), collision(), parsed({ type: 'web_page', venue: null }))
+    expect(d).toEqual({ rule: 7, status: 'out_of_index', reasons: ['out_of_index_type'] })
+  })
+
+  it('some authors found, but too few, is still a mismatch', () => {
+    expect(run(candidates(), scored({ authors: 0.34 })).reasons).toEqual(['mismatch_authors'])
+  })
+
+  it('does not apply when no authors were cited', () => {
+    const b = scored({ authors: 0 }, { authorsCited: false })
+    expect(run(candidates(), b, parsed({ authors: [] })).status).toBe('verified')
+  })
+
+  it('does not apply to a record reached through a cited DOI: that is the cited work', () => {
+    const d = run(doiRecord(), collision(), parsed({ doi: '10.1/x' }))
+    expect(d).toMatchObject({ rule: 5, reasons: ['mismatch_authors'] })
+  })
+
+  it('does not apply when the author check is switched off (A4)', () => {
+    expect(run(candidates(), collision(), parsed(), { checkAuthors: false }).status).toBe(
+      'verified',
+    )
+  })
+})
+
+describe('T3: a venue is a journal name only for types that have journals', () => {
+  const none = (): Retrieval => ({ kind: 'candidates', candidates: [], openAlexUsed: false })
+
+  it.each(['thesis', 'book', 'book_chapter', 'report', 'web_page'] as const)(
+    '%s with a venue is still abstained on (row 7)',
+    (type) => {
+      const d = run(none(), null, parsed({ type, venue: 'Repositori Universitas Contoh' }))
+      expect(d).toMatchObject({ rule: 7, status: 'out_of_index' })
+    },
+  )
+
+  it.each(['conference_paper', 'other'] as const)(
+    '%s with a venue is journal-like (row 6)',
+    (type) => {
+      const d = run(none(), null, parsed({ type, venue: 'Some Proceedings' }))
+      expect(d).toMatchObject({ rule: 6, status: 'suspect' })
+    },
+  )
 })
 
 describe('thresholds are inclusive on the "high" side', () => {
@@ -373,7 +442,7 @@ describe('ablations', () => {
     const noAbstain = { abstain: false }
     expect(
       run(
-        { kind: 'candidates', candidates: [] },
+        { kind: 'candidates', candidates: [], openAlexUsed: false },
         null,
         parsed({ type: 'thesis', venue: null }),
         noAbstain,
@@ -392,7 +461,7 @@ describe('ablations', () => {
 
   it('A1 keeps the original reason code so the audit trail still says why', () => {
     const d = run(
-      { kind: 'candidates', candidates: [] },
+      { kind: 'candidates', candidates: [], openAlexUsed: false },
       null,
       parsed({ type: 'thesis', venue: null }),
       { abstain: false },
@@ -401,7 +470,7 @@ describe('ablations', () => {
   })
 
   it('A4 (no author check): wrong authors no longer cause a mismatch', () => {
-    const b = scored({ authors: 0 })
+    const b = scored({ authors: 0.3 })
     expect(run(candidates(), b, parsed(), { checkAuthors: false }).status).toBe('verified')
     expect(run(candidates(), b, parsed(), { checkAuthors: true }).status).toBe('mismatch')
   })

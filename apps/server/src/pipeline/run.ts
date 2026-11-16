@@ -8,7 +8,7 @@ import type {
 import type { GeminiClient, GeminiUsage } from '../clients/gemini.js'
 import { Scheduler } from '../lib/scheduler.js'
 import { buildComparison } from './format.js'
-import { decide } from './decide.js'
+import { decide, isSameWorkCandidate, isTitleCollision } from './decide.js'
 import { pickBest, scoreCandidate } from './match.js'
 import { parseBatch } from './parse.js'
 import { retrieve } from './retrieve.js'
@@ -43,6 +43,9 @@ function median(values: number[]): number {
   const mid = Math.floor(s.length / 2)
   return s.length % 2 === 1 ? (s[mid] as number) : ((s[mid - 1] as number) + (s[mid] as number)) / 2
 }
+
+const errorCode = (err: unknown): string =>
+  err instanceof Error && 'code' in err ? String((err as { code: unknown }).code) : 'internal'
 
 /** How many batches the model reads at the same time. */
 const PARSE_CONCURRENCY = 3
@@ -80,22 +83,53 @@ export async function checkOne(
   let best: Scored | null = null
   const matchOpts = { checkAuthors: options.checkAuthors }
 
+  const sameWork = (s: Scored) => isSameWorkCandidate(s, options)
+
   try {
     retrieval = await retrieve(parsed, deps.retrieve, options)
     if (retrieval.kind === 'doi_record') best = scoreCandidate(parsed, retrieval.record, matchOpts)
-    else if (retrieval.kind === 'candidates')
-      best = pickBest(parsed, retrieval.candidates, matchOpts)
+    else if (retrieval.kind === 'candidates') {
+      best = pickBest(parsed, retrieval.candidates, matchOpts, sameWork)
+    }
   } catch (err) {
     // A lookup service failed, or something unexpected broke. Either way this is not evidence
     // about the reference, so it must never become a verdict.
-    deps.onError?.(
-      err instanceof Error && 'code' in err ? String((err as { code: unknown }).code) : 'internal',
-    )
+    deps.onError?.(errorCode(err))
     retrieval = { kind: 'service_failed' }
     best = null
   }
 
-  const decision = decide({ parsed, retrieval, best, options })
+  let decision = decide({ parsed, retrieval, best, options })
+
+  // T2, second look: Crossref has a record with this title, but it did not verify (details differ, or
+  // it is another work with the same title). Crossref sometimes holds only a repost or a namesake, so
+  // ask OpenAlex too, and take its answer only if it is a full match.
+  if (
+    retrieval.kind === 'candidates' &&
+    !retrieval.openAlexUsed &&
+    options.useOpenAlex &&
+    parsed.title !== null &&
+    (decision.status === 'mismatch' || isTitleCollision(best, options))
+  ) {
+    try {
+      const extra = await deps.retrieve.openalex.searchTitle(parsed.title)
+      const second = pickBest(parsed, extra, matchOpts, sameWork)
+      const secondDecision = decide({
+        parsed,
+        retrieval: { kind: 'candidates', candidates: extra, openAlexUsed: true },
+        best: second,
+        options,
+      })
+      if (secondDecision.status === 'verified') {
+        best = second
+        decision = secondDecision
+      }
+    } catch (err) {
+      // The first answer rests on a record Crossref really holds, so it stands. Only the extra
+      // look is lost. (When Crossref has nothing at all, a failed OpenAlex call is check_failed.)
+      deps.onError?.(`second_look_${errorCode(err)}`)
+    }
+  }
 
   // Show the record only when the verdict is about that record.
   const showRecord =

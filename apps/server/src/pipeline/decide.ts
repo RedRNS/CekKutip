@@ -1,4 +1,4 @@
-import type { CheckStatus, ParsedReference, ReasonCode } from '@cekkutip/shared'
+import type { CheckStatus, ParsedReference, ReasonCode, ReferenceType } from '@cekkutip/shared'
 import type { PipelineOptions, Retrieval, Scored } from './types.js'
 
 export interface DecideInput {
@@ -32,10 +32,16 @@ export interface Decision {
  *
  * One more rule, added for evidence: a match needs at least two of title, authors, and year to have
  * been written and compared. A bare DOI or a bare title cannot be called Verified.
+ *
+ * Three refinements approved on 2026-11-16 after live runs (docs/DECISIONS.md, T1 to T3):
+ * - T1: a search candidate whose title matches but in which none of the cited authors is found is
+ *   another work with the same title, not this work cited wrongly. It does not count as a match.
+ * - T2 lives in run.ts (a second look in OpenAlex), not here.
+ * - T3: for a thesis, book, book chapter, report, or web page, a venue is not "a journal name" (row 6).
  */
 export function decide(input: DecideInput): Decision {
   const { parsed, retrieval, best, options } = input
-  const { tauT, tauA, tauL, tauV } = options.thresholds
+  const { tauA, tauL, tauV } = options.thresholds
 
   const done = (rule: number, status: CheckStatus, reasons: ReasonCode[]): Decision => {
     if (!options.abstain && status === 'out_of_index') return { rule, status: 'suspect', reasons }
@@ -62,7 +68,7 @@ export function decide(input: DecideInput): Decision {
   const sameWork =
     retrieval.kind === 'doi_record'
       ? best !== null && !(best.flags.titleCited && best.scores.title < tauL)
-      : best !== null && best.scores.title >= tauT
+      : best !== null && isSameWorkCandidate(best, options)
 
   if (retrieval.kind === 'doi_record') {
     if (best === null) throw new Error('decide: doi_record needs a scored record')
@@ -98,11 +104,46 @@ export function decide(input: DecideInput): Decision {
   // Row 6: cited like a journal article.
   const journalLike =
     parsed.type === 'journal_article' ||
-    parsed.venue !== null ||
+    (parsed.venue !== null && !VENUE_IS_NOT_A_JOURNAL.has(parsed.type)) ||
     parsed.volume !== null ||
     parsed.doi !== null
   if (journalLike) return done(6, 'suspect', ['suspect_no_record_journal'])
 
   // Row 7: a type that Crossref and OpenAlex often do not hold. Abstain.
   return done(7, 'out_of_index', ['out_of_index_type'])
+}
+
+/** T3: for these types a venue is a repository, publisher, book, or site, never a journal name. */
+const VENUE_IS_NOT_A_JOURNAL: ReadonlySet<ReferenceType> = new Set([
+  'thesis',
+  'book',
+  'book_chapter',
+  'report',
+  'web_page',
+])
+
+/**
+ * Whether a search candidate counts as the cited work: its title reaches TAU_T, and (T1) it is not a
+ * title collision, meaning authors were cited and compared and none of them is in the record.
+ */
+export function isSameWorkCandidate(
+  scored: Scored,
+  options: Pick<PipelineOptions, 'thresholds' | 'checkAuthors'>,
+): boolean {
+  if (scored.scores.title < options.thresholds.tauT) return false
+  const noAuthorFound =
+    options.checkAuthors && scored.flags.authorsCited && scored.scores.authors === 0
+  return !noAuthorFound
+}
+
+/** A candidate whose title matches but that T1 rejects as another work. Used to trigger the second look. */
+export function isTitleCollision(
+  scored: Scored | null,
+  options: Pick<PipelineOptions, 'thresholds' | 'checkAuthors'>,
+): boolean {
+  return (
+    scored !== null &&
+    scored.scores.title >= options.thresholds.tauT &&
+    !isSameWorkCandidate(scored, options)
+  )
 }

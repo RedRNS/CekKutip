@@ -58,13 +58,16 @@ export async function retrieve(
   })
 
   const best = candidates.reduce((m, c) => Math.max(m, titleSimilarity(title, c.title)), 0)
-  if (best >= opts.thresholds.tauL || !opts.useOpenAlex) return { kind: 'candidates', candidates }
+  if (best >= opts.thresholds.tauL || !opts.useOpenAlex) {
+    return { kind: 'candidates', candidates, openAlexUsed: false }
+  }
 
   // No Crossref candidate reaches the minimum: try OpenAlex.
   const extra = await deps.openalex.searchTitle(title)
   const seen = new Set(candidates.map(recordKey))
   return {
     kind: 'candidates',
+    openAlexUsed: true,
     candidates: [...candidates, ...extra.filter((r) => !seen.has(recordKey(r)))],
   }
 }

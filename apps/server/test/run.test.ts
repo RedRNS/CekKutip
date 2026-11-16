@@ -419,6 +419,149 @@ describe('streaming and summary', () => {
   })
 })
 
+describe('T1 and T2: namesakes and reposts in Crossref', () => {
+  const VASWANI =
+    'Vaswani, A., Shazeer, N., & Polosukhin, I. (2017). Attention is all you need. Advances in Neural Information Processing Systems, 30.'
+  const WHO =
+    'World Health Organization. (2021). Obesity and overweight. https://www.who.int/news-room/fact-sheets/detail/obesity-and-overweight'
+
+  const crossrefItems = (items: unknown[]) => ok({ message: { items } })
+  const repost = {
+    DOI: '10.65215/repost1',
+    type: 'posted-content',
+    title: ['Attention Is All You Need'],
+    author: [
+      { family: 'Vaswani', given: 'Ashish' },
+      { family: 'Shazeer', given: 'Noam' },
+      { family: 'Polosukhin', given: 'Illia' },
+    ],
+    issued: { 'date-parts': [[2025]] },
+  }
+  const original = {
+    id: 'https://openalex.org/W1',
+    doi: null,
+    title: 'Attention is All you Need',
+    publication_year: 2017,
+    authorships: [
+      { author: { display_name: 'Ashish Vaswani' } },
+      { author: { display_name: 'Noam Shazeer' } },
+      { author: { display_name: 'Illia Polosukhin' } },
+    ],
+    primary_location: {
+      landing_page_url: 'https://example.org/attention',
+      source: { display_name: 'Neural Information Processing Systems' },
+    },
+    biblio: { volume: '30' },
+  }
+  const namesake = {
+    DOI: '10.1000/other-obesity',
+    title: ['Obesity and overweight'],
+    author: [{ family: 'Smith', given: 'Jo' }],
+    issued: { 'date-parts': [[2005]] },
+    'container-title': ['Some Medical Journal'],
+  }
+
+  it('T2: a repost in Crossref with the wrong year is overruled by a full match in OpenAlex', async () => {
+    const w = world([
+      {
+        repeat: true,
+        match: urlHas('query.bibliographic'),
+        respond: () => crossrefItems([repost]),
+      },
+      {
+        repeat: true,
+        match: urlHas('api.openalex.org'),
+        respond: () => ok({ results: [original] }),
+      },
+    ])
+    const r = await only(VASWANI, w)
+    expect(r).toMatchObject({ status: 'verified', record: { source: 'openalex', year: 2017 } })
+    expect(w.calls.filter((c) => c.url.includes('openalex'))).toHaveLength(1)
+  })
+
+  it('T2: without a full match in OpenAlex the Crossref mismatch stands', async () => {
+    const w = world([
+      {
+        repeat: true,
+        match: urlHas('query.bibliographic'),
+        respond: () => crossrefItems([repost]),
+      },
+      { repeat: true, match: urlHas('api.openalex.org'), respond: () => ok({ results: [] }) },
+    ])
+    const r = await only(VASWANI, w)
+    expect(r).toMatchObject({
+      status: 'mismatch',
+      reasons: ['mismatch_year'],
+      record: { source: 'crossref' },
+    })
+  })
+
+  it('T2: if the second look fails, the first answer stands and the failure is reported as a code', async () => {
+    const w = world([
+      {
+        repeat: true,
+        match: urlHas('query.bibliographic'),
+        respond: () => crossrefItems([repost]),
+      },
+      { repeat: true, match: urlHas('api.openalex.org'), respond: () => status(503) },
+    ])
+    const r = await only(VASWANI, w)
+    expect(r.status).toBe('mismatch')
+    expect(w.errors).toEqual(['second_look_server_error'])
+  })
+
+  it('T2: A2 (no OpenAlex) takes no second look', async () => {
+    const w = world([
+      {
+        repeat: true,
+        match: urlHas('query.bibliographic'),
+        respond: () => crossrefItems([repost]),
+      },
+    ])
+    const r = await only(VASWANI, w, applyAblation(regexOptions(), 'a2'))
+    expect(r.status).toBe('mismatch')
+    expect(w.calls.some((c) => c.url.includes('openalex'))).toBe(false)
+  })
+
+  it('T1: a web page whose title matches another work is abstained on, not called a mismatch', async () => {
+    const w = world([
+      {
+        repeat: true,
+        match: urlHas('query.bibliographic'),
+        respond: () => crossrefItems([namesake]),
+      },
+      { repeat: true, match: urlHas('api.openalex.org'), respond: () => ok({ results: [] }) },
+    ])
+    const r = await only(WHO, w)
+    expect(r).toMatchObject({
+      status: 'out_of_index',
+      reasons: ['out_of_index_type'],
+      record: null,
+    })
+    expect(r.parsed.type).toBe('web_page')
+    // The namesake triggers a second look in OpenAlex.
+    expect(w.calls.some((c) => c.url.includes('openalex'))).toBe(true)
+  })
+
+  it('T1: among candidates, one with a cited author beats a namesake with a better title score', async () => {
+    const real = {
+      DOI: '10.1000/real-obesity',
+      title: ['Obesity and overweight: fact sheet'],
+      author: [{ name: 'World Health Organization' }],
+      issued: { 'date-parts': [[2021]] },
+    }
+    const w = world([
+      {
+        repeat: true,
+        match: urlHas('query.bibliographic'),
+        respond: () => crossrefItems([namesake, real]),
+      },
+    ])
+    const r = await only(WHO, w)
+    expect(r).toMatchObject({ status: 'verified', record: { doi: '10.1000/real-obesity' } })
+  })
+})
+
 describe('planBatches', () => {
   it.each([
     [0, 8, []],

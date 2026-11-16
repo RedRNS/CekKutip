@@ -47,7 +47,7 @@ export type Retrieval =
   | { kind: 'doi_not_registered' }
   | { kind: 'doi_other_registry'; agency: string }
   | { kind: 'doi_record'; record: MatchedRecord }
-  | { kind: 'candidates'; candidates: MatchedRecord[] }
+  | { kind: 'candidates'; candidates: MatchedRecord[]; openAlexUsed: boolean }
 
 /** Which cited fields were present and comparable. A field that was not written is never held against the reference. */
 export interface MatchFlags {
