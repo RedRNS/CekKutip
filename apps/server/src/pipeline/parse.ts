@@ -30,7 +30,12 @@ export interface ParseDeps {
   batchSize: number
   now?: () => Date
   onUsage?: (usage: GeminiUsage) => void
+  /** Called with a short code (never text) each time the regex parser has to take over from the model. */
+  onError?: (code: string) => void
 }
+
+const errorCode = (err: unknown): string =>
+  err instanceof Error && 'code' in err ? String((err as { code: unknown }).code) : 'internal'
 
 const blankToNull = (s: string | null): string | null => {
   const t = s?.trim() ?? ''
@@ -117,8 +122,9 @@ export async function parseBatch(
     const res = await gemini.extract(items)
     deps.onUsage?.(res.usage)
     first = res.results
-  } catch {
+  } catch (err) {
     // The model service is unavailable. Do not hammer it one reference at a time: use the regex parser.
+    deps.onError?.(`parse_${errorCode(err)}`)
     return refs.map(regex)
   }
 
@@ -137,9 +143,11 @@ export async function parseBatch(
         const single = await gemini.extract([{ i: 0, text: item.text }])
         deps.onUsage?.(single.usage)
         parsed = validateExtraction(single.results[0], item.text, now)
-      } catch {
+      } catch (err) {
+        deps.onError?.(`parse_${errorCode(err)}`)
         parsed = null
       }
+      if (parsed === null) deps.onError?.('parse_unfaithful_output')
     }
     out.push(parsed ?? regex(item.text))
   }

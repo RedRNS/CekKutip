@@ -350,6 +350,27 @@ describe('parseBatch', () => {
     expect(out[0]?.parseMode).toBe('regex')
   })
 
+  it('reports a code, never text, each time the regex parser takes over', async () => {
+    const codes: string[] = []
+    const down = vi.fn(async () => {
+      throw new ServiceUnavailableError('gemini', 'rate_limited', 429)
+    })
+    await parseBatch([REF], 'llm', {
+      gemini: fake(down),
+      batchSize: 8,
+      now: () => NOW,
+      onError: (c) => codes.push(c),
+    })
+    const unfaithful = vi.fn(async () => ({ results: [good({ doi: '10.9999/invented' })], usage }))
+    await parseBatch([REF], 'llm', {
+      gemini: fake(unfaithful),
+      batchSize: 8,
+      now: () => NOW,
+      onError: (c) => codes.push(c),
+    })
+    expect(codes).toEqual(['parse_rate_limited', 'parse_unfaithful_output'])
+  })
+
   it('reports token usage for every call', async () => {
     const onUsage = vi.fn()
     const extract = vi

@@ -65,7 +65,7 @@ for await (const chunk of res.body as unknown as AsyncIterable<Uint8Array>) {
       rows[r.index] =
         `${String(r.index + 1).padStart(2)} ${r.status.padEnd(12)} ${r.reasons.join('+').padEnd(34)} ` +
         `t=${s.title.toFixed(2)} a=${s.authors.toFixed(2)} y=${s.yearDiff ?? '-'} v=${s.venue.toFixed(2)} ` +
-        `${String(r.latencyMs).padStart(5)}ms ${r.parsed.type.padEnd(16)} | ${r.raw.slice(0, 48)}`
+        `${String(r.latencyMs).padStart(5)}ms ${r.parsed.parseMode.padEnd(5)} ${r.parsed.type.padEnd(16)} | ${r.raw.slice(0, 48)}`
       console.log(`  arrived #${r.index + 1} after ${Date.now() - t0} ms`)
     }
     if (e.type === 'done') {

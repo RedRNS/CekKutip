@@ -16,7 +16,7 @@ export const EXTRACTION_SYSTEM_INSTRUCTION = [
   'hasEtAl: true only when the text says "et al.", "dkk.", or "dll.".',
   'year: the publication year as an integer, only if written.',
   'title: the title of the work itself, as written, without the final full stop. Do not include a bracketed note such as [Skripsi, Universitas X].',
-  'venue: the journal, proceedings, or book title that contains the work. Not the publisher and not the university.',
+  'venue: only the journal, the conference proceedings, or (for a book chapter) the book that contains the work. Use null for a thesis, a book, a report, and a web page. A repository, university, publisher, website, or city is never a venue.',
   'volume, issue, pages: as written. doi: only a DOI that is written in the text, without the https://doi.org/ prefix.',
   `type: one of ${ReferenceTypeSchema.options.join(', ')}. Use thesis for a skripsi, tesis, or disertasi, report for a report or laporan, web_page for an online page without a journal, and other when unsure.`,
   'Return exactly one object per input item, with the same "i".',
@@ -95,11 +95,7 @@ export interface GeminiOptions {
   model: string
   generate?: GenerateFn
   timeoutMs?: number
-  /**
-   * Sent only when set. The brief asks for temperature 0, but Google's current guidance for Gemini 3
-   * says temperature may be ignored or rejected, and this has not been checked against a live key yet
-   * (docs/DECISIONS.md). Determinism comes from the schema, the instruction, and our own validation.
-   */
+  /** Sent only when set. The server default is 0 (brief 6.2), accepted by the live API on 2026-11-16. */
   temperature?: number
   retries?: number
 }

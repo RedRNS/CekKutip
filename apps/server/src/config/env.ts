@@ -3,7 +3,7 @@ export interface Env {
   port: number
   geminiApiKey: string | undefined
   geminiModel: string
-  /** Sent to Gemini only when set. See docs/DECISIONS.md. */
+  /** Sent to Gemini. Default 0 (brief 6.2). `GEMINI_TEMPERATURE=off` stops sending it. */
   geminiTemperature: number | undefined
   crossrefMailto: string | undefined
   openalexApiKey: string | undefined
@@ -35,16 +35,18 @@ export const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite'
 
 export function loadEnv(env: NodeJS.ProcessEnv = process.env): Env {
   const nodeEnv = text(env.NODE_ENV) ?? 'development'
-  const temperature = text(env.GEMINI_TEMPERATURE)
+  const temperature = text(env.GEMINI_TEMPERATURE)?.toLowerCase()
   return {
     nodeEnv,
     port: int(env.PORT, 8787),
     geminiApiKey: text(env.GEMINI_API_KEY),
     geminiModel: text(env.GEMINI_MODEL) ?? DEFAULT_GEMINI_MODEL,
     geminiTemperature:
-      temperature === undefined || Number.isNaN(Number(temperature))
+      temperature === 'off'
         ? undefined
-        : Number(temperature),
+        : temperature === undefined || Number.isNaN(Number(temperature))
+          ? 0
+          : Number(temperature),
     crossrefMailto: text(env.CROSSREF_MAILTO),
     openalexApiKey: text(env.OPENALEX_API_KEY),
     // Never on in production, whatever the variable says.

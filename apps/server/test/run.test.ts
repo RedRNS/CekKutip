@@ -2,7 +2,7 @@ import type { ReferenceResult, StreamEvent } from '@cekkutip/shared'
 import { describe, expect, it, vi } from 'vitest'
 import type { GeminiClient } from '../src/clients/gemini.js'
 import { ServiceUnavailableError } from '../src/lib/http.js'
-import { runPipeline } from '../src/pipeline/run.js'
+import { planBatches, runPipeline } from '../src/pipeline/run.js'
 import { DEFAULT_OPTIONS, applyAblation } from '../src/pipeline/types.js'
 import type { PipelineOptions } from '../src/pipeline/types.js'
 import { fixtureText, ok, status, urlHas } from './helpers.js'
@@ -419,7 +419,58 @@ describe('streaming and summary', () => {
   })
 })
 
+describe('planBatches', () => {
+  it.each([
+    [0, 8, []],
+    [1, 8, [1]],
+    [8, 8, [8]],
+    [9, 8, [5, 4]],
+    [10, 8, [5, 5]],
+    [16, 8, [8, 8]],
+    [17, 8, [6, 6, 5]],
+    [40, 8, [8, 8, 8, 8, 8]],
+    [3, 1, [1, 1, 1]],
+  ])('%i references with at most %i per batch', (total, max, sizes) => {
+    const plan = planBatches(total, max)
+    expect(plan.map((b) => b.size)).toEqual(sizes)
+    expect(plan.every((b) => b.size <= max)).toBe(true)
+    // Batches are contiguous and cover every reference exactly once.
+    let next = 0
+    for (const b of plan) {
+      expect(b.start).toBe(next)
+      next += b.size
+    }
+    expect(next).toBe(total)
+  })
+})
+
 describe('parsing in the pipeline', () => {
+  it('reads batches in parallel, at most three at a time, and keeps every reference in its place', async () => {
+    let active = 0
+    let peak = 0
+    const sizes: number[] = []
+    const gemini: GeminiClient = {
+      extract: async (items) => {
+        active++
+        peak = Math.max(peak, active)
+        sizes.push(items.length)
+        await new Promise((r) => setTimeout(r, 30))
+        active--
+        // An empty answer makes every reference fall back to the regex parser after one retry.
+        return { results: [], usage: { inputTokens: 0, outputTokens: 0 } }
+      },
+    }
+    const refs = Array.from({ length: 34 }, (_, i) => `Doe. 20${String(i).padStart(2, '0')}.`)
+    const { results } = await check(refs, world(FIXTURE_RULES, gemini), {
+      ...DEFAULT_OPTIONS,
+      parseMode: 'llm',
+    })
+    expect(sizes.filter((n) => n > 1)).toEqual([7, 7, 7, 7, 6]) // 34 references, five even batches
+    expect(peak).toBeGreaterThan(1)
+    expect(peak).toBeLessThanOrEqual(3)
+    expect(results.map((r) => r.raw)).toEqual(refs)
+  })
+
   it('falls back to the regex parser for every reference when the model service is down', async () => {
     const gemini: GeminiClient = {
       extract: vi.fn(async () => {

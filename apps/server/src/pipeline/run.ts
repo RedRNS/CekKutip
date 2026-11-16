@@ -44,6 +44,29 @@ function median(values: number[]): number {
   return s.length % 2 === 1 ? (s[mid] as number) : ((s[mid - 1] as number) + (s[mid] as number)) / 2
 }
 
+/** How many batches the model reads at the same time. */
+const PARSE_CONCURRENCY = 3
+
+/**
+ * Split `total` references into the fewest batches of at most `maxSize`, with sizes as equal as possible.
+ * Ten references with a maximum of eight become 5 + 5, not 8 + 2: a model call takes a fixed time plus
+ * a little per reference, so even batches finish sooner.
+ */
+export function planBatches(total: number, maxSize: number): { start: number; size: number }[] {
+  if (total <= 0) return []
+  const count = Math.ceil(total / Math.max(1, maxSize))
+  const base = Math.floor(total / count)
+  const extra = total % count
+  const out: { start: number; size: number }[] = []
+  let start = 0
+  for (let i = 0; i < count; i++) {
+    const size = base + (i < extra ? 1 : 0)
+    out.push({ start, size })
+    start += size
+  }
+  return out
+}
+
 /** Look up, match, and decide one parsed reference. Never throws: a failure becomes `check_failed`. */
 export async function checkOne(
   index: number,
@@ -131,30 +154,38 @@ export async function runPipeline(params: RunParams, deps: PipelineDeps): Promis
   const lookups = new Scheduler({ maxConcurrent: params.retrievalConcurrency, minIntervalMs: 0 })
   const tasks: Promise<void>[] = []
 
-  for (let start = 0; start < references.length; start += params.parseBatchSize) {
-    if (signal?.aborted) break
-    const batch = references.slice(start, start + params.parseBatchSize)
-    const t0 = performance.now()
-    const parsedBatch = await parseBatch(batch, options.parseMode, {
-      gemini: deps.gemini,
-      batchSize: params.parseBatchSize,
-      now: deps.now,
-      onUsage: deps.onUsage,
-    })
-    const parseShare = (performance.now() - t0) / batch.length
+  // Batches are read by the model in parallel, and lookups start as soon as a batch is read.
+  const parsers = new Scheduler({ maxConcurrent: PARSE_CONCURRENCY, minIntervalMs: 0 })
+  await Promise.all(
+    planBatches(references.length, params.parseBatchSize).map(({ start, size }) =>
+      parsers.run(async () => {
+        if (signal?.aborted) return
+        const batch = references.slice(start, start + size)
+        const t0 = performance.now()
+        const parsedBatch = await parseBatch(batch, options.parseMode, {
+          gemini: deps.gemini,
+          batchSize: params.parseBatchSize,
+          now: deps.now,
+          onUsage: deps.onUsage,
+          onError: deps.onError,
+        })
+        // Each reference carries an equal share of its batch's reading time.
+        const parseShare = (performance.now() - t0) / batch.length
 
-    parsedBatch.forEach((parsed, k) => {
-      const index = start + k
-      tasks.push(
-        lookups.run(async () => {
-          if (signal?.aborted) return
-          const result = await checkOne(index, parsed, options, deps, parseShare)
-          results.push(result)
-          await emit({ type: 'result', result })
-        }),
-      )
-    })
-  }
+        parsedBatch.forEach((parsed, k) => {
+          const index = start + k
+          tasks.push(
+            lookups.run(async () => {
+              if (signal?.aborted) return
+              const result = await checkOne(index, parsed, options, deps, parseShare)
+              results.push(result)
+              await emit({ type: 'result', result })
+            }),
+          )
+        })
+      }),
+    ),
+  )
 
   await Promise.all(tasks)
   await chain

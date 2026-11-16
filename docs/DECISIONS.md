@@ -70,6 +70,33 @@ Sebelas dari dua belas sesuai harapan. Satu tidak:
 - **Masalah terbuka, Mismatch palsu:** `Vaswani et al. (2017). Attention is all you need. NeurIPS 30` (referensi benar) mendapat `mismatch_year` dengan selisih 8 tahun. Makalah asli tidak ada di Crossref. Crossref memuat lima unggahan ulang tahun 2025 bertipe `posted-content` dengan judul dan penulis yang sama. Aturan bekerja sesuai tabel, tetapi kesimpulannya keliru bagi pengguna. Aturan **tidak** diubah karena satu contoh. Pilihan yang menunggu keputusan pengguna: (a) biarkan dan ukur di dev set, (b) bila kandidat terbaik Crossref `mismatch`, cari juga di OpenAlex dan pakai kandidat yang cocok penuh bila ada (menambah biaya OpenAlex dan mengubah arti ablation A2). Apa pun pilihannya, referensi ini tidak boleh dipakai sebagai contoh `Verified` di daftar demo (M4).
 - Pengamatan lain: buku Sugiyono (2017) benar menjadi `out_of_index`. Skripsi karangan mendapat kandidat mirip berskor 0,74 dan tetap `out_of_index`, sedangkan teks yang sama bergaya jurnal menjadi `suspect`.
 
+## 2026-11-16 (M3, uji dengan Gemini nyata)
+
+Butir 42 dan 43 di atas ditulis sebelum ada kunci. Butir berikut menggantikannya.
+
+48. **Jalur Gemini nyata sudah diuji** (`scripts/smoke-gemini.ts`, lalu lewat server dengan `scripts/smoke-check.ts ... llm`). `gemini-3.1-flash-lite` menerima `responseMimeType`, `responseJsonSchema`, dan instruksi sistem. Enam referensi contoh (APA, skripsi, buku, IEEE, lembaga, dan satu referensi berisi perintah injeksi) semuanya lolos pemeriksaan "tertulis di teks". Referensi berisi perintah diperlakukan sebagai data.
+49. **Temperatur bawaan 0**, sesuai brief. `temperature: 0` diterima API nyata pada 16 Nov 2026. `GEMINI_TEMPERATURE=off` berhenti mengirimnya bila model berikutnya menolak parameter itu. Keluaran model tetap bisa berbeda antar-batch walau temperatur 0 (lihat butir 51), jadi determinisme verdict dijaga oleh validasi dan aturan, bukan oleh model.
+50. **Waktu model terukur:** sekitar 2,3 detik tetap ditambah sekitar 0,2 detik per referensi (1 referensi 2,5 detik, 4 referensi 3,2 detik, 8 referensi 4,2 detik). `thoughtsTokenCount` nol, jadi pengaturan thinking tidak membantu. Pemakaian token: 814 masuk dan 981 keluar untuk 8 referensi.
+51. **Batch seimbang dan paralel.** Daftar dibagi menjadi batch sesedikit mungkin dengan ukuran serata mungkin (10 referensi menjadi 5 + 5, bukan 8 + 2) dan dibaca sampai 3 batch sekaligus. Pada 12 referensi waktu baca turun dari 10,2 detik menjadi 5,4 detik. Ukuran batch maksimum tetap 8.
+52. **Instruksi venue diperketat.** Pada satu batch model mengisi "Repositori Universitas Contoh" sebagai venue sebuah skripsi, sehingga baris 6 ("ada nama jurnal") mengalahkan baris 7 dan skripsi itu menjadi `suspect`. Instruksi sekarang menyatakan venue hanya jurnal, prosiding, atau buku yang memuat bab, dan `null` untuk skripsi, buku, laporan, dan halaman web. Ini perbaikan Parse (definisi field), bukan perubahan aturan Decide. Setelah perbaikan, skripsi yang sama menjadi `out_of_index`.
+53. **Kegagalan Parse dicatat sebagai kode** (`parse_rate_limited`, `parse_unfaithful_output`, dan sejenisnya) lewat `onError`, supaya jatuh ke parser regex tidak terjadi diam-diam. Tetap tanpa teks.
+54. **Latensi per referensi** = bagian rata waktu baca batch ditambah waktu pencarian (termasuk antre di penjadwal Crossref). Angka ini yang dilaporkan sebagai `latencyMs`.
+
+### Masalah terbuka pada aturan (menunggu keputusan pengguna, aturan belum diubah)
+
+Ketiganya muncul dari uji langsung dan sama-sama menghasilkan tuduhan keliru pada referensi yang benar. Aturan tidak diubah berdasarkan contoh. Seharusnya diputuskan pengguna dan diukur di dev set.
+
+- **T1, record lain berjudul sama.** `World Health Organization. (2021). Obesity and overweight. https://www.who.int/...` (halaman web yang benar) mendapat `mismatch_authors` + `mismatch_year`, karena Crossref punya artikel lain berjudul persis "Obesity and overweight". Judul pendek dan umum akan sering bertabrakan. Usul: bila judul cocok tetapi **tidak satu pun** penulis yang dikutip ditemukan (skor penulis 0), anggap itu karya lain, bukan karya yang sama dengan penulis keliru. Referensi lalu jatuh ke baris 6 atau 7 sesuai tipe. `mismatch_authors` tetap berlaku untuk kecocokan sebagian.
+- **T2, Crossref hanya memuat unggahan ulang.** `Vaswani et al. (2017). Attention is all you need` mendapat `mismatch_year` (selisih 8 tahun) karena Crossref hanya punya unggahan ulang tahun 2025. Usul: bila kandidat terbaik Crossref `mismatch`, cari juga di OpenAlex dan pakai kandidat yang cocok penuh bila ada.
+- **T3, venue pada tipe non-jurnal.** Baris 6 menganggap referensi "seperti jurnal" bila ada venue, termasuk bila tipenya skripsi, buku, laporan, atau halaman web. Butir 52 mengurangi kasusnya di Parse, tetapi parser regex dan model masih bisa mengisi venue. Usul: untuk tipe-tipe itu venue tidak dihitung sebagai "nama jurnal" (volume dan DOI tetap dihitung).
+
+### Latensi dan risiko demo
+
+- Dengan Gemini dan cache kosong, 12 referensi butuh 32 sampai 45 detik di pool publik Crossref (satu permintaan sekaligus, dan saat diuji tiap pencarian butuh 4 sampai 5 detik). Mode tanpa AI pada saat lain butuh sekitar 10 detik untuk daftar yang sama. Kecepatan Crossref berubah-ubah.
+- Dengan hasil pencarian sudah di cache, daftar yang sama selesai dalam 5,4 detik (waktu model saja).
+- **Belum diukur: pool polite** (dengan `CROSSREF_MAILTO`, tiga permintaan sekaligus). Saya tidak menjalankan server dengan alamat itu. Pengguna bisa mengukurnya dengan `npm run dev` lalu `npx tsx scripts/smoke-check.ts http://localhost:8787 llm`.
+- Untuk demo ke juri: jalankan daftar demo sekali sebelum presentasi agar hasil pencarian ada di cache 24 jam. Ini dicatat di DEPLOY.md (M7).
+
 ## Ambang final
 
 Belum dituning. Nilai sementara: `TAU_T` 0,90, `TAU_A` 0,60, `TAU_L` 0,60, `TAU_V` 0,40. Diisi setelah `npm run eval:tune` pada dev set (M5): ambang, hash commit, tanggal.
