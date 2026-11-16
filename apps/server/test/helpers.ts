@@ -18,6 +18,8 @@ export function fixtureJson<T = unknown>(name: string): T {
 export interface Rule {
   match: (url: string) => boolean
   respond: () => Response | Error | Promise<Response | Error>
+  /** Keep answering matching requests instead of being used once. */
+  repeat?: boolean
 }
 
 export const ok = (body: unknown, headers: Record<string, string> = {}) =>
@@ -38,7 +40,8 @@ export function stubFetch(rules: Rule[]) {
     calls.push({ url, init })
     const i = remaining.findIndex((r) => r.match(url))
     if (i < 0) throw new Error(`Unexpected request in test: ${new URL(url).pathname}`)
-    const [rule] = remaining.splice(i, 1)
+    const rule = remaining[i]
+    if (!rule?.repeat) remaining.splice(i, 1)
     const result = await (rule as Rule).respond()
     if (result instanceof Error) throw result
     return result

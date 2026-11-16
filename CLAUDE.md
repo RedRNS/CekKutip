@@ -28,6 +28,9 @@ npm test               # vitest, semua workspace
 npm run typecheck
 npm run lint
 npm run build
+npm run dev               # server API di :8787 (tsx watch, membaca .env)
+npm run dev:web           # Vite di :5173, /api diteruskan ke :8787
+npx tsx scripts/smoke-check.ts   # kirim 12 referensi ke server yang sedang jalan, cetak verdict
 npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)
 npm run fixtures:record   # rekam ulang fixture tes dari layanan nyata
 npm run eval -- --split test --system cekkutip --out eval/results   # M5

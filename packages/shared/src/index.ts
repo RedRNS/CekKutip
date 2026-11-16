@@ -160,4 +160,6 @@ export interface PublicConfig {
   maxReferences: number
   maxReferenceChars: number
   toolVersion: string
+  /** False when no AI service key is configured: checks then always use the no-AI reader. */
+  aiAvailable: boolean
 }

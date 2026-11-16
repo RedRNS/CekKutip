@@ -43,6 +43,33 @@ Format: tanggal, keputusan, alasan. Ambang final dan hash commit dicatat di bagi
 31. **Fixture** direkam dari layanan nyata dengan `scripts/record-fixtures.ts` (pool publik, tanpa email). Daftar referensi Crossref dibuang agar kecil. Respons 429, 5xx, dan timeout bersifat sintetis di tes karena tidak bisa direkam dengan wajar.
 32. **Uji langsung:** `scripts/smoke-live.ts` memanggil klien terhadap Crossref, OpenAlex, dan doi.org sungguhan. Dijalankan 16 Nov 2026 tanpa email dan tanpa kunci: sembilan langkah berhasil.
 
+## 2026-11-16 (M3)
+
+33. **Arti "di atas" dan "di bawah" ambang:** "di atas" berarti `>=`, "di bawah" berarti `<`. Skor judul tepat di `TAU_T` dihitung cocok. Diuji pada nilai batas.
+34. **Field yang tidak ditulis tidak pernah merugikan referensi.** Penulis, tahun, atau venue yang tidak dikutip (atau tidak ada di record) tidak dihitung "berbeda". `mismatch_venue` hanya muncul bila venue dikutip, ada di record, dan skornya di bawah `TAU_V`.
+35. **Aturan bukti (tambahan).** `verified` mensyaratkan paling sedikit dua dari judul, penulis, dan tahun tertulis dan terbandingkan. DOI telanjang atau judul saja yang kebetulan cocok menghasilkan `out_of_index_insufficient_data`, bukan `verified`. Alasan: tanpa itu, DOI apa pun yang terdaftar akan "terverifikasi" tanpa ada yang dibandingkan. Aturan ini tidak ada di tabel brief. Beri tahu bila tidak setuju.
+36. **Urutan baris 8 dan 9.** `out_of_index_other_registry` dan `out_of_index_insufficient_data` ditentukan oleh hasil Retrieve, jadi dievaluasi sebelum baris 3 sampai 7. Hasilnya sama dengan tabel karena kondisinya saling lepas.
+37. **A1 (tanpa abstain)** mengubah status `out_of_index` menjadi `suspect` tetapi mempertahankan kode alasan aslinya agar jejak audit tetap terbaca.
+38. **Record hanya ditampilkan bila verdict memang tentang record itu** (`verified` dan `mismatch`). Kandidat "hampir cocok" pada `suspect` dan `out_of_index` tidak ditampilkan, supaya pengguna tidak mengira itu sumbernya. Skornya tetap dikirim untuk bagian Details.
+39. **Validasi keluaran model lebih ketat dari skema.** Selain zod, setiap DOI, judul, venue, penulis, tahun, volume, nomor, dan halaman dari model harus benar-benar tertulis di teks referensi (dibandingkan setelah normalisasi). Bila tidak, keluaran ditolak, diulang sekali sebagai panggilan tunggal, lalu jatuh ke parser regex. Ini menutup risiko model "melengkapi" DOI atau membetulkan judul.
+40. **Gemini gagal dijangkau:** seluruh batch langsung dibaca parser regex tanpa mengulang per referensi (agar tidak membanjiri layanan yang sedang gagal). Hasil ditandai `parseMode: 'regex'`. Ini bukan `check_failed` karena pemeriksaan masih bisa dilakukan.
+41. **Tanpa `GEMINI_API_KEY`** server tetap berjalan dan selalu memakai parser regex. `GET /api/config` melaporkan `aiAvailable: false` supaya antarmuka bisa jujur soal itu (dipakai di M4).
+42. **Temperatur Gemini tidak dikirim secara bawaan** (menyimpang dari brief yang meminta 0). Dokumentasi Google yang dibaca 16 Nov 2026 menyebut `temperature`, `top_p`, dan `top_k` usang dan diabaikan pada keluarga Gemini 3, dan akan ditolak (HTTP 400) pada generasi berikutnya. Bisa diisi lewat `GEMINI_TEMPERATURE`. **Belum diuji dengan kunci nyata.** Determinisme dijaga oleh skema, instruksi sistem, dan validasi di butir 39.
+43. **Parameter skema:** SDK `@google/genai` 3.3.0 memakai `responseMimeType` dan `responseJsonSchema` (JSON Schema biasa, tipe nullable ditulis `["string","null"]`). **Jalur Gemini nyata belum pernah dijalankan** karena belum ada kunci. Semua tes Parse memakai klien palsu.
+44. **Model:** tetap `gemini-3.1-flash-lite` sesuai brief. Dokumentasi juga menyebut `gemini-3.5-flash-lite` yang lebih baru. Tidak diganti tanpa persetujuan. Cukup ubah `GEMINI_MODEL` bila mau.
+45. **Mode eksperimen** (`system`, `ablation`) ditolak kecuali `ENABLE_EXPERIMENT_MODES=true`, dan selalu mati bila `NODE_ENV=production` apa pun isi variabelnya. Lewat HTTP hanya sistem `cekkutip` dan ablation `a1` sampai `a4`. Baseline B1 sampai B3 hanya ada di harness (M5).
+46. **Logger tidak bisa mencatat teks.** `AppLogger` hanya punya metode bertipe tetap (id, jumlah, waktu, kode). Tidak ada metode yang menerima string bebas, objek permintaan, atau galat mentah. Dibuktikan tes: teks penanda di referensi tidak muncul di log pada pemeriksaan sukses, layanan gagal, masukan tidak valid, dan batas terlampaui.
+47. **`TRUST_PROXY`** bawaan 1 di produksi (satu reverse proxy), 0 selain itu, agar batas laju memakai IP pengguna yang benar. Sesuaikan dengan host di M7.
+
+### Hasil uji langsung M3 (16 Nov 2026, mode tanpa AI, pool publik Crossref)
+
+`scripts/smoke-check.ts` mengirim 12 referensi ke server lokal yang memanggil layanan sungguhan. Ringkasan: 3 `verified`, 4 `mismatch`, 2 `suspect`, 3 `out_of_index`, 0 `check_failed`. Seluruh daftar selesai dalam sekitar 10 detik, hasil pertama tiba setelah sekitar 1,3 detik. Ini uji asap pada referensi pilihan saya sendiri, **bukan** ukuran akurasi.
+
+Sebelas dari dua belas sesuai harapan. Satu tidak:
+
+- **Masalah terbuka, Mismatch palsu:** `Vaswani et al. (2017). Attention is all you need. NeurIPS 30` (referensi benar) mendapat `mismatch_year` dengan selisih 8 tahun. Makalah asli tidak ada di Crossref. Crossref memuat lima unggahan ulang tahun 2025 bertipe `posted-content` dengan judul dan penulis yang sama. Aturan bekerja sesuai tabel, tetapi kesimpulannya keliru bagi pengguna. Aturan **tidak** diubah karena satu contoh. Pilihan yang menunggu keputusan pengguna: (a) biarkan dan ukur di dev set, (b) bila kandidat terbaik Crossref `mismatch`, cari juga di OpenAlex dan pakai kandidat yang cocok penuh bila ada (menambah biaya OpenAlex dan mengubah arti ablation A2). Apa pun pilihannya, referensi ini tidak boleh dipakai sebagai contoh `Verified` di daftar demo (M4).
+- Pengamatan lain: buku Sugiyono (2017) benar menjadi `out_of_index`. Skripsi karangan mendapat kandidat mirip berskor 0,74 dan tetap `out_of_index`, sedangkan teks yang sama bergaya jurnal menjadi `suspect`.
+
 ## Ambang final
 
 Belum dituning. Nilai sementara: `TAU_T` 0,90, `TAU_A` 0,60, `TAU_L` 0,60, `TAU_V` 0,40. Diisi setelah `npm run eval:tune` pada dev set (M5): ambang, hash commit, tanggal.

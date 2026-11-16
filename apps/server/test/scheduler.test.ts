@@ -34,16 +34,16 @@ describe('Scheduler', () => {
   })
 
   it('spaces request starts by the minimum interval', async () => {
-    const s = new Scheduler({ maxConcurrent: 10, minIntervalMs: 30 })
-    const starts: number[] = []
-    await Promise.all(
-      [1, 2, 3, 4].map(() => s.run(async () => void starts.push(performance.now()))),
-    )
-    starts.sort((a, b) => a - b)
-    // Timers can fire a millisecond early, so allow a little slack.
-    for (let i = 1; i < starts.length; i++) {
-      expect((starts[i] as number) - (starts[i - 1] as number)).toBeGreaterThanOrEqual(27)
-    }
+    // A frozen clock: each run must ask to wait until its own start slot.
+    const waits: number[] = []
+    const s = new Scheduler({
+      maxConcurrent: 10,
+      minIntervalMs: 100,
+      now: () => 1000,
+      sleep: async (ms) => void waits.push(ms),
+    })
+    await Promise.all([1, 2, 3, 4].map(() => s.run(async () => {})))
+    expect(waits).toEqual([100, 200, 300]) // the first starts at once
   })
 
   it('releases the slot when the task throws', async () => {

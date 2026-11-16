@@ -12,15 +12,17 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "echo 'dev scripts arrive in M3/M4'",
-    "build": "npm run build -w @cekkutip/shared",
+    "dev": "npm run dev -w @cekkutip/server",
+    "build": "npm run build -w @cekkutip/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
     "smoke:live": "tsx --env-file=.env scripts/smoke-live.ts",
-    "fixtures:record": "tsx scripts/record-fixtures.ts"
+    "fixtures:record": "tsx scripts/record-fixtures.ts",
+    "dev:web": "npm run dev -w @cekkutip/web",
+    "start": "npm run start -w @cekkutip/server"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
