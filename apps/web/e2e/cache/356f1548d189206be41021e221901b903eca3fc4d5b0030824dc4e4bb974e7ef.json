@@ -1,0 +1,75 @@
+{
+  "value": [
+    {
+      "source": "crossref",
+      "doi": "10.1109/cvpr.2016.90",
+      "url": "https://doi.org/10.1109/cvpr.2016.90",
+      "title": "Deep Residual Learning for Image Recognition",
+      "authors": ["He", "Zhang", "Ren", "Sun"],
+      "authorsFull": ["Kaiming He", "Xiangyu Zhang", "Shaoqing Ren", "Jian Sun"],
+      "year": 2016,
+      "venue": "2016 IEEE Conference on Computer Vision and Pattern Recognition (CVPR)",
+      "volume": null,
+      "issue": null,
+      "pages": "770-778"
+    },
+    {
+      "source": "crossref",
+      "doi": "10.22541/au.170666177.72403547/v1",
+      "url": "https://doi.org/10.22541/au.170666177.72403547/v1",
+      "title": "Multiple butterflies recognition based on deep residual learning and image analyze",
+      "authors": ["Xi", "Wang", "Han", "Lin", "Ji"],
+      "authorsFull": ["Tianyu Xi", "Jiangning Wang", "Yan Han", "Congtian Lin", "Liqiang Ji"],
+      "year": 2024,
+      "venue": null,
+      "volume": null,
+      "issue": null,
+      "pages": null
+    },
+    {
+      "source": "crossref",
+      "doi": "10.3390/app12188972",
+      "url": "https://doi.org/10.3390/app12188972",
+      "title": "Deep Residual Learning for Image Recognition: A Survey",
+      "authors": ["Shafiq", "Gu"],
+      "authorsFull": ["Muhammad Shafiq", "Zhaoquan Gu"],
+      "year": 2022,
+      "venue": "Applied Sciences",
+      "volume": "12",
+      "issue": "18",
+      "pages": "8972"
+    },
+    {
+      "source": "crossref",
+      "doi": "10.5220/0011270400003277",
+      "url": "https://doi.org/10.5220/0011270400003277",
+      "title": "RRConvNet: Recursive-residual Network for Real-life Character Image Recognition",
+      "authors": ["Mengiste", "Belay", "Tilahun", "Worku", "Tegegne"],
+      "authorsFull": [
+        "Tadele Mengiste",
+        "Birhanu Belay",
+        "Bezawork Tilahun",
+        "Tsiyon Worku",
+        "Tesfa Tegegne"
+      ],
+      "year": 2022,
+      "venue": "Proceedings of the 3rd International Conference on Deep Learning Theory and Applications",
+      "volume": null,
+      "issue": null,
+      "pages": "110-116"
+    },
+    {
+      "source": "crossref",
+      "doi": "10.1109/cvidl58838.2023.10167244",
+      "url": "https://doi.org/10.1109/cvidl58838.2023.10167244",
+      "title": "EEG-based Drowsiness and Alertness Recognition Using Feature Fusion and Deep Residual Networks",
+      "authors": ["Lu", "Liu"],
+      "authorsFull": ["Wei Lu", "Wenjian Liu"],
+      "year": 2023,
+      "venue": "2023 4th International Conference on Computer Vision, Image and Deep Learning (CVIDL)",
+      "volume": null,
+      "issue": null,
+      "pages": "300-304"
+    }
+  ]
+}

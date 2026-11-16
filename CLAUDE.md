@@ -32,6 +32,10 @@ npm run dev               # server API di :8787 (tsx watch, membaca .env)
 npm run dev:web           # Vite di :5173, /api diteruskan ke :8787
 npx tsx scripts/smoke-check.ts   # kirim 12 referensi ke server yang sedang jalan, cetak verdict
 npx tsx --env-file=.env scripts/smoke-gemini.ts   # uji tahap Parse terhadap Gemini nyata
+npm run test:e2e          # Playwright, server putar-ulang tanpa jaringan (membangun web dulu)
+npm run e2e:server        # server putar-ulang di :8799 (untuk tangkapan layar)
+npm run screenshots       # tangkapan layar 375/768/1280 + axe (butuh e2e:server); argumen: baseUrl en|id
+npx tsx scripts/check-examples.ts <baseUrl> llm|regex   # verdict daftar contoh
 npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)
 npm run fixtures:record   # rekam ulang fixture tes dari layanan nyata
 npm run eval -- --split test --system cekkutip --out eval/results   # M5
@@ -55,6 +59,14 @@ split, Parse (satu-satunya yang memakai model), Retrieve, Match, Decide. Streami
 
 - **Celah A:** baris 4 (`verified`) juga mensyaratkan venue tidak jelas berbeda (venue dikutip dan ditemukan, skor `< TAU_V` berarti berbeda). Jika berbeda, jatuh ke baris 5 (`mismatch_venue`).
 - **Celah B:** record yang diambil lewat DOI dengan skor judul di antara `TAU_L` dan `TAU_T` diperlakukan seolah melewati `TAU_T` untuk baris 4 dan 5.
+
+Tiga penyempurnaan yang disetujui pengguna pada 16 Nov 2026 (DECISIONS butir 55 sampai 57):
+
+- **T1:** kandidat pencarian berjudul cocok tetapi tanpa satu pun penulis yang dikutip adalah karya lain, bukan `mismatch`.
+- **T2:** bila Crossref punya judul yang cocok tetapi hasilnya bukan `verified`, cari juga di OpenAlex dan pakai hasilnya hanya bila `verified`.
+- **T3:** venue pada skripsi, buku, bab buku, laporan, dan halaman web bukan "nama jurnal" untuk baris 6.
+
+Juga: `verified` butuh minimal dua dari judul, penulis, tahun yang tertulis (butir 35).
 
 ## Token desain (ringkas; lengkap di docs/DESIGN.md)
 

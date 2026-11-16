@@ -83,3 +83,16 @@ Belum ada gerak di M1 selain perubahan keadaan fokus. `prefers-reduced-motion` m
 ## Tangkapan layar
 
 `docs/screenshots/<state>-<lebar>[-id].png`. Dibuat oleh `npx tsx scripts/screenshots.ts [baseUrl] [en|id]`. Skrip yang sama menjalankan axe (WCAG 2.2 AA) dan memeriksa guliran horizontal pada tiap state. Hasil M1: nol pelanggaran, nol overflow, enam state, tiga lebar, dua bahasa.
+
+## Workbench (M4)
+
+- **Baris ledger:** nomor (mono, dua digit), referensi sebagaimana ditulis (dua baris, terbuka penuh saat rincian dibuka), label verdict, kalimat alasan dari templat, tombol buka rincian 44 px. Tinggi minimum 56 px. Baris muncul dengan opasitas dan geser 4 px selama 150 ms.
+- **Baris menunggu:** teks referensi berwarna redup dan kata "CHECKING". Tanpa kerangka abu-abu berkedip.
+- **Bilah ringkasan:** 12 px, pola per verdict (Verified solid, Mismatch garis diagonal, Suspect titik rapat, Out-of-index kotak berbingkai putus-putus, Could not check bingkai titik-titik). Bagian yang belum selesai dibiarkan kosong. Di bawahnya tombol filter dengan glif, nama, dan hitungan.
+- **Panel bukti:** tabel perbandingan, langkah berikutnya, tombol "Open record" atau "Search on Google Scholar", dan bagian Details (skor, tipe yang terbaca, pembaca field, kode alasan).
+- **Galat:** banner netral dengan garis kiri tebal warna ink, judul, kalimat, dan tombol "Try again". Galat batas muncul di bawah kotak teks dengan `role="alert"`.
+- **Ponsel:** panel bertumpuk. Tombol Check melekat di bawah layar selama kotak teks berisi. Setelah Check ditekan, halaman bergulir ke hasil.
+
+### Daftar periksa 9.9 untuk M4 (16 Nov 2026, tangkapan layar 375/768/1280, EN dan ID)
+
+Semua dijawab ya. Buktinya: 32 tes E2E (alur contoh, filter, panel bukti, ekspor, bahasa, mode tanpa AI, batas, galat jaringan, alur keyboard penuh, 375 px tanpa guliran horizontal), axe WCAG 2.2 AA tanpa pelanggaran pada 7 state di 3 lebar dan 2 bahasa, dan tanpa galat konsol di bawah CSP ketat. Butir 12 (teks dipahami mahasiswa tingkat satu) tetap penilaian saya dan perlu uji pengguna.

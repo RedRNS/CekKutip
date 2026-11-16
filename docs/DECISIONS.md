@@ -82,7 +82,7 @@ Butir 42 dan 43 di atas ditulis sebelum ada kunci. Butir berikut menggantikannya
 53. **Kegagalan Parse dicatat sebagai kode** (`parse_rate_limited`, `parse_unfaithful_output`, dan sejenisnya) lewat `onError`, supaya jatuh ke parser regex tidak terjadi diam-diam. Tetap tanpa teks.
 54. **Latensi per referensi** = bagian rata waktu baca batch ditambah waktu pencarian (termasuk antre di penjadwal Crossref). Angka ini yang dilaporkan sebagai `latencyMs`.
 
-### Masalah terbuka pada aturan (menunggu keputusan pengguna, aturan belum diubah)
+### Masalah pada aturan yang ditemukan uji langsung (diputuskan: lihat butir 55 sampai 57)
 
 Ketiganya muncul dari uji langsung dan sama-sama menghasilkan tuduhan keliru pada referensi yang benar. Aturan tidak diubah berdasarkan contoh. Seharusnya diputuskan pengguna dan diukur di dev set.
 
@@ -96,6 +96,48 @@ Ketiganya muncul dari uji langsung dan sama-sama menghasilkan tuduhan keliru pad
 - Dengan hasil pencarian sudah di cache, daftar yang sama selesai dalam 5,4 detik (waktu model saja).
 - **Belum diukur: pool polite** (dengan `CROSSREF_MAILTO`, tiga permintaan sekaligus). Saya tidak menjalankan server dengan alamat itu. Pengguna bisa mengukurnya dengan `npm run dev` lalu `npx tsx scripts/smoke-check.ts http://localhost:8787 llm`.
 - Untuk demo ke juri: jalankan daftar demo sekali sebelum presentasi agar hasil pencarian ada di cache 24 jam. Ini dicatat di DEPLOY.md (M7).
+
+## 2026-11-16 (T1 sampai T3 disetujui, lalu M4)
+
+Pengguna menyetujui T1, T2, dan T3 pada 16 Nov 2026. Ketiganya diterapkan sebelum data evaluasi ada, jadi tidak disetel pada data uji. Dampaknya tetap harus diukur di dev set (M5).
+
+55. **T1, tabrakan judul.** Kandidat hasil pencarian yang judulnya mencapai `TAU_T` tetapi tidak satu pun penulis yang dikutip ditemukan (skor penulis tepat 0, penulis dikutip, pengecekan penulis aktif) dianggap karya lain. Referensi jatuh ke baris 6 atau 7. `mismatch_authors` tetap berlaku bila sebagian penulis ditemukan. T1 tidak berlaku untuk record yang dicapai lewat DOI yang dikutip, dan tidak berlaku pada ablation A4. Saat memilih kandidat terbaik, kandidat yang lolos T1 didahulukan atas "kembaran" berjudul sama.
+56. **T2, pandangan kedua ke OpenAlex.** Bila Crossref punya record berjudul cocok tetapi hasilnya bukan `verified` (yaitu `mismatch`, atau tabrakan judul menurut T1) dan OpenAlex belum dipakai, pipeline mencari judul itu di OpenAlex. Hasil OpenAlex dipakai **hanya bila `verified`**. Selain itu jawaban pertama tetap. Bila pandangan kedua gagal dijangkau, jawaban pertama tetap dan kegagalannya dicatat sebagai kode `second_look_*`. Alasannya: jawaban pertama bersandar pada record yang benar-benar ada di Crossref. Ini berbeda dari butir 23 (Crossref tidak punya apa-apa lalu OpenAlex gagal menjadi `check_failed`). A2 (tanpa OpenAlex) tidak melakukan pandangan kedua, jadi A2 sekarang juga mengukur nilai pandangan kedua.
+57. **T3, venue pada tipe non-jurnal.** Untuk `thesis`, `book`, `book_chapter`, `report`, dan `web_page`, venue tidak dihitung sebagai "nama jurnal" pada baris 6. Volume dan DOI tetap dihitung. `conference_paper` dan `other` dengan venue tetap dianggap seperti jurnal.
+58. **Biaya T2.** Setiap `mismatch` dan setiap tabrakan judul pada referensi tanpa DOI menambah satu pencarian OpenAlex (sekitar $0,001). Tanpa kunci OpenAlex, anggaran gratis $0,10 per hari per IP cepat habis. Kunci gratis OpenAlex sekarang sangat disarankan.
+
+### Daftar contoh (apps/web/src/data/example-list.ts), dijalankan 16 Nov 2026
+
+Sepuluh entri: lima nyata, satu nyata dengan tahun dan jurnal sengaja diubah, empat karangan (ditandai di komentar kode, memakai "Universitas Contoh" dan "Jurnal Contoh"). Verdict aktual dari pipeline terhadap layanan nyata, sama pada satu kali jalan tanpa AI dan empat kali jalan dengan Gemini:
+
+| No  | Jenis                          | Verdict      | Kode alasan                   |
+| --- | ------------------------------ | ------------ | ----------------------------- |
+| 1   | nyata, ber-DOI                 | verified     | verified_all_match            |
+| 2   | nyata, tahun dan jurnal diubah | mismatch     | mismatch_year, mismatch_venue |
+| 3   | karangan, DOI tidak terdaftar  | suspect      | suspect_doi_not_found         |
+| 4   | nyata, tanpa DOI               | verified     | verified_all_match            |
+| 5   | karangan, skripsi              | out_of_index | out_of_index_type             |
+| 6   | DOI nyata, judul karangan      | mismatch     | mismatch_doi_other_work       |
+| 7   | nyata, buku                    | out_of_index | out_of_index_type             |
+| 8   | karangan, artikel jurnal       | suspect      | suspect_no_record_journal     |
+| 9   | nyata, tanpa DOI               | verified     | verified_all_match            |
+| 10  | nyata, laporan pemerintah      | out_of_index | out_of_index_type             |
+
+Dengan hasil pencarian sudah di cache, sepuluh referensi selesai dalam 4 sampai 5,5 detik dengan Gemini. Jalan pertama dengan cache kosong butuh sekitar 20 detik di pool publik Crossref. Tim tetap menyiapkan daftar demo akhirnya sendiri.
+
+Entri nomor 2 juga dipakai sebagai contoh di halaman How it works. Sisi record di halaman itu (Scientific Reports, 2023, DOI) sekarang terkonfirmasi oleh pipeline. Butir 17 selesai.
+
+### M4
+
+59. **Klien mengirim larik referensi yang sudah dipisah** di browser dengan pemisah yang sama dengan server. Baris yang belum selesai menampilkan teks referensinya dan kata "Checking".
+60. **Ledger adalah daftar berurut (`ol`)**, bukan `table`. Tiap baris bisa dibuka dan berisi tabel perbandingan yang sungguhan (`table` dengan `caption`, `th scope`). Tabel bersarang di dalam baris tabel lebih buruk untuk pembaca layar.
+61. **Bilah ringkasan** adalah SVG dengan ukuran berupa atribut persen, sehingga tidak perlu gaya inline (CSP `style-src 'self'`). Bilah itu `aria-hidden`. Tombol hitungan di bawahnya adalah filter yang bisa diakses (`aria-pressed`).
+62. **Galat ditampilkan dari kode ke teks tetap** (jaringan, berhenti di tengah, batas laju, batas jumlah). Banner memakai warna netral. Hasil yang sudah tiba tetap ditampilkan bila aliran terputus.
+63. **Tanpa kunci AI di server**, kotak centang "tanpa AI" tercentang dan nonaktif, dan pemberitahuannya diganti dengan kalimat yang benar untuk keadaan itu.
+64. **CSV** diawali BOM, memakai CRLF, dan menetralkan sel yang diawali `=`, `+`, `-`, `@` agar tidak dijalankan sebagai rumus oleh program lembar kerja.
+65. **Tautan record** hanya dibuat dari DOI atau URL `https`. Tautan Google Scholar dibuat dari judul dan hanya terbuka bila pengguna mengekliknya.
+66. **E2E tanpa jaringan.** `scripts/e2e-server.ts` membangun aplikasi web lalu menjalankan server sungguhan dengan cache pencarian rekaman (`apps/web/e2e/cache`, mode putar ulang saja), tanpa kunci AI dan tanpa alamat kontak. Berkas cache berisi metadata publik dengan nama berkas berupa hash. Referensi yang tidak terekam menghasilkan `check_failed`, dan itu dipakai untuk menguji status tersebut.
+67. **"Copy corrected reference" (P1) belum dibuat.** Panel bukti menampilkan "Open record" dan "Search on Google Scholar".
 
 ## Ambang final
 

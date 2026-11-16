@@ -1,8 +1,8 @@
 /**
- * Take screenshots at 375, 768, and 1280 px and run axe on each state.
- * Usage: npx tsx scripts/screenshots.ts [baseUrl] [lang] [stateName...]
+ * Take screenshots at 375, 768, and 1280 px, and run axe plus an overflow check on each state.
+ * Needs the replay server: npx tsx scripts/e2e-server.ts   (port 8799, no network)
+ * Usage: npx tsx scripts/screenshots.ts [baseUrl] [en|id] [stateName...]
  * Output: docs/screenshots/<state>-<width>[-id].png
- * Also reports horizontal overflow and axe violations, so a screenshot run doubles as a smoke test.
  */
 import { mkdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
@@ -10,7 +10,7 @@ import { AxeBuilder } from '@axe-core/playwright'
 import { chromium } from '@playwright/test'
 import type { Page } from '@playwright/test'
 
-const baseUrl = process.argv[2] ?? 'http://localhost:5173'
+const baseUrl = process.argv[2] ?? 'http://localhost:8799'
 const lang = process.argv[3] ?? 'en'
 const only = process.argv.slice(4)
 const widths = [375, 768, 1280]
@@ -19,16 +19,40 @@ const outDir = fileURLToPath(new URL('../docs/screenshots/', import.meta.url))
 interface State {
   name: string
   path: string
+  /** Stop the result stream after this many lines, to capture a check in progress. */
+  holdAfter?: number
   prepare?: (page: Page) => Promise<void>
+}
+
+const example = async (page: Page) => {
+  await page.getByRole('button', { name: /try an example|coba contoh/i }).click()
+  await page.getByRole('button', { name: /check references|periksa referensi/i }).click()
 }
 
 const states: State[] = [
   { name: 'home-empty', path: '/' },
   {
-    name: 'home-typed',
+    name: 'home-partial',
+    path: '/',
+    holdAfter: 5, // "started" plus four results
+    prepare: async (page) => {
+      await example(page)
+      await page.locator('.row:not(.row--pending)').nth(3).waitFor()
+    },
+  },
+  {
+    name: 'home-complete',
     path: '/',
     prepare: async (page) => {
-      await page.getByRole('button', { name: /try an example|coba contoh/i }).click()
+      await example(page)
+      await page.getByRole('button', { name: /export csv|ekspor csv/i }).waitFor()
+      // Open the evidence panel of the second reference (the Mismatch example).
+      await page
+        .getByRole('button', {
+          name: /(show details for reference|tampilkan rincian referensi) 2$/i,
+        })
+        .click()
+      await page.locator('.evidence').waitFor()
     },
   },
   { name: 'how-it-works', path: '/how-it-works' },
@@ -36,6 +60,20 @@ const states: State[] = [
   { name: 'about', path: '/about' },
   { name: 'privacy', path: '/privacy' },
 ]
+
+/** Replaces the body of /api/check responses with its first N lines and never ends the stream. */
+const HOLD_SCRIPT = `(() => {
+  const original = window.fetch.bind(window)
+  window.fetch = async (input, init) => {
+    const url = typeof input === 'string' ? input : input.url
+    if (!window.__holdAfter || !url.includes('/api/check')) return original(input, init)
+    const res = await original(input, init)
+    const lines = (await res.text()).split('\\n').filter(Boolean).slice(0, window.__holdAfter)
+    const enc = new TextEncoder()
+    const body = new ReadableStream({ start(c) { for (const l of lines) c.enqueue(enc.encode(l + '\\n')) } })
+    return new Response(body, { status: 200, headers: { 'content-type': 'application/x-ndjson' } })
+  }
+})()`
 
 mkdirSync(outDir, { recursive: true })
 const browser = await chromium.launch()
@@ -49,7 +87,15 @@ for (const state of states.filter((s) => only.length === 0 || only.includes(s.na
       reducedMotion: 'reduce',
     })
     await context.addInitScript(`try { localStorage.setItem('cekkutip.lang', '${lang}') } catch {}`)
+    if (state.holdAfter) {
+      await context.addInitScript(`window.__holdAfter = ${state.holdAfter}`)
+      await context.addInitScript(HOLD_SCRIPT)
+    }
     const page = await context.newPage()
+    const consoleErrors: string[] = []
+    page.on('console', (m) => {
+      if (m.type() === 'error') consoleErrors.push(m.text().slice(0, 140))
+    })
     await page.goto(baseUrl + state.path, { waitUntil: 'networkidle' })
     await page.evaluate(() => document.fonts.ready)
     if (state.prepare) await state.prepare(page)
@@ -61,12 +107,14 @@ for (const state of states.filter((s) => only.length === 0 || only.includes(s.na
       .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
       .analyze()
     const suffix = lang === 'en' ? '' : `-${lang}`
+    await page.evaluate(() => window.scrollTo(0, 0))
     await page.screenshot({ path: `${outDir}${state.name}-${width}${suffix}.png`, fullPage: true })
 
     const flags: string[] = []
     if (overflow > 0) flags.push(`horizontal overflow ${overflow}px`)
     for (const v of axe.violations) flags.push(`axe ${v.impact}: ${v.id} (${v.nodes.length})`)
-    if (flags.length) problems += flags.length
+    for (const e of consoleErrors) flags.push(`console: ${e}`)
+    problems += flags.length
     console.log(`${state.name} @${width}: ${flags.length ? flags.join('; ') : 'ok'}`)
     await context.close()
   }
@@ -74,3 +122,4 @@ for (const state of states.filter((s) => only.length === 0 || only.includes(s.na
 
 await browser.close()
 console.log(problems ? `\n${problems} problem(s)` : '\nno problems')
+if (problems) process.exitCode = 1

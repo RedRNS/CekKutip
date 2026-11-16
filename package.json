@@ -22,7 +22,10 @@
     "smoke:live": "tsx --env-file=.env scripts/smoke-live.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
     "dev:web": "npm run dev -w @cekkutip/web",
-    "start": "npm run start -w @cekkutip/server"
+    "start": "npm run start -w @cekkutip/server",
+    "test:e2e": "playwright test",
+    "screenshots": "tsx scripts/screenshots.ts",
+    "e2e:server": "tsx scripts/e2e-server.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

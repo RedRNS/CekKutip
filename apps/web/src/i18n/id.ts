@@ -272,6 +272,95 @@ export const id: Dict = {
     ],
     googleTerms: 'Baca ketentuan Google untuk Gemini API',
   },
+  results: {
+    progress: (n: number, total: number) => `${n} dari ${total} diperiksa`,
+    checking: 'Memeriksa',
+    filterLabel: 'Tampilkan hasil',
+    all: 'Semua',
+    showDetails: (n: number) => `Tampilkan rincian referensi ${n}`,
+    hideDetails: (n: number) => `Sembunyikan rincian referensi ${n}`,
+    exportCsv: 'Ekspor CSV',
+    copyReport: 'Salin laporan',
+    copied: 'Tersalin',
+    copyFailed: 'Tidak bisa menyalin. Pilih teksnya lalu salin secara manual.',
+    noneInFilter: 'Tidak ada referensi dengan hasil ini.',
+    finished: (total: number) => `Pemeriksaan selesai. ${total} referensi diperiksa.`,
+    barLabel: 'Hasil menurut verdict',
+  },
+  evidence: {
+    caption: (n: number) => `Referensi ${n} dibandingkan dengan record`,
+    asCited: 'Seperti ditulis',
+    recordFound: 'Record ditemukan ({source})',
+    recordNone: 'Record ditemukan',
+    status: 'Status',
+    field: 'Field',
+    noRecord:
+      'Tidak ada record yang ditampilkan, karena tidak ada yang cukup dekat untuk dianggap karya ini.',
+    openRecord: 'Buka record',
+    scholar: 'Cari di Google Scholar',
+    opensNewTab: 'terbuka di tab baru',
+    nextStep: 'Langkah berikutnya',
+    next: {
+      verified:
+        'Tidak ada yang perlu diperbaiki. Tetap baca sumbernya sebelum kamu mengandalkannya.',
+      mismatch: 'Buka record-nya lalu perbaiki detail yang kamu tulis.',
+      suspect:
+        'Cari sumber ini secara manual. Kalau tidak ketemu, jangan pertahankan di daftar pustakamu.',
+      out_of_index:
+        'Periksa yang ini secara manual: cari judulnya, atau lihat di perpustakaan atau repositori kampusmu.',
+      check_failed: 'Periksa lagi referensi ini sebentar lagi.',
+    },
+    details: 'Rincian',
+    titleScore: 'Kemiripan judul',
+    authorsScore: 'Penulis yang ditemukan',
+    yearDiff: 'Selisih tahun',
+    venueScore: 'Kemiripan venue',
+    notCompared: 'tidak dibandingkan',
+    readBy: 'Field dibaca oleh',
+    readers: { llm: 'model bahasa', regex: 'pembaca pola, tanpa AI' },
+    reasonCodes: 'Kode alasan',
+    sourceType: 'Dibaca sebagai',
+  },
+  sources: { crossref: 'Crossref', openalex: 'OpenAlex', datacite: 'DataCite' },
+  types: {
+    journal_article: 'artikel jurnal',
+    book: 'buku',
+    book_chapter: 'bab buku',
+    conference_paper: 'makalah konferensi',
+    thesis: 'skripsi atau tesis',
+    report: 'laporan',
+    web_page: 'halaman web',
+    other: 'sumber jenis lain',
+  },
+  errors: {
+    title: 'Pemeriksaan tidak selesai',
+    generic: 'Ada masalah di sisi kami. Teksmu tidak disimpan. Coba lagi sebentar lagi.',
+    network:
+      'Kami tidak bisa menghubungi server. Teksmu tidak disimpan. Periksa koneksimu lalu coba lagi.',
+    incomplete: 'Pemeriksaan berhenti sebelum selesai. Hasil yang tampil belum lengkap. Coba lagi.',
+    rate_limited:
+      'Kamu sudah mencapai batas pemeriksaan untuk saat ini. Tunggu beberapa menit lalu coba lagi.',
+    too_many_references:
+      'Kamu bisa memeriksa paling banyak {max} referensi sekaligus. Bagi daftarmu lalu periksa per bagian.',
+    reference_too_long:
+      'Referensi {n} lebih panjang dari {max} karakter. Pendekkan, atau pastikan itu memang satu referensi.',
+    no_references: 'Tempel paling sedikit satu referensi untuk diperiksa.',
+    tryAgain: 'Coba lagi',
+  },
+  workbench: {
+    aiUnavailable:
+      'Pembaca AI belum dipasang di server ini. Teksmu dibaca oleh pembaca pola di server kami, lalu dicari di Crossref dan OpenAlex. Kami tidak menyimpan teksmu.',
+    shortcut: 'Ctrl+Enter',
+    checkingButton: 'Memeriksa',
+  },
+  report: {
+    title: 'Pemeriksaan referensi CekKutip',
+    record: 'Record',
+    totals:
+      'Total {total}. Verified {verified}. Mismatch {mismatch}. Suspect {suspect}. Out-of-index {outOfIndex}. Tidak bisa diperiksa {checkFailed}.',
+    tool: 'CekKutip {version}. Ambang: judul {tauT}, penulis {tauA}, judul rendah {tauL}, venue {tauV}.',
+    filename: 'laporan-cekkutip',
+  },
   notFound: {
     h1: 'Halaman tidak ditemukan',
     text: 'Halaman ini tidak ada. Kembali ke pemeriksa.',
