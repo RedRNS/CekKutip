@@ -30,6 +30,10 @@ const server = app.listen(env.port, () => {
   })
 })
 
-const stop = () => server.close(() => process.exit(0))
+/** Stop taking new requests, let running checks finish, and leave after ten seconds whatever happens. */
+const stop = () => {
+  server.close(() => process.exit(0))
+  setTimeout(() => process.exit(0), 10_000).unref()
+}
 process.on('SIGTERM', stop)
 process.on('SIGINT', stop)

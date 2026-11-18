@@ -203,6 +203,25 @@ Semua halaman: FCP dan LCP 0,8 detik, CLS 0. Dengan pengali CPU 1, TBT 0 sampai 
 - **Tuas yang tersisa dan belum dipakai:** mengganti React dengan Preact (kompatibel, sekitar 100 KB lebih kecil). Itu mengubah tumpukan yang ditetapkan brief, jadi perlu persetujuan.
 - Angka akhir diukur dengan **PageSpeed Insights pada URL deploy** (M7), karena itu yang akan dibandingkan juri.
 
+## 2026-11-18 (M7: deploy)
+
+91. **Host yang direkomendasikan: Render, web service gratis, region Singapore.** Terverifikasi dari dokumen resmi (18 Nov 2026): mendukung `runtime: docker`, plan gratis 0,1 CPU dan 512 MB, region `singapore` valid, 750 jam instance per bulan per workspace, tidur setelah 15 menit tanpa permintaan, bangun sekitar satu menit, sistem berkas hilang saat tidur. Cloud Run, Koyeb, Fly.io, dan Hugging Face Spaces dibandingkan di docs/DEPLOY.md dan tidak dipilih karena perlu kartu atau tidak terverifikasi. **Kelemahan utama: tidur dan bangun satu menit**, jadi demo ke juri butuh rencana (bangunkan lima menit sebelumnya, atau pemantau luar gratis, atau paket berbayar). Itu keputusan tim, dan paket berbayar menyentuh anggaran hampir nol.
+92. **Server dibundel dengan esbuild** ke satu berkas (sekitar 78 KB): kode sendiri dan paket `shared` (yang berupa sumber TypeScript). Paket pihak ketiga **tidak** dibundel (pino dan SDK Google memakai require dinamis dan worker thread), melainkan dipasang di image dari `package-lock.json` dengan `npm ci --omit=dev`. Build gagal bila bundel mengimpor paket yang tidak tercantum di `dependencies` server. Bundel ditemani `package.json` berisi `{"type":"module"}`, karena tanpanya Node membaca berkas itu sebagai CommonJS.
+93. **Image:** tiga tahap (build, dependensi produksi, runtime) di atas `node:22-alpine`, berjalan sebagai pengguna `node`, tanpa menulis ke disk, dengan `HEALTHCHECK` ke `/api/health`. 297 MB (47 MB dependensi produksi). `.dockerignore` menjaga `.env`, cache, dan tangkapan layar di luar image.
+94. **Node 22 atau lebih baru** (`engines` dan README), bukan 20 seperti di brief. Skrip `dev` dan `start` memakai `--env-file-if-exists`, dan image memakai 22.
+95. **Gerbang `TODO` berlaku di Docker.** `docker build` gagal selama `site.config.ts` berisi placeholder (dibuktikan 18 Nov). `--build-arg ALLOW_TODO=1` hanya untuk mencoba image secara lokal.
+96. **`scripts/verify-production.ts`** memeriksa artefak produksi tanpa Docker: menyalin hanya isi image ke folder bersih, memasang dependensi produksi saja (dan memastikan alat pengembangan tidak ikut), menjalankan server dengan `NODE_ENV=production`, lalu memeriksa 18 hal lewat HTTP termasuk aliran hasil dan penolakan mode eksperimen. Pemeriksaan "fallback ke pembaca pola tanpa kunci" semula saya tulis kosong (selalu lulus) dan sudah diperbaiki menjadi pemeriksaan sungguhan.
+97. **Penutupan server** menunggu permintaan berjalan lalu keluar paling lama sepuluh detik. Di Windows `SIGTERM` adalah penghentian paksa, jadi jalur halus hanya teruji secara logika, belum di Linux.
+98. **`render.yaml`** memakai kunci yang saya cocokkan dengan referensi Blueprint hari itu (`runtime`, `plan`, `region`, `healthCheckPath`, `dockerfilePath`, `autoDeployTrigger`, `envVars` dengan `sync: false`). **Belum pernah dijalankan di Render.**
+
+### Hasil uji image (18 Nov 2026, Docker Desktop lokal)
+
+- Seluruh suite E2E (43 tes) lulus **dua kali terhadap kontainer** (CSP produksi aktif, pencarian dari cache rekaman).
+- Daftar contoh dengan layanan nyata dan Gemini, **tiga kali berturut-turut** terhadap kontainer: **12,7 detik** (pencarian dingin), **3,1**, dan **2,2 detik**, verdict sama setiap kali (3 Verified, 2 Mismatch, 2 Suspect, 3 Out-of-index, 0 Could not check). Jauh di bawah 90 detik.
+- Kontainer berjalan sebagai `node` dan berstatus `healthy`.
+
+**Belum diuji, dan tidak bisa dari sini:** deploy ke Render, waktu bangun nyata di sana, PageSpeed Insights pada alamat publik, jalur penutupan di Linux, dan uji di perangkat nyata. Semuanya butuh akun host, alamat publik, atau perangkat.
+
 ## Ambang final
 
 Belum dituning. Nilai sementara: `TAU_T` 0,90, `TAU_A` 0,60, `TAU_L` 0,60, `TAU_V` 0,40. Diisi setelah `npm run eval:tune` pada dev set (M5): ambang, hash commit, tanggal.

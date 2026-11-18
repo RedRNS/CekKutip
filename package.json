@@ -5,7 +5,7 @@
   "description": "Reference list checker for Indonesian students. Verdicts come from fixed rules over Crossref and OpenAlex data.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "workspaces": [
     "packages/*",
@@ -13,7 +13,7 @@
   ],
   "scripts": {
     "dev": "npm run dev -w @cekkutip/server",
-    "build": "npm run build -w @cekkutip/web",
+    "build": "npm run build:web && npm run build:server",
     "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit -p eval",
     "lint": "eslint .",
     "format": "prettier --write .",
@@ -22,7 +22,7 @@
     "smoke:live": "tsx --env-file=.env scripts/smoke-live.ts",
     "fixtures:record": "tsx scripts/record-fixtures.ts",
     "dev:web": "npm run dev -w @cekkutip/web",
-    "start": "npm run start -w @cekkutip/server",
+    "start": "node --env-file-if-exists=.env dist/server/index.js",
     "test:e2e": "playwright test",
     "screenshots": "tsx scripts/screenshots.ts",
     "e2e:server": "tsx scripts/e2e-server.ts",
@@ -30,13 +30,17 @@
     "eval:tune": "tsx --env-file-if-exists=.env eval/scripts/tune.ts",
     "eval:kappa": "tsx --env-file-if-exists=.env eval/scripts/kappa.ts",
     "eval:report": "tsx --env-file-if-exists=.env eval/scripts/report.ts",
-    "lighthouse": "tsx scripts/lighthouse.ts"
+    "lighthouse": "tsx scripts/lighthouse.ts",
+    "build:web": "npm run build -w @cekkutip/web",
+    "build:server": "tsx scripts/build-server.ts",
+    "start:dev": "npm run start -w @cekkutip/server"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^10.0.0",
     "@playwright/test": "^1.65.1",
     "@types/node": "^22.0.0",
+    "esbuild": "^0.28.2",
     "eslint": "^10.15.0",
     "prettier": "^3.10.1",
     "tsx": "^4.23.15",

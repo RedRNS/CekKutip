@@ -1,0 +1,32 @@
+# Render Blueprint for CekKutip (https://render.com/docs/blueprint-spec).
+# Keys checked against the Blueprint reference on 2026-11-18: runtime docker, plan free (0.1 CPU,
+# 512 MB), region singapore, healthCheckPath, envVars with sync: false.
+# Steps and the cold-start caveat are in docs/DEPLOY.md.
+services:
+  - type: web
+    name: cekkutip
+    runtime: docker
+    plan: free
+    # Closest region to Indonesian users. It cannot be changed after the service is created.
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      # Secrets: Render asks for these once, when the Blueprint is created. They are never in the repo.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: CROSSREF_MAILTO
+        sync: false
+      - key: OPENALEX_API_KEY
+        sync: false
+      # Not secret.
+      - key: GEMINI_MODEL
+        value: gemini-3.1-flash-lite
+      - key: PUBLIC_SITE_URL
+        sync: false
+      # Experiment options on /api/check must stay off in production (they are also refused whenever
+      # NODE_ENV is production, which the image sets).
+      - key: ENABLE_EXPERIMENT_MODES
+        value: 'false'

@@ -1,0 +1,8 @@
+# Files that Linux reads (the Docker build, the host) must always have LF line endings,
+# even when they are checked out on Windows.
+* text=auto
+Dockerfile text eol=lf
+.dockerignore text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+*.sh text eol=lf

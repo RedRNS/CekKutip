@@ -1,0 +1,24 @@
+# Secrets and local state never enter the image.
+.env
+.env.*
+!.env.example
+
+# Rebuilt inside the image.
+node_modules
+**/node_modules
+dist
+**/dist
+
+# Not needed to build or run.
+.git
+.gitignore
+.claude
+docs/screenshots
+test-results
+playwright-report
+blob-report
+coverage
+eval/cache
+eval/results-sample
+apps/web/e2e/cache
+*.log

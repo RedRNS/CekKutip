@@ -32,6 +32,8 @@ npm run dev               # server API di :8787 (tsx watch, membaca .env)
 npm run dev:web           # Vite di :5173, /api diteruskan ke :8787
 npx tsx scripts/smoke-check.ts   # kirim 12 referensi ke server yang sedang jalan, cetak verdict
 npx tsx --env-file=.env scripts/smoke-gemini.ts   # uji tahap Parse terhadap Gemini nyata
+npm run build && npx tsx scripts/verify-production.ts   # artefak produksi di folder bersih, tanpa Docker
+docker build --build-arg ALLOW_TODO=1 -t cekkutip:test .  # mencoba image (tanpa ALLOW_TODO build gagal sampai site.config terisi)
 npm run test:e2e          # Playwright, server putar-ulang tanpa jaringan (membangun web dulu)
 npm run e2e:server        # server putar-ulang di :8799 (untuk tangkapan layar)
 npm run lighthouse        # Lighthouse (ponsel) untuk semua halaman; argumen: baseUrl, --default (butuh e2e:server)
