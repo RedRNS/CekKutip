@@ -166,6 +166,43 @@ Seluruh alur dijalankan terhadap layanan nyata dan Gemini pada 12 baris templat 
 
 Satu pengamatan yang layak diperhatikan karena menyangkut aturan, bukan angka: **efek samping T1.** Referensi templat T003 adalah karya nyata dengan penulis yang seluruhnya diganti. Sebelum T1 hasilnya `mismatch_authors`. Sekarang `suspect_no_record_journal`, karena T1 menganggap "judul cocok tetapi tidak satu pun penulis ditemukan" sebagai karya lain. Keduanya masuk akal, tetapi ini pola yang umum pada referensi buatan asisten AI (judul asli, penulis keliru), dan label emas bergantung pada definisi: "mismatch = karya ada, detail keliru". Usul perbaikan (**T1', belum diterapkan**): T1 hanya berlaku untuk judul pendek atau umum (misalnya sampai 4 kata), tempat tabrakan judul memang terjadi (kasus WHO). Judul panjang yang khas dan cocok persis hampir pasti karya yang sama dengan penulis keliru, sehingga tetap `mismatch_authors`. Ini perubahan aturan, jadi menunggu keputusan pengguna, lalu diukur di dev set.
 
+## 2026-11-18 (M6: aksesibilitas, performa, keamanan, Evaluation)
+
+79. **`npm audit` (18 Nov 2026).** Dependensi produksi (`--omit=dev`): **0 kerentanan**. Seluruh pohon: 12 tinggi, semuanya alat build dan uji (`vite`, `vitest`, `@vitejs/plugin-react`, rantai `typescript-eslint`) lewat satu advisori: **GHSA-fc5q-39xc-vjpf, ReDoS di `picomatch` (rentang `<=4.0.7`)**. `4.0.7` adalah versi terbaru, jadi **belum ada versi tambalan** dan `overrides` tidak membantu. Saran `npm audit fix --force` menurunkan vite dan vitest ke versi lama dan tidak diikuti. Yang non-breaking (`minimatch`, 6 moderate) sudah diperbaiki dengan `npm audit fix`. Risiko yang tersisa: pola glob dari berkas konfigurasi kita sendiri, hanya saat build, tidak ikut ke image produksi. **Diterima, ditinjau ulang sebelum rilis akhir.** Brief meminta kerentanan tingkat tinggi diperbaiki: yang bisa diperbaiki sudah diperbaiki, sisanya tidak punya perbaikan.
+80. **Halaman Evaluation membaca hasil nyata.** `eval/results/summary.json` dilayani lewat `GET /api/evaluation`. Ringkasan hanya ditampilkan bila **lengkap dan `sample: false`**. Validator buatan sendiri (`packages/shared/src/evaluation.ts`, tanpa pustaka skema di browser) menolak berkas yang tidak lengkap, angka yang bukan angka, dan ringkasan dari data templat. Semua yang tidak lolos menampilkan keadaan kosong yang jujur tanpa satu pun angka. Halaman hanya memformat angka dari berkas, tidak menghitung apa pun. Fixture tes (`@cekkutip/shared/testing`) berisi angka **karangan** dan hanya dipakai di tes.
+81. **"Belum ada hasil" adalah jawaban 200** (`{"available": false}`), bukan 404. Sebuah 404 menaruh baris galat di konsol setiap pengunjung ("Failed to load resource"), dan itu menurunkan skor Best Practices.
+82. **Kunjungan langsung ke `/evaluation` membawa keadaannya di dalam HTML** (blok `<script type="application/json">`, tanpa kode yang dijalankan, jadi lolos CSP ketat). Tanpa keadaan memuat, tanpa permintaan tambahan, dan tanpa halaman yang berubah bentuk setelah cat pertama. Pengukuran awal dengan `fetch` memberi CLS 0,256 dan LCP 2,7 detik pada pengaturan bawaan Lighthouse. Tanda `<` di dalam JSON di-escape supaya tidak ada isi berkas yang bisa menutup blok lebih awal (dibuktikan tes). Navigasi dari dalam aplikasi tetap memakai `fetch` (pergeseran sesudah klik tidak dihitung sebagai CLS).
+83. **Pemecahan kode per halaman dihentikan.** Tiap halaman hanya beberapa KB, dan pemecahan membuat kunjungan langsung menunggu dua permintaan berurutan: LCP 0,8 detik menjadi sekitar 2,7 detik, dan footer melompat saat halaman tiba (CLS 0,203 di About). Semua halaman sekarang ikut paket utama. JS awal **105 KB gzip** (batas brief 200 KB). Ini menyimpang dari "pecah kode per halaman" di brief, karena tujuan di baliknya (performa) justru dirugikan.
+84. **Kompresi teks** (`compression`) pada semua respons kecuali `/api/check`. Aliran hasil tidak boleh dikompres karena gzip menahan baris sampai buffer penuh, padahal hasil harus tiba satu per satu. Bobot halaman 487 KB menjadi 250 KB. Dibuktikan tes.
+85. **`text-wrap: pretty` dihapus** dari paragraf (mahal untuk tata letak). **Dua font di atas lipatan dipramuat** (Newsreader 500 dan Plex Sans 400) lewat plugin Vite yang membaca nama berkas ber-hash dari bundel. Pada How it works, rata-rata skor bawaan naik dari 88 (85, 85, 95) menjadi 90 (88 sampai 92) walau CPU mesin lebih lambat saat pengukuran kedua.
+86. **Tombol bahasa: "Label in Name" (WCAG 2.5.3).** Nama aksesibel sekarang diawali teks yang terlihat ("EN: Switch to English"). Sebelumnya Lighthouse menandainya.
+87. **`robots.txt`** ditambahkan (izinkan semuanya kecuali `/api/`).
+88. **Penyebab tes E2E yang acak:** klik "Try an example" kadang hilang karena font web selesai dimuat dan menggeser tombol di antara pengecekan stabil Playwright dan klik. Bukti: setelah tes menunggu `document.fonts.ready` dan `networkidle` di setiap `goto`, tiga putaran penuh berturut-turut lulus (sebelumnya satu sampai dua tes gagal tiap putaran). Pekerja Playwright dibatasi empat. Pergeseran ini tidak muncul di CLS Lighthouse (0).
+89. **Ukuran data di halaman Evaluation** adalah jumlah per split (dev ditambah test), atau jalan "all" bila ada. Versi pertama memakai run terbesar saja dan menulis "80 referensi" untuk data yang sebenarnya 130.
+90. **Tabel utama dipecah dua** (akurasi; waktu dan biaya) supaya muat di 1280 px tanpa digulir. Di bawah itu tabel menggulir di dalam kotaknya sendiri, dapat dijangkau keyboard (`role="region"`, `tabindex="0"`).
+
+### Hasil Lighthouse (profil ponsel, 18 Nov 2026, build produksi, server lokal)
+
+Perintah: `npm run e2e:server`, lalu `npm run lighthouse` (pengali CPU 1) dan `npm run lighthouse -- http://localhost:8799 --default` (pengaturan bawaan).
+
+| Halaman      | Perf, pengali CPU 1 | Perf, bawaan | A11y | Best Practices | SEO |
+| ------------ | ------------------- | ------------ | ---- | -------------- | --- |
+| Check        | 100                 | 91           | 100  | 100            | 100 |
+| How it works | 100                 | 82           | 100  | 100            | 100 |
+| Evaluation   | 100                 | 87           | 100  | 100            | 100 |
+| About        | 100                 | 96           | 100  | 100            | 100 |
+| Privacy      | 100                 | 97           | 100  | 100            | 100 |
+
+Semua halaman: FCP dan LCP 0,8 detik, CLS 0. Dengan pengali CPU 1, TBT 0 sampai 10 ms.
+
+**Cara membaca angka ini dengan jujur:**
+
+- Skor Performance dengan pengaturan bawaan **bergerak 5 sampai 10 poin antar-putaran** pada halaman yang sama (How it works: 95, 85, 85 sebelum pramuat font, dan 90, 91, 92, 88 sesudahnya). Satu tabel di atas adalah satu putaran, bukan rata-rata.
+- `benchmarkIndex` mesin berubah antara 209 dan 1.278 menurut beban latar belakang (`npm audit fix` yang berjalan bersamaan sempat membuat pengukuran awal terlalu rendah). Pengukuran di atas dilakukan saat mesin lebih tenang (sekitar 560 sampai 1.250), tetapi tidak steril.
+- **Yang tidak saya klaim:** bahwa pengaturan bawaan selalu menghasilkan 90 atau lebih di setiap halaman. Dua halaman (How it works dan Evaluation) berada di 82 sampai 92 menurut putaran. Penyumbang utamanya Total Blocking Time dari satu bundel React (sekitar 200 ms skrip di bawah throttling 4×, ditambah penataan gaya dan tata letak).
+- **Tuas yang tersisa dan belum dipakai:** mengganti React dengan Preact (kompatibel, sekitar 100 KB lebih kecil). Itu mengubah tumpukan yang ditetapkan brief, jadi perlu persetujuan.
+- Angka akhir diukur dengan **PageSpeed Insights pada URL deploy** (M7), karena itu yang akan dibandingkan juri.
+
 ## Ambang final
 
 Belum dituning. Nilai sementara: `TAU_T` 0,90, `TAU_A` 0,60, `TAU_L` 0,60, `TAU_V` 0,40. Diisi setelah `npm run eval:tune` pada dev set (M5): ambang, hash commit, tanggal.

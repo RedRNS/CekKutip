@@ -1,5 +1,7 @@
 import { existsSync } from 'node:fs'
+import { readFile } from 'node:fs/promises'
 import path from 'node:path'
+import compression from 'compression'
 import express from 'express'
 import type { ErrorRequestHandler } from 'express'
 import { rateLimit } from 'express-rate-limit'
@@ -7,6 +9,11 @@ import helmet from 'helmet'
 import { createCheckRouter } from './routes/check.js'
 import { sendError } from './routes/context.js'
 import type { AppContext } from './routes/context.js'
+import {
+  createEvaluationLoader,
+  createEvaluationRouter,
+  evaluationDataBlock,
+} from './routes/evaluation.js'
 import { createConfigRouter, createHealthRouter } from './routes/health.js'
 
 export function createApp(ctx: AppContext): express.Express {
@@ -35,8 +42,18 @@ export function createApp(ctx: AppContext): express.Express {
     }),
   )
 
+  // Compress text responses (the page, scripts, styles, JSON). The check stream is left alone: gzip
+  // would hold lines back until a buffer fills, and results must reach the browser one by one.
+  app.use(
+    compression({
+      filter: (req, res) => !req.path.startsWith('/api/check') && compression.filter(req, res),
+    }),
+  )
+
   app.use('/api/health', createHealthRouter())
   app.use('/api/config', createConfigRouter(ctx))
+  const loadEvaluation = createEvaluationLoader(ctx.evaluationFile)
+  app.use('/api/evaluation', createEvaluationRouter(loadEvaluation))
 
   const limiter = rateLimit({
     windowMs: ctx.limits.rateLimitWindowMs,
@@ -65,10 +82,21 @@ export function createApp(ctx: AppContext): express.Express {
       express.static(path.join(dir, 'assets'), { immutable: true, maxAge: '1y', index: false }),
     )
     app.use(express.static(dir, { index: false, maxAge: '1h' }))
-    app.use((req, res, next) => {
+    const indexFile = path.join(dir, 'index.html')
+    app.use(async (req, res, next) => {
       if (req.method !== 'GET' && req.method !== 'HEAD') return next()
       res.set('cache-control', 'no-cache')
-      res.sendFile(path.join(dir, 'index.html'))
+      if (req.path !== '/evaluation') return res.sendFile(indexFile)
+      try {
+        // A direct visit to the Evaluation page gets its state in the page itself.
+        const html = (await readFile(indexFile, 'utf8')).replace(
+          '</head>',
+          `${evaluationDataBlock(await loadEvaluation())}</head>`,
+        )
+        res.type('html').send(html)
+      } catch (err) {
+        next(err)
+      }
     })
   }
 

@@ -42,7 +42,8 @@ export function Header() {
                 className="lang-switch__btn"
                 lang={l}
                 aria-pressed={lang === l}
-                aria-label={t.nav.switchTo[l]}
+                // The accessible name starts with the visible text ("EN"), as WCAG 2.5.3 (Label in Name) asks.
+                aria-label={`${l.toUpperCase()}: ${t.nav.switchTo[l]}`}
                 onClick={() => setLang(l)}
               >
                 {l.toUpperCase()}

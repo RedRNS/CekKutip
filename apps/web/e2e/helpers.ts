@@ -1,6 +1,24 @@
 import { AxeBuilder } from '@axe-core/playwright'
-import { expect } from '@playwright/test'
+import { expect, test as base } from '@playwright/test'
 import type { Page } from '@playwright/test'
+
+/**
+ * `test` for every spec. Each page.goto() waits for the network to go quiet and for the web fonts to
+ * finish loading. Without that, a font swap can reflow the page between Playwright's "is it stable?"
+ * check and its click, and the click lands on the wrong element (seen as rare, random 30 s timeouts).
+ */
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    const goto = page.goto.bind(page)
+    page.goto = async (url, options) => {
+      const response = await goto(url, { waitUntil: 'networkidle', ...options })
+      await page.evaluate(() => document.fonts.ready)
+      return response
+    }
+    await use(page)
+  },
+})
+export { expect }
 
 /** Verdict labels the example list must produce, in order (see src/data/example-list.ts). */
 export const EXPECTED = [

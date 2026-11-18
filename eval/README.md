@@ -8,7 +8,7 @@ Bukti utama untuk paper. Harness memakai kode pipeline yang sama dengan produk, 
 2. Target: 130 referensi, 80 `dev` dan 50 `test`. Isi `labeler1` dan `labeler2` secara terpisah **sebelum** membandingkan. `gold_label` adalah label yang disepakati.
 3. Isi `PRICE_INPUT_PER_M` dan `PRICE_OUTPUT_PER_M` di `.env` dari daftar harga Google yang berlaku, supaya biaya per 1.000 referensi bisa dihitung.
 
-Selama `references.csv` belum ada, skrip memakai templat. Hasilnya otomatis ditandai **sample**, ditulis ke `eval/results-sample/` (tidak di-commit), dan tidak boleh ditulis ke `eval/results/`. Halaman Evaluation hanya membaca `eval/results/summary.json`.
+Selama `references.csv` belum ada, skrip memakai templat. Hasilnya otomatis ditandai **sample**, ditulis ke `eval/results-sample/` (tidak di-commit), dan tidak boleh ditulis ke `eval/results/`. Halaman Evaluation hanya membaca `eval/results/summary.json` (lewat `GET /api/evaluation`), dan hanya menampilkannya bila lengkap dan `sample: false`. Berkas baru muncul di halaman tanpa restart server.
 
 ## Urutan kerja
 

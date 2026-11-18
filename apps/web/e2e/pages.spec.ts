@@ -1,5 +1,11 @@
-import { expect, test } from '@playwright/test'
-import { checkButton, expectNoAxeViolations, expectNoHorizontalScroll, rows } from './helpers'
+import {
+  checkButton,
+  expect,
+  expectNoAxeViolations,
+  expectNoHorizontalScroll,
+  rows,
+  test,
+} from './helpers'
 
 const PAGES = [
   {

@@ -16,7 +16,11 @@ const defaultStatic = fileURLToPath(new URL('../../web/dist', import.meta.url))
 const staticDir =
   process.env.STATIC_DIR?.trim() || (existsSync(defaultStatic) ? defaultStatic : undefined)
 
-const app = createApp({ pipeline, limits, env, logger, staticDir })
+const evaluationFile =
+  process.env.EVALUATION_SUMMARY?.trim() ||
+  fileURLToPath(new URL('../../../eval/results/summary.json', import.meta.url))
+
+const app = createApp({ pipeline, limits, env, logger, staticDir, evaluationFile })
 
 const server = app.listen(env.port, () => {
   logger.started({

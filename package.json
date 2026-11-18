@@ -29,7 +29,8 @@
     "eval": "tsx --env-file-if-exists=.env eval/scripts/run.ts",
     "eval:tune": "tsx --env-file-if-exists=.env eval/scripts/tune.ts",
     "eval:kappa": "tsx --env-file-if-exists=.env eval/scripts/kappa.ts",
-    "eval:report": "tsx --env-file-if-exists=.env eval/scripts/report.ts"
+    "eval:report": "tsx --env-file-if-exists=.env eval/scripts/report.ts",
+    "lighthouse": "tsx scripts/lighthouse.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

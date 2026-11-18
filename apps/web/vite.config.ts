@@ -33,8 +33,41 @@ function failOnTodoPlaceholders(): Plugin {
   }
 }
 
+/**
+ * Preload the two fonts the first screen needs (heading and body text), so the browser fetches them
+ * together with the script instead of after the stylesheet. Other weights load when first used.
+ */
+function preloadFirstScreenFonts(): Plugin {
+  return {
+    name: 'cekkutip-preload-fonts',
+    apply: 'build',
+    transformIndexHtml: {
+      order: 'post',
+      handler(_html, ctx) {
+        const wanted = [
+          /newsreader-latin-500-normal.*\.woff2$/,
+          /ibm-plex-sans-latin-400-normal.*\.woff2$/,
+        ]
+        return Object.keys(ctx.bundle ?? {})
+          .filter((file) => wanted.some((re) => re.test(file)))
+          .map((file) => ({
+            tag: 'link',
+            attrs: {
+              rel: 'preload',
+              as: 'font',
+              type: 'font/woff2',
+              crossorigin: '',
+              href: `/${file}`,
+            },
+            injectTo: 'head' as const,
+          }))
+      },
+    },
+  }
+}
+
 export default defineConfig({
-  plugins: [react(), failOnTodoPlaceholders()],
+  plugins: [react(), failOnTodoPlaceholders(), preloadFirstScreenFonts()],
   server: {
     port: 5173,
     proxy: { '/api': 'http://localhost:8787' },

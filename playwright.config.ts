@@ -8,6 +8,8 @@ export default defineConfig({
   testDir: 'apps/web/e2e',
   testMatch: '**/*.spec.ts',
   fullyParallel: true,
+  // The tests share one server on one machine. Too many pages at once makes timing-based tests flaky.
+  workers: 4,
   forbidOnly: true,
   retries: 0,
   reporter: 'list',

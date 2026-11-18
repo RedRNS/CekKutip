@@ -34,6 +34,7 @@ npx tsx scripts/smoke-check.ts   # kirim 12 referensi ke server yang sedang jala
 npx tsx --env-file=.env scripts/smoke-gemini.ts   # uji tahap Parse terhadap Gemini nyata
 npm run test:e2e          # Playwright, server putar-ulang tanpa jaringan (membangun web dulu)
 npm run e2e:server        # server putar-ulang di :8799 (untuk tangkapan layar)
+npm run lighthouse        # Lighthouse (ponsel) untuk semua halaman; argumen: baseUrl, --default (butuh e2e:server)
 npm run screenshots       # tangkapan layar 375/768/1280 + axe (butuh e2e:server); argumen: baseUrl en|id
 npx tsx scripts/check-examples.ts <baseUrl> llm|regex   # verdict daftar contoh
 npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)

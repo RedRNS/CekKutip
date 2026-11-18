@@ -11,6 +11,8 @@ export interface AppContext {
   logger: AppLogger
   /** Built web app to serve. Omit in tests and when running the API alone. */
   staticDir?: string
+  /** eval/results/summary.json. The Evaluation page shows it when it holds real results. */
+  evaluationFile?: string
 }
 
 /** Errors always have this shape: a stable code and a message a person can read. */

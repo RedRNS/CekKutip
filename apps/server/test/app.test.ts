@@ -481,6 +481,31 @@ describe('serving the built web app', () => {
     expect((await fetch(`${base}/api/health`)).status).toBe(200)
   })
 
+  it('compresses text responses, so the page loads faster on a slow connection', async () => {
+    const dir = await site()
+    await writeFile(path.join(dir, 'assets', 'big-abc123.js'), 'const x = 1;'.repeat(2000))
+    const { base } = await start({ staticDir: dir })
+    for (const p of ['/assets/big-abc123.js', '/api/config']) {
+      const res = await fetch(base + p, { headers: { 'accept-encoding': 'gzip' } })
+      expect(res.status).toBe(200)
+      if (p.startsWith('/assets')) expect(res.headers.get('content-encoding')).toBe('gzip')
+      expect((await res.text()).length).toBeGreaterThan(10)
+    }
+  })
+
+  it('never compresses the result stream, so each result reaches the browser as soon as it is ready', async () => {
+    const { base } = await start()
+    const res = await fetch(`${base}/api/check`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', 'accept-encoding': 'gzip' },
+      body: JSON.stringify({ references: [REF_OK], options: { parseMode: 'regex' } }),
+    })
+    expect(res.headers.get('content-encoding')).toBeNull()
+    expect(res.headers.get('content-type')).toContain('application/x-ndjson')
+    const lines = (await res.text()).split(String.fromCharCode(10)).filter(Boolean)
+    expect(lines).toHaveLength(3) // started, one result, done
+  })
+
   it('serves only the API when there is no build', async () => {
     const { base } = await start()
     expect((await fetch(`${base}/`)).status).toBe(404)

@@ -1,15 +1,16 @@
 import { readFile } from 'node:fs/promises'
-import { expect, test } from '@playwright/test'
 import {
-  EXPECTED,
-  UNRECORDED,
   checkButton,
+  expect,
+  EXPECTED,
   expectNoAxeViolations,
   expectNoHorizontalScroll,
   filters,
   input,
   rows,
   runExample,
+  test,
+  UNRECORDED,
 } from './helpers'
 
 test.describe('checking a list', () => {

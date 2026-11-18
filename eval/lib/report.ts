@@ -1,68 +1,14 @@
 import type { Verdict } from '@cekkutip/shared'
+import type { EvaluationKappa, EvaluationRun, EvaluationSummary } from '@cekkutip/shared/evaluation'
 import { GOLD_LABELS } from './dataset.js'
 import type { RunResult } from './evaluate.js'
 import type { Metrics } from './metrics.js'
 
 export type RunFile = Omit<RunResult, 'predictions'>
 
-export interface KappaFile {
-  n: number
-  skipped: number
-  observed: number | null
-  expected: number | null
-  kappa: number | null
-  matrix: Record<Verdict, Record<Verdict, number>>
-  dataset: { sha256: string; sample: boolean }
-}
-
-interface Scored {
-  value: number
-  ci95: [number, number] | null
-}
-
-export interface SummaryRun {
-  name: string
-  system: string
-  ablation: string | null
-  split: string
-  parseMode: string
-  n: number
-  macroF1: Scored
-  f1: Record<Verdict, number>
-  precision: Record<Verdict, number>
-  recall: Record<Verdict, number>
-  falseAccusationRate: { value: number | null; ci95: [number, number] | null; outOf: number }
-  abstainRate: Scored
-  binaryVerified: Metrics['binaryVerified']
-  checkFailed: number
-  medianLatencyMs: number
-  costPer1000Usd: number | null
-  tokens: { input: number; output: number }
-  /** The same headline figures without synthetic items, when the split has any. */
-  withoutPerturbed: {
-    n: number
-    macroF1: Scored
-    falseAccusationRate: number | null
-    abstainRate: number
-  } | null
-  perturbedItems: number
-}
-
-export interface Summary {
-  /** True when any run used the template data. A sample summary must never be shown as results. */
-  sample: boolean
-  generatedAt: string
-  toolVersion: string | null
-  commit: string | null
-  uncommittedChanges: boolean
-  model: string | null
-  thresholds: RunFile['meta']['thresholds'] | null
-  thresholdsSource: string | null
-  datasetSha256: string[]
-  bootstrap: RunFile['meta']['bootstrap'] | null
-  runs: SummaryRun[]
-  kappa: KappaFile | null
-}
+export type KappaFile = EvaluationKappa
+export type SummaryRun = EvaluationRun
+export type Summary = EvaluationSummary
 
 const pick = <T>(m: Metrics, f: (s: Metrics['perVerdict'][Verdict]) => T) =>
   Object.fromEntries(GOLD_LABELS.map((l) => [l, f(m.perVerdict[l])])) as Record<Verdict, T>

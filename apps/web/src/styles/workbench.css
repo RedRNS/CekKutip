@@ -409,3 +409,69 @@
   padding-block: var(--s-12);
   width: fit-content;
 }
+
+/* ---------- Evaluation results ---------- */
+.eval-h3 {
+  margin-top: var(--s-32);
+  margin-bottom: var(--s-12);
+}
+
+.eval-note {
+  margin-top: var(--s-8);
+  margin-bottom: var(--s-12);
+  font-size: var(--fs-14);
+}
+
+.table-scroll {
+  overflow-x: auto;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+  background: var(--surface);
+}
+
+.data-table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+  font-size: var(--fs-14);
+  text-align: left;
+}
+
+.data-table th,
+.data-table td {
+  padding: var(--s-8) var(--s-12);
+  border-top: 1px solid var(--rule);
+  vertical-align: baseline;
+}
+
+.data-table thead th {
+  border-top: 0;
+  background: var(--paper);
+  color: var(--ink-muted);
+  font-weight: 600;
+  vertical-align: bottom;
+}
+
+.data-table tbody th {
+  font-weight: 600;
+  min-width: 11rem;
+}
+
+.data-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.data-table .subtle {
+  display: block;
+  color: var(--ink-muted);
+  font-size: 12px;
+  white-space: normal;
+}
+
+.eval-loading {
+  margin-top: var(--s-72);
+  min-height: 12rem; /* about the height of the empty state that usually replaces it */
+  color: var(--ink-muted);
+}

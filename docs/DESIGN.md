@@ -96,3 +96,12 @@ Belum ada gerak di M1 selain perubahan keadaan fokus. `prefers-reduced-motion` m
 ### Daftar periksa 9.9 untuk M4 (16 Nov 2026, tangkapan layar 375/768/1280, EN dan ID)
 
 Semua dijawab ya. Buktinya: 32 tes E2E (alur contoh, filter, panel bukti, ekspor, bahasa, mode tanpa AI, batas, galat jaringan, alur keyboard penuh, 375 px tanpa guliran horizontal), axe WCAG 2.2 AA tanpa pelanggaran pada 7 state di 3 lebar dan 2 bahasa, dan tanpa galat konsol di bawah CSP ketat. Butir 12 (teks dipahami mahasiswa tingkat satu) tetap penilaian saya dan perlu uji pengguna.
+
+## Halaman Evaluation dengan hasil (M6)
+
+- Urutan: fakta cara hasil dibuat (versi, commit, model, tanggal, ambang, interval, ukuran data), lalu satu bagian per split (pengembangan, lalu uji), lalu kesepakatan pelabel, lalu penjelasan metrik.
+- Tiap split: perbandingan utama (akurasi), waktu dan biaya, F1 per verdict, verdict melawan bukan verdict, ablation sebagai perubahan terhadap pipeline penuh, dan dengan lawan tanpa referensi yang diubah.
+- Semua tabel adalah `table` sungguhan dengan `caption`, `th scope`, angka rata kanan dengan `tabular-nums`. Nama verdict tidak diterjemahkan. Angka mengikuti bahasa (titik desimal di Inggris, koma di Indonesia).
+- Tabel yang lebih lebar dari layar menggulir di dalam kotaknya sendiri (`role="region"`, `tabindex="0"`, nama dari caption), tidak pernah membuat halaman bergulir ke samping.
+- Tanpa grafik. Tidak ada angka yang dihitung di browser.
+- Keadaan kosong tetap: judul, "Results will be published after data lock on 9 December 2026.", dan catatan bahwa halaman tidak menampilkan angka sampai ada hasil terukur.
