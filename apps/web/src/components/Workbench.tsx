@@ -1,13 +1,15 @@
 import type { PublicConfig } from '@cekkutip/shared'
-import { checkLimits, splitReferences } from '@cekkutip/shared/split'
+import { checkLimits, joinReferences, splitReferences } from '@cekkutip/shared/split'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { KeyboardEvent } from 'react'
+import type { ChangeEvent, KeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { EXAMPLE_TEXT, PLACEHOLDER_EXAMPLES } from '../data/example-list'
 import { fmt, useI18n } from '../i18n'
 import { DEFAULT_CONFIG, fetchConfig } from '../lib/api'
+import { MAX_UPLOAD_BYTES, appendText, readReferenceFile } from '../lib/upload'
 import { useCheck } from '../state/useCheck'
 import { ResultsLedger } from './ResultsLedger'
+import { SplitPreview } from './SplitPreview'
 
 /**
  * The tool itself. Left: paste references. Right: results, one row per reference, as they arrive.
@@ -23,6 +25,8 @@ export function Workbench() {
   const hintId = useId()
   const errorId = useId()
   const resultsRef = useRef<HTMLElement>(null)
+  const fileRef = useRef<HTMLInputElement>(null)
+  const [uploadNote, setUploadNote] = useState<{ ok: boolean; text: string } | null>(null)
 
   useEffect(() => {
     const ac = new AbortController()
@@ -68,12 +72,31 @@ export function Workbench() {
 
   const clear = () => {
     setText('')
+    setUploadNote(null)
     reset()
+  }
+
+  const maxKb = MAX_UPLOAD_BYTES / 1024
+  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // so the same file can be chosen again
+    if (!file) return
+    const r = await readReferenceFile(file)
+    if (!r.ok) {
+      setUploadNote({ ok: false, text: fmt(t.upload.errors[r.error], { max: maxKb }) })
+      return
+    }
+    setText((prev) => appendText(prev, r.text))
+    const added = t.upload.added(splitReferences(r.text).length, file.name)
+    setUploadNote({
+      ok: true,
+      text: r.skipped > 0 ? `${added} ${t.upload.skipped(r.skipped)}` : added,
+    })
   }
 
   return (
     <div className="workbench">
-      <section className="panel panel--input" aria-labelledby={`${inputId}-label`}>
+      <section className="panel panel--input print-hide" aria-labelledby={`${inputId}-label`}>
         <div className="panel__row">
           <label className="field-label" id={`${inputId}-label`} htmlFor={inputId}>
             {t.home.inputLabel}
@@ -99,6 +122,8 @@ export function Workbench() {
             {problemText}
           </p>
         )}
+
+        <SplitPreview references={references} onChange={(refs) => setText(joinReferences(refs))} />
 
         <label className="check-row">
           <input
@@ -126,12 +151,37 @@ export function Workbench() {
           <button
             type="button"
             className="btn btn--secondary"
+            onClick={() => fileRef.current?.click()}
+          >
+            {t.upload.button}
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".txt,.bib,text/plain"
+            hidden
+            onChange={(e) => void onFile(e)}
+          />
+          <button
+            type="button"
+            className="btn btn--secondary"
             onClick={clear}
             disabled={!hasText && state.phase === 'idle'}
           >
             {t.home.clear}
           </button>
         </div>
+        <p className="hint">{fmt(t.upload.hint, { max: maxKb })}</p>
+        {uploadNote &&
+          (uploadNote.ok ? (
+            <p className="hint" role="status">
+              {uploadNote.text}
+            </p>
+          ) : (
+            <p className="field-error" role="alert">
+              {uploadNote.text}
+            </p>
+          ))}
 
         <div className={hasText ? 'check-bar check-bar--sticky' : 'check-bar'}>
           <button type="button" className="btn btn--primary" onClick={check} disabled={!canCheck}>

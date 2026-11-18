@@ -11,6 +11,8 @@ import {
   DOI,
   FAKE_JOURNAL,
   FIXTURE_RULES,
+  REF_ARXIV_OK,
+  REF_ARXIV_WRONG_YEAR,
   REF_DATACITE,
   REF_FAKE_DOI,
   REF_OK,
@@ -116,8 +118,49 @@ describe('verdicts from recorded API responses', () => {
     expect(r).toMatchObject({ status: 'suspect', reasons: ['suspect_doi_not_found'], record: null })
   })
 
-  it('Out-of-index: a DOI that belongs to DataCite', async () => {
+  it('Verified: an arXiv preprint is found through DataCite by its DOI', async () => {
+    const w = world()
+    const r = await only(REF_ARXIV_OK, w)
+    expect(r).toMatchObject({ status: 'verified', reasons: ['verified_all_match'] })
+    expect(r.record).toMatchObject({
+      source: 'datacite',
+      title: 'Attention Is All You Need',
+      year: 2017,
+      venue: null,
+    })
+    // Crossref was asked first, then doi.org, then DataCite, and no title search was made.
+    const hosts = w.calls.map((c) => new URL(c.url).hostname)
+    expect(hosts).toEqual(['api.crossref.org', 'doi.org', 'api.datacite.org'])
+  })
+
+  it('Mismatch: the same preprint cited with the wrong year', async () => {
+    const r = await only(REF_ARXIV_WRONG_YEAR)
+    expect(r).toMatchObject({ status: 'mismatch', reasons: ['mismatch_year'] })
+    expect(r.record).toMatchObject({ source: 'datacite', year: 2017 })
+  })
+
+  it('Mismatch: a DataCite DOI that leads to a different work', async () => {
     const r = await only(REF_DATACITE)
+    expect(r).toMatchObject({ status: 'mismatch', reasons: ['mismatch_doi_other_work'] })
+    expect(r.record?.source).toBe('datacite')
+  })
+
+  it('Out-of-index: a DOI that belongs to a registry we do not search', async () => {
+    const r = await only(
+      'Rossi, M. (2018). Un articolo di esempio. Rivista Esempio, 2(1), 1-9. https://doi.org/10.1285/i20705948v12n1p1',
+      world([
+        {
+          repeat: true,
+          match: urlHas('api.crossref.org/works/10.1285'),
+          respond: () => status(404),
+        },
+        {
+          repeat: true,
+          match: urlHas('doi.org/doiRA/10.1285'),
+          respond: () => ok([{ DOI: '10.1285/i20705948v12n1p1', RA: 'mEDRA' }]),
+        },
+      ]),
+    )
     expect(r).toMatchObject({ status: 'out_of_index', reasons: ['out_of_index_other_registry'] })
   })
 
@@ -258,6 +301,28 @@ describe('service failures are never verdicts', () => {
           match: () => true,
           respond: () => status(429, '', { 'retry-after': '9999' }),
         },
+      ]),
+    )
+    expect(r.status).toBe('check_failed')
+  })
+
+  it('DataCite down after doi.org named it gives check_failed, not a verdict', async () => {
+    const w = world([down(urlHas('api.datacite.org')), ...FIXTURE_RULES])
+    const r = await only(REF_ARXIV_OK, w)
+    expect(r).toMatchObject({ status: 'check_failed', record: null })
+    expect(w.errors).toEqual(['server_error'])
+  })
+
+  it('doi.org saying DataCite holds a DOI that DataCite lacks gives check_failed (we cannot tell why)', async () => {
+    const r = await only(
+      REF_ARXIV_OK,
+      world([
+        {
+          repeat: true,
+          match: urlHas('api.datacite.org'),
+          respond: () => status(404),
+        },
+        ...FIXTURE_RULES,
       ]),
     )
     expect(r.status).toBe('check_failed')

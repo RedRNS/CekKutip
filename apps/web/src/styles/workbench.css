@@ -475,3 +475,71 @@
   min-height: 12rem; /* about the height of the empty state that usually replaces it */
   color: var(--ink-muted);
 }
+
+/* ---------- Split preview ---------- */
+.btn--compact {
+  padding: 0 var(--s-12);
+  font-size: var(--fs-14);
+}
+
+.split {
+  margin-top: var(--s-8);
+}
+
+.split__list {
+  max-height: 28rem;
+  margin: var(--s-8) 0 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.split__item {
+  padding: var(--s-12) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.split__item:focus-visible {
+  outline-offset: -2px;
+}
+
+.split__text {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  font-size: var(--fs-14);
+  overflow-wrap: anywhere;
+}
+
+.split__num {
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.split__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-8);
+  margin-top: var(--s-8);
+  padding-left: 2rem;
+}
+
+.split__textarea {
+  min-height: 8rem;
+}
+
+/* ---------- Corrected reference ---------- */
+.corrected {
+  margin-top: var(--s-16);
+  padding: var(--s-12) var(--s-16);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r-control);
+}
+
+.corrected__text {
+  margin-top: var(--s-8);
+  font-size: var(--fs-14);
+  overflow-wrap: anywhere;
+}

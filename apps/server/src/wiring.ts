@@ -1,4 +1,5 @@
 import { createCrossrefClient } from './clients/crossref.js'
+import { createDataciteClient } from './clients/datacite.js'
 import { createDoiClient } from './clients/doi.js'
 import { createGeminiClient } from './clients/gemini.js'
 import { createOpenAlexClient } from './clients/openalex.js'
@@ -23,6 +24,7 @@ export function buildPipelineDeps(env: Env, limits: Limits): PipelineDeps {
     retrieve: {
       crossref: createCrossrefClient({ http, cache, mailto: env.crossrefMailto }),
       openalex: createOpenAlexClient({ http, cache, apiKey: env.openalexApiKey }),
+      datacite: createDataciteClient({ http, cache, mailto: env.crossrefMailto }),
       doi: createDoiClient({ http, cache }),
     },
     gemini: env.geminiApiKey

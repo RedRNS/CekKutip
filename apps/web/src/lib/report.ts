@@ -92,6 +92,27 @@ export function toCsv(results: ReferenceResult[], t: Dict): string {
   return `${BOM}${[CSV_COLUMNS.join(','), ...rows].join('\r\n')}\r\n`
 }
 
+/** The totals sentence and the tool-and-cut-offs sentence, for the text report and the printout. */
+export function summaryLines(summary: CheckSummary, t: Dict): { totals: string; tool: string } {
+  return {
+    totals: fill(t.report.totals, {
+      total: summary.total,
+      verified: summary.verified,
+      mismatch: summary.mismatch,
+      suspect: summary.suspect,
+      outOfIndex: summary.outOfIndex,
+      checkFailed: summary.checkFailed,
+    }),
+    tool: fill(t.report.tool, {
+      version: summary.toolVersion,
+      tauT: summary.thresholds.tauT,
+      tauA: summary.thresholds.tauA,
+      tauL: summary.thresholds.tauL,
+      tauV: summary.thresholds.tauV,
+    }),
+  }
+}
+
 export function toReport(
   results: ReferenceResult[],
   summary: CheckSummary | null,
@@ -107,25 +128,8 @@ export function toReport(
     lines.push('')
   }
   if (summary) {
-    lines.push(
-      fill(t.report.totals, {
-        total: summary.total,
-        verified: summary.verified,
-        mismatch: summary.mismatch,
-        suspect: summary.suspect,
-        outOfIndex: summary.outOfIndex,
-        checkFailed: summary.checkFailed,
-      }),
-    )
-    lines.push(
-      fill(t.report.tool, {
-        version: summary.toolVersion,
-        tauT: summary.thresholds.tauT,
-        tauA: summary.thresholds.tauA,
-        tauL: summary.thresholds.tauL,
-        tauV: summary.thresholds.tauV,
-      }),
-    )
+    const { totals, tool } = summaryLines(summary, t)
+    lines.push(totals, tool)
   }
   lines.push(t.home.statement)
   return lines.join('\n')

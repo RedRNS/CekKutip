@@ -345,6 +345,7 @@ export const id: Dict = {
       'Secara bawaan, teks referensimu dikirim ke Google Gemini. Teks itu hanya dipakai untuk membaca field: penulis, tahun, judul. Pilih "Jangan kirim teksku ke layanan AI" untuk menghindarinya. Hasilnya jadi kurang akurat.',
       'Google menyatakan bahwa konten yang dikirim lewat tier gratisnya dapat dipakai untuk meningkatkan produknya, dan bahwa peninjau manusia dapat membacanya.',
       'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya.',
+      'Berkas .txt atau .bib yang kamu pilih dibaca di browsermu dan dimasukkan ke kotak, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
       'Server kami tidak menyimpan teksmu. Log kami hanya berisi id permintaan, jumlah referensi, waktu proses, dan kode galat. Log tidak pernah berisi teksmu.',
       'Kami mengikuti prinsip Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi: mengumpulkan seperlunya, memakainya untuk satu tujuan, dan tidak menyimpan yang tidak dibutuhkan. Ini gambaran cara kami bekerja, bukan pernyataan kepatuhan hukum.',
       'Jangan menempelkan informasi sensitif atau data pribadi. Daftar pustaka tidak membutuhkannya.',
@@ -365,6 +366,7 @@ export const id: Dict = {
     noneInFilter: 'Tidak ada referensi dengan hasil ini.',
     finished: (total: number) => `Pemeriksaan selesai. ${total} referensi diperiksa.`,
     barLabel: 'Hasil menurut verdict',
+    printFiltered: 'Hanya menampilkan hasil {verdict}: {shown} dari {total}.',
   },
   evidence: {
     caption: (n: number) => `Referensi ${n} dibandingkan dengan record`,
@@ -400,6 +402,13 @@ export const id: Dict = {
     reasonCodes: 'Kode alasan',
     sourceType: 'Dibaca sebagai',
   },
+  corrected: {
+    title: 'Referensi yang dikoreksi (APA 7)',
+    note: 'Ditulis dari record dengan aturan tetap, bukan oleh model bahasa. Cocokkan dengan sumbernya. Kamu masih perlu memiringkan nama jurnal dan volume, serta menulis judul artikel dengan huruf kapital hanya di awal kalimat (sentence case).',
+    copy: 'Salin referensi',
+    copied: 'Tersalin',
+    copyFailed: 'Tidak bisa menyalin. Pilih teksnya lalu salin secara manual.',
+  },
   sources: { crossref: 'Crossref', openalex: 'OpenAlex', datacite: 'DataCite' },
   types: {
     journal_article: 'artikel jurnal',
@@ -431,6 +440,34 @@ export const id: Dict = {
       'Pembaca AI belum dipasang di server ini. Teksmu dibaca oleh pembaca pola di server kami, lalu dicari di Crossref dan OpenAlex. Kami tidak menyimpan teksmu.',
     shortcut: 'Ctrl+Enter',
     checkingButton: 'Memeriksa',
+  },
+  upload: {
+    button: 'Unggah .txt atau .bib',
+    hint: 'Berkas dibaca di browsermu lalu dimasukkan ke kotak, seperti teks yang ditempel. Sampai {max} KB.',
+    added: (n: number, name: string) => `${n} referensi ditambahkan dari ${name}.`,
+    skipped: (n: number) => `${n} entri tanpa judul tidak diikutkan.`,
+    errors: {
+      too_large: 'Berkas itu lebih besar dari {max} KB. Pecah dulu, lalu unggah sebagian-sebagian.',
+      unsupported: 'Hanya berkas .txt dan .bib yang didukung.',
+      empty: 'Tidak ada referensi yang ditemukan di berkas itu.',
+      unreadable: 'Berkas itu tidak bisa dibaca sebagai teks.',
+    },
+  },
+  split: {
+    summary: (n: number) => `Periksa cara daftarmu dipecah (${n})`,
+    hint: 'Tiap butir di bawah diperiksa sebagai satu referensi. Kalau ada referensi yang terpotong di tempat yang salah, gabungkan dengan referensi sebelumnya, atau ubah. Setiap perubahan menulis ulang kotak di atas menjadi satu referensi per paragraf.',
+    item: (n: number) => `Referensi ${n}`,
+    merge: 'Gabung dengan sebelumnya',
+    mergeLabel: (n: number) => `Gabungkan referensi ${n} dengan referensi ${n - 1}`,
+    edit: 'Ubah',
+    editLabel: (n: number) => `Ubah referensi ${n}`,
+    editHint:
+      'Beri satu baris kosong di tempat sebuah referensi berakhir dan yang berikutnya mulai. Kosongkan teks untuk menghapus referensi.',
+    apply: 'Terapkan',
+    cancel: 'Batal',
+    merged: (n: number, total: number) =>
+      `Referensi ${n} digabung ke referensi ${n - 1}. ${total} terdeteksi.`,
+    updated: (total: number) => `Referensi diubah. ${total} terdeteksi.`,
   },
   report: {
     title: 'Pemeriksaan referensi CekKutip',

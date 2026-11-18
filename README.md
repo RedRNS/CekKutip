@@ -1,6 +1,6 @@
 # CekKutip
 
-Pemeriksa referensi untuk mahasiswa Indonesia. Tempel daftar pustaka, dan CekKutip mencari tiap referensi di Crossref dan OpenAlex lalu memberi satu dari empat verdict:
+Pemeriksa referensi untuk mahasiswa Indonesia. Tempel daftar pustaka, dan CekKutip mencari tiap referensi di Crossref dan OpenAlex lalu memberi satu dari empat verdict (arXiv dan Zenodo lewat DataCite):
 
 | Verdict          | Arti                                                                                                                                 |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
@@ -12,6 +12,14 @@ Pemeriksa referensi untuk mahasiswa Indonesia. Tempel daftar pustaka, dan CekKut
 Model bahasa **hanya membaca** teks referensi menjadi field (penulis, tahun, judul, dan seterusnya). Model tidak pernah memutuskan verdict. Verdict datang dari aturan tetap yang bisa diaudit atas data Crossref dan OpenAlex. Kalau bukti kurang, hasilnya `Out-of-index` atau `Could not check`, bukan tebakan. Verdict adalah ajakan untuk memeriksa ulang, bukan temuan pelanggaran.
 
 Dibuat untuk GYIIF 2027 (kategori Engineering and Technology). Pembeda dari pemeriksa lain: verdict `Mismatch` untuk karya nyata yang dikutip keliru, verdict abstain `Out-of-index`, dan evaluasi pada referensi mahasiswa Indonesia.
+
+## Fitur selain pemeriksaan dasar (P1)
+
+- **DOI arXiv dan Zenodo** diperiksa lewat DataCite, bukan langsung `Out-of-index`.
+- **Pratinjau pemisahan** di bawah kotak teks: gabungkan atau ubah referensi yang terpotong salah.
+- **Unggah `.txt` atau `.bib`** (dibaca di browser, sampai 256 KB).
+- **Salin referensi yang dikoreksi** (APA 7) dari record untuk hasil `Mismatch`, ditulis dengan aturan tetap, bukan model bahasa.
+- **Cetak** hanya hasil sebagai laporan (Ctrl+P).
 
 ## Menjalankan di komputermu
 

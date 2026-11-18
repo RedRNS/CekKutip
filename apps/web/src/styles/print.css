@@ -1,21 +1,162 @@
+/*
+ * Print: the results only, as a report. Black on white. The verdict is still readable without
+ * color, because each label keeps its glyph, its frame style (solid, dashed, dotted), and its word.
+ * What is not a result (header, footer, the input box, buttons, the explainer sections) is left out.
+ */
+
+/* Print-only text: hidden on screen, shown in the @media print block below. */
+.print-only {
+  display: none;
+}
+
 @media print {
+  @page {
+    margin: 16mm;
+  }
+
+  html,
   body {
     background: #fff;
     color: #000;
+    font-size: 11pt;
   }
+
+  .print-only {
+    display: block;
+  }
+
+  .print-head {
+    margin-bottom: 12pt;
+    padding-bottom: 8pt;
+    border-bottom: 1.5pt solid #000;
+  }
+
+  .print-head p {
+    max-width: none;
+    margin: 0 0 2pt;
+    font-size: 10pt;
+  }
+
+  .print-head__title {
+    font-family: var(--font-display, serif);
+    font-size: 16pt !important;
+    font-weight: 600;
+  }
+
+  /* Not part of the report. */
   .skip-link,
   .dev-banner,
   .site-header,
   .site-footer,
+  .print-hide,
+  .check-bar,
   .button-row,
-  .check-bar {
+  .export-row,
+  .filters,
+  .progress,
+  .row__toggle,
+  button {
     display: none !important;
   }
+
+  /* One column, no boxes. */
+  .workbench {
+    display: block;
+    margin-top: 0;
+  }
+
   .panel {
-    border-color: #999;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .panel--results {
+    display: block;
+  }
+
+  /* The printed heading above says what this is. */
+  .panel__title {
+    display: none;
+  }
+
+  /* Keep the pattern bar and the verdict frames and tints when the browser would drop backgrounds. */
+  .summary__bar,
+  .verdict {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .summary__bar {
+    margin-bottom: 8pt;
+  }
+
+  /* Rows: the whole reference, not two lines, and never split across pages. */
+  .row {
+    break-inside: avoid;
+    animation: none;
+  }
+
+  .row__head {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    min-height: 0;
+    padding-block: 6pt;
+  }
+
+  .row__raw--clamp {
+    display: block;
+    overflow: visible;
+    -webkit-line-clamp: none;
+    line-clamp: none;
+  }
+
+  .evidence {
+    padding-left: 2rem;
+    padding-bottom: 8pt;
+    animation: none;
+  }
+
+  .field-table {
     break-inside: avoid;
   }
+
+  /* A printed link shows where it goes. */
   a {
     color: inherit;
+    text-decoration: underline;
+  }
+
+  a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 9pt;
+    overflow-wrap: anywhere;
+  }
+
+  /* Links that are buttons on screen read as plain links on paper. */
+  .evidence__actions {
+    gap: 6pt 12pt;
+    margin-top: 6pt;
+  }
+
+  .btn {
+    min-height: 0;
+    padding: 0;
+    background: none;
+    border: 0;
+    color: inherit;
+  }
+
+  .btn svg {
+    display: none;
+  }
+
+  .corrected {
+    break-inside: avoid;
+    border-color: #000;
+  }
+
+  .results-statement {
+    margin-top: 12pt;
+    color: #000;
   }
 }

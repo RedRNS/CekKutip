@@ -340,6 +340,7 @@ export const en = {
       'By default, your reference text is sent to Google Gemini. It is used only to read the fields: authors, year, title. Choose "Do not send my text to an AI service" to avoid this. Results are then less accurate.',
       'Google states that content sent through its free tier can be used to improve its products, and that human reviewers may read it.',
       'The title, authors, and DOI that were read from your references are sent to Crossref and OpenAlex, and to DataCite when needed, to look the work up.',
+      'A .txt or .bib file you choose is read in your browser and put in the input box, like pasted text. Nothing is sent until you choose Check references.',
       'Our server does not store your text. Our logs hold only a request id, the number of references, timings, and error codes. They never hold your text.',
       'We follow the principles of Indonesian Law No. 27 of 2022 on Personal Data Protection: collect little, use it for one purpose, and keep nothing we do not need. This describes our approach. It is not a statement of legal compliance.',
       'Do not paste sensitive or personal information. A reference list does not need any.',
@@ -360,6 +361,7 @@ export const en = {
     noneInFilter: 'No references with this result.',
     finished: (total: number) => `Check finished. ${total} references checked.`,
     barLabel: 'Results by verdict',
+    printFiltered: 'Showing only {verdict} results: {shown} of {total}.',
   },
   evidence: {
     caption: (n: number) => `Reference ${n} compared with the record`,
@@ -393,6 +395,13 @@ export const en = {
     reasonCodes: 'Reason codes',
     sourceType: 'Read as',
   },
+  corrected: {
+    title: 'Corrected reference (APA 7)',
+    note: 'Written from the record by fixed rules, not by a language model. Check it against the source. You still need to italicize the journal name and volume, and to write the article title in sentence case.',
+    copy: 'Copy reference',
+    copied: 'Copied',
+    copyFailed: 'Could not copy. Select the text and copy it by hand.',
+  },
   sources: { crossref: 'Crossref', openalex: 'OpenAlex', datacite: 'DataCite' },
   types: {
     journal_article: 'journal article',
@@ -424,6 +433,36 @@ export const en = {
       'The AI reader is not set up on this server. Your text is read by a pattern reader on our server instead, then looked up in Crossref and OpenAlex. We do not store your text.',
     shortcut: 'Ctrl+Enter',
     checkingButton: 'Checking',
+  },
+  upload: {
+    button: 'Upload .txt or .bib',
+    hint: 'The file is read in your browser and put in the box, like pasted text. Up to {max} KB.',
+    added: (n: number, name: string) =>
+      `Added ${n} ${n === 1 ? 'reference' : 'references'} from ${name}.`,
+    skipped: (n: number) =>
+      `${n} ${n === 1 ? 'entry' : 'entries'} without a title ${n === 1 ? 'was' : 'were'} left out.`,
+    errors: {
+      too_large: 'That file is larger than {max} KB. Split it and upload it in parts.',
+      unsupported: 'Only .txt and .bib files are supported.',
+      empty: 'No references were found in that file.',
+      unreadable: 'That file could not be read as text.',
+    },
+  },
+  split: {
+    summary: (n: number) => `Review how your list was split (${n})`,
+    hint: 'Each item below is checked as one reference. If a reference was cut in the wrong place, merge it with the one before it, or edit it. A change rewrites the box above with one reference per paragraph.',
+    item: (n: number) => `Reference ${n}`,
+    merge: 'Merge with previous',
+    mergeLabel: (n: number) => `Merge reference ${n} with reference ${n - 1}`,
+    edit: 'Edit',
+    editLabel: (n: number) => `Edit reference ${n}`,
+    editHint:
+      'Leave a blank line where one reference ends and the next begins. Clear the text to remove the reference.',
+    apply: 'Apply',
+    cancel: 'Cancel',
+    merged: (n: number, total: number) =>
+      `Reference ${n} merged into reference ${n - 1}. ${total} found.`,
+    updated: (total: number) => `Reference updated. ${total} found.`,
   },
   report: {
     title: 'CekKutip reference check',

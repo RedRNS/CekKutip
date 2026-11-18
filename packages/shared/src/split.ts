@@ -125,3 +125,26 @@ export function checkLimits(refs: string[], limits: Limits): LimitError | null {
   }
   return null
 }
+
+/** Merge reference `index` into the one before it (joined with a space). Out-of-range: unchanged. */
+export function mergeWithPrevious(refs: string[], index: number): string[] {
+  if (index < 1 || index >= refs.length) return [...refs]
+  const merged = `${refs[index - 1] as string} ${refs[index] as string}`
+  return clean(merged) === ''
+    ? [...refs]
+    : [...refs.slice(0, index - 1), clean(merged), ...refs.slice(index + 1)]
+}
+
+/**
+ * Replace reference `index` with edited text. The edited text goes through the same splitter,
+ * so a blank line in it splits one reference into several, and an emptied text removes the reference.
+ */
+export function replaceReference(refs: string[], index: number, text: string): string[] {
+  if (index < 0 || index >= refs.length) return [...refs]
+  return [...refs.slice(0, index), ...splitReferences(text), ...refs.slice(index + 1)]
+}
+
+/** Write a list back as text that `splitReferences` reads as exactly the same list. */
+export function joinReferences(refs: string[]): string {
+  return refs.join('\n\n')
+}

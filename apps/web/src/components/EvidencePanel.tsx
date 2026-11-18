@@ -2,6 +2,7 @@ import type { ReferenceResult } from '@cekkutip/shared'
 import { ExternalLink, Search } from 'lucide-react'
 import { fmt, useI18n } from '../i18n'
 import { recordUrl, scholarUrl } from '../lib/report'
+import { CorrectedReference } from './CorrectedReference'
 import { FieldTable } from './FieldTable'
 import type { FieldRow } from './FieldTable'
 
@@ -24,6 +25,11 @@ export function EvidencePanel({ result, id }: { result: ReferenceResult; id: str
         : null,
   }))
 
+  // Only when the record is the same work as the one cited: a DOI that leads to another work is not a correction.
+  const showCorrected =
+    result.status === 'mismatch' &&
+    record !== null &&
+    !result.reasons.includes('mismatch_doi_other_work')
   const showScholar = result.status === 'out_of_index' || result.status === 'suspect'
   const compared = record !== null || result.scores.title > 0
   const score = (v: number) => (compared ? v.toFixed(2) : t.evidence.notCompared)
@@ -52,6 +58,8 @@ export function EvidencePanel({ result, id }: { result: ReferenceResult; id: str
       <p className="evidence__next">
         <span className="label">{t.evidence.nextStep}</span> {t.evidence.next[result.status]}
       </p>
+
+      {showCorrected && record && <CorrectedReference record={record} />}
 
       {(link || showScholar) && (
         <div className="evidence__actions">

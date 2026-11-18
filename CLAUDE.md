@@ -19,6 +19,7 @@ CekKutip memeriksa daftar pustaka mahasiswa Indonesia. Pengguna menempelkan refe
 - UI: tanpa emoji, gradien, blur kaca, ilustrasi stok, tombol pil, bayangan dekoratif, Tailwind, atau pustaka komponen. Kata terlarang di teks: supercharge, seamless, unlock, revolutionize, magic, powerful, cutting-edge, "Welcome to".
 - Jangan menulis teks referensi pengguna ke log.
 - Host keluar hanya: `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`.
+- P1 selesai (DECISIONS butir 99 sampai 108): DataCite, pratinjau pemisahan, unggah `.txt`/`.bib`, APA 7 dari record, cetak. Berkas dibaca di browser dan tidak diunggah. Referensi APA dan BibTeX dibuat deterministik di `packages/shared` (`apa.ts`, `bibtex.ts`), tanpa model.
 
 ## Perintah
 
@@ -40,7 +41,7 @@ npm run lighthouse        # Lighthouse (ponsel) untuk semua halaman; argumen: ba
 npm run screenshots       # tangkapan layar 375/768/1280 + axe (butuh e2e:server); argumen: baseUrl en|id
 npx tsx scripts/check-examples.ts <baseUrl> llm|regex   # verdict daftar contoh
 npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)
-npm run fixtures:record   # rekam ulang fixture tes dari layanan nyata
+npm run fixtures:record   # rekam ulang fixture tes dari layanan nyata; argumen opsional: crossref|doira|openalex|datacite
 npm run eval -- --split test --system cekkutip --out eval/results   # lihat eval/README.md
 npm run eval:tune | eval:kappa | eval:report
 ```

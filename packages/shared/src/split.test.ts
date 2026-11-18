@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { checkLimits, splitReferences } from './split.js'
+import {
+  checkLimits,
+  joinReferences,
+  mergeWithPrevious,
+  replaceReference,
+  splitReferences,
+} from './split.js'
 
 const A =
   'Walters, W. H., & Wilder, E. I. (2023). Fabrication and errors in citations. Scientific Reports, 13, 14045.'
@@ -139,5 +145,65 @@ describe('checkLimits', () => {
 
   it('allows a reference exactly at the limit', () => {
     expect(checkLimits(['x'.repeat(50)], limits)).toBeNull()
+  })
+})
+
+describe('editing a split list', () => {
+  const list = [A, B, C]
+
+  it('merges a reference into the previous one', () => {
+    expect(mergeWithPrevious(list, 1)).toEqual([`${A} ${B}`, C])
+    expect(mergeWithPrevious(list, 2)).toEqual([A, `${B} ${C}`])
+  })
+
+  it('leaves the list alone when there is no previous reference or the index is out of range', () => {
+    expect(mergeWithPrevious(list, 0)).toEqual(list)
+    expect(mergeWithPrevious(list, 3)).toEqual(list)
+    expect(mergeWithPrevious(list, -1)).toEqual(list)
+  })
+
+  it('never changes the list it was given', () => {
+    const copy = [...list]
+    mergeWithPrevious(list, 1)
+    replaceReference(list, 1, 'x')
+    expect(list).toEqual(copy)
+  })
+
+  it('replaces a reference with edited text', () => {
+    expect(replaceReference(list, 1, 'Vaswani, A. (2017). Attention is all you need.')).toEqual([
+      A,
+      'Vaswani, A. (2017). Attention is all you need.',
+      C,
+    ])
+  })
+
+  it('splits one reference into several where the edit has blank lines', () => {
+    expect(replaceReference([`${A} ${B}`, C], 0, `${A}\n\n${B}`)).toEqual([A, B, C])
+  })
+
+  it('removes a reference whose text was cleared', () => {
+    expect(replaceReference(list, 1, '  \n ')).toEqual([A, C])
+  })
+
+  it('reads a merge followed by a split as the original list', () => {
+    expect(replaceReference(mergeWithPrevious(list, 1), 0, `${A}\n\n${B}`)).toEqual(list)
+  })
+
+  it.each([
+    ['plain list', list],
+    ['one reference', [A]],
+    ['empty list', []],
+    [
+      'references with colons, quotes and brackets',
+      [`${A} [Preprint]`, 'Kemenkes RI. (2020). "Pedoman": edisi 2.'],
+    ],
+  ])('round-trips through joinReferences (%s)', (_name, refs) => {
+    expect(splitReferences(joinReferences(refs))).toEqual(refs)
+  })
+
+  it('round-trips a list that was first split from numbered lines', () => {
+    const refs = splitReferences(`1. ${A}\n2. ${B}\n3. ${C}`)
+    expect(refs).toEqual(list)
+    expect(splitReferences(joinReferences(refs))).toEqual(refs)
   })
 })

@@ -9,6 +9,8 @@
     ".": "./src/index.ts",
     "./normalize": "./src/normalize.ts",
     "./split": "./src/split.ts",
+    "./bibtex": "./src/bibtex.ts",
+    "./apa": "./src/apa.ts",
     "./evaluation": "./src/evaluation.ts",
     "./testing": "./src/evaluation.fixture.ts"
   },

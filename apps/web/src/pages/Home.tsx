@@ -10,19 +10,19 @@ export default function Home() {
 
   return (
     <>
-      <div className="page-head">
+      <div className="page-head print-hide">
         <h1>{t.home.h1}</h1>
         <p className="lede">{t.home.intro}</p>
       </div>
 
       <Workbench />
 
-      <section className="section" aria-labelledby="verdicts-title">
+      <section className="section print-hide" aria-labelledby="verdicts-title">
         <h2 id="verdicts-title">{t.home.verdictsTitle}</h2>
         <Legend className="legend--columns" />
       </section>
 
-      <section className="section" aria-labelledby="how-title">
+      <section className="section print-hide" aria-labelledby="how-title">
         <h2 id="how-title">{t.home.howTitle}</h2>
         <ol className="steps">
           {t.home.steps.map((s, i) => (
@@ -43,7 +43,7 @@ export default function Home() {
         </p>
       </section>
 
-      <section className="section" aria-labelledby="not-title">
+      <section className="section print-hide" aria-labelledby="not-title">
         <h2 id="not-title">{t.home.notTitle}</h2>
         <ul className="plain-list">
           {t.home.notItems.map((item) => (

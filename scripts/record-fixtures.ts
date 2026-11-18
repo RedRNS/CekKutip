@@ -1,6 +1,7 @@
 /**
  * Record real API responses as test fixtures (apps/server/test/fixtures).
- * Usage: npx tsx scripts/record-fixtures.ts
+ * Usage: npx tsx scripts/record-fixtures.ts [crossref|doira|openalex|datacite]
+ * With no argument everything is re-recorded; name one group to record only that group.
  *
  * Uses a generic client name. If CROSSREF_MAILTO is set in the environment it is added for the
  * Crossref polite pool; otherwise the public pool is used (5 requests per second, 1 at a time),
@@ -19,6 +20,9 @@ const crossref = (q: string) =>
 const SELECT = 'DOI,title,subtitle,author,issued,container-title,volume,issue,page,type,URL,score'
 const OA_SELECT =
   'id,doi,title,display_name,publication_year,authorships,primary_location,biblio,type'
+
+const only = process.argv[2]
+const want = (group: string) => only === undefined || only === group
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
@@ -50,7 +54,7 @@ const walters = 'Fabrication and errors in the bibliographic citations generated
 const doi = '10.1038/s41598-023-41032-5'
 
 // Crossref: one work by DOI (reference list and similar bulky fields removed)
-{
+if (want('crossref')) {
   const r = await get(crossref(`/works/${doi}`))
   const json = JSON.parse(r.body) as { message: Record<string, unknown> }
   for (const k of ['reference', 'license', 'link', 'relation', 'content-domain', 'funder'])
@@ -59,43 +63,58 @@ const doi = '10.1038/s41598-023-41032-5'
   save('crossref-headers-public.json', r.headers)
 }
 // Crossref: DOI that does not exist (plain-text 404)
-{
+if (want('crossref')) {
   const r = await get(crossref('/works/10.9999/this-doi-does-not-exist-12345'))
   save('crossref-work-404.txt', `${r.status}\n${r.body}\n`)
 }
 // Crossref: bibliographic search, matching and non-matching
-for (const [file, query] of [
-  ['crossref-search-walters.json', `${walters} Walters 2023`],
-  [
-    'crossref-search-nomatch.json',
-    'Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh Wijaya 2020',
-  ],
-] as const) {
-  const r = await get(
-    crossref(`/works?query.bibliographic=${encodeURIComponent(query)}&rows=5&select=${SELECT}`),
-  )
-  save(file, JSON.parse(r.body))
-}
+if (want('crossref'))
+  for (const [file, query] of [
+    ['crossref-search-walters.json', `${walters} Walters 2023`],
+    [
+      'crossref-search-nomatch.json',
+      'Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh Wijaya 2020',
+    ],
+  ] as const) {
+    const r = await get(
+      crossref(`/works?query.bibliographic=${encodeURIComponent(query)}&rows=5&select=${SELECT}`),
+    )
+    save(file, JSON.parse(r.body))
+  }
 // doi.org registration agency lookups
-for (const [file, d] of [
-  ['doira-crossref.json', doi],
-  ['doira-datacite.json', '10.5281/zenodo.3233821'],
-  ['doira-notfound.json', '10.9999/this-doi-does-not-exist-12345'],
-] as const) {
-  const r = await get(`https://doi.org/doiRA/${d}`)
-  save(file, r.body)
-}
+if (want('doira'))
+  for (const [file, d] of [
+    ['doira-crossref.json', doi],
+    ['doira-datacite.json', '10.5281/zenodo.3233821'],
+    ['doira-notfound.json', '10.9999/this-doi-does-not-exist-12345'],
+  ] as const) {
+    const r = await get(`https://doi.org/doiRA/${d}`)
+    save(file, r.body)
+  }
 // OpenAlex title search (keyless: shares a small free daily budget, one request costs about $0.001)
-for (const [file, title] of [
-  ['openalex-search-walters.json', walters],
-  [
-    'openalex-search-nomatch.json',
-    'Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh',
-  ],
-] as const) {
-  const params = new URLSearchParams({ 'search.title': title, per_page: '5', select: OA_SELECT })
-  const r = await get(`https://api.openalex.org/works?${params.toString()}`)
-  const json = JSON.parse(r.body) as { meta?: Record<string, unknown> }
-  if (json.meta) delete json.meta.notice // contains account-level text, not needed
-  save(file, json)
+if (want('openalex'))
+  for (const [file, title] of [
+    ['openalex-search-walters.json', walters],
+    [
+      'openalex-search-nomatch.json',
+      'Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh',
+    ],
+  ] as const) {
+    const params = new URLSearchParams({ 'search.title': title, per_page: '5', select: OA_SELECT })
+    const r = await get(`https://api.openalex.org/works?${params.toString()}`)
+    const json = JSON.parse(r.body) as { meta?: Record<string, unknown> }
+    if (json.meta) delete json.meta.notice // contains account-level text, not needed
+    save(file, json)
+  }
+// DataCite: one DOI document each for a Zenodo record, an arXiv preprint, and a DOI that does not exist
+if (want('datacite')) {
+  for (const [file, d] of [
+    ['datacite-zenodo.json', '10.5281/zenodo.3233821'],
+    ['datacite-arxiv-vaswani.json', '10.48550/arXiv.1706.03762'],
+    ['datacite-404.json', '10.9999/this-doi-does-not-exist-12345'],
+  ] as const) {
+    const r = await get(`https://api.datacite.org/dois/${d}`)
+    // Pretty-print so a fixture diff is readable; the 404 body is JSON too.
+    save(file, JSON.parse(r.body))
+  }
 }

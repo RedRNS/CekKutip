@@ -22,7 +22,7 @@ ResultsLedger <-------------- runPipeline
                                    v
                               RETRIEVE  concurrency 3, cache LRU 24 jam
                                    |   DOI:  Crossref /works/{doi}
-                                   |           404 -> doi.org/doiRA -> tidak terdaftar | registri lain
+                                   |           404 -> doi.org/doiRA -> tidak terdaftar | DataCite -> api.datacite.org | registri lain
                                    |   tanpa DOI: Crossref bibliographic ---------------> Crossref
                                    |           bila tidak ada kandidat >= TAU_L -> OpenAlex  -> OpenAlex
                                    v
@@ -39,15 +39,15 @@ Teks penjelasan untuk pengguna dibuat di klien dari templat per kode alasan (`i1
 
 ## Tahap
 
-| Tahap    | Berkas                                                              | Isi                                                                                                                                                                                                                     |
-| -------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Split    | `packages/shared/src/split.ts`                                      | Deterministik, dipakai browser dan server supaya "N found" sama dengan yang diperiksa. Memisah pada baris kosong, nomor, atau pola penulis. Batas jumlah dan panjang ditolak, tidak dipotong.                           |
-| Parse    | `pipeline/parse.ts`, `clients/gemini.ts`, `pipeline/regex-parse.ts` | Satu-satunya tahap yang memakai model. Keluaran divalidasi dengan zod **dan** harus benar-benar tertulis di teks referensi. Gagal: ulang sekali sebagai panggilan tunggal, lalu parser regex.                           |
-| Retrieve | `pipeline/retrieve.ts`, `clients/*.ts`, `lib/http.ts`               | Klien HTTP dengan timeout 8 detik, retry, `Retry-After`, daftar putih host, dan penjadwal laju per layanan yang mengikuti batas yang diiklankan Crossref. Kegagalan layanan dilempar sebagai `ServiceUnavailableError`. |
-| Match    | `pipeline/match.ts`, `lib/similarity.ts`                            | Levenshtein ternormalisasi, subjudul, nama keluarga (tahan `et al.`, inisial, satu nama), singkatan venue.                                                                                                              |
-| Decide   | `pipeline/decide.ts`                                                | Fungsi murni. Diuji pada setiap baris tabel keputusan.                                                                                                                                                                  |
-| Format   | `pipeline/format.ts`                                                | Perbandingan field untuk panel bukti.                                                                                                                                                                                   |
-| Run      | `pipeline/run.ts`                                                   | Orkestrasi, aliran hasil per referensi, ringkasan.                                                                                                                                                                      |
+| Tahap    | Berkas                                                                                        | Isi                                                                                                                                                                                                                     |
+| -------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Split    | `packages/shared/src/split.ts`                                                                | Deterministik, dipakai browser dan server supaya "N found" sama dengan yang diperiksa. Memisah pada baris kosong, nomor, atau pola penulis. Batas jumlah dan panjang ditolak, tidak dipotong.                           |
+| Parse    | `pipeline/parse.ts`, `clients/gemini.ts`, `pipeline/regex-parse.ts`                           | Satu-satunya tahap yang memakai model. Keluaran divalidasi dengan zod **dan** harus benar-benar tertulis di teks referensi. Gagal: ulang sekali sebagai panggilan tunggal, lalu parser regex.                           |
+| Retrieve | `pipeline/retrieve.ts`, `clients/*.ts` (Crossref, OpenAlex, DataCite, doi.org), `lib/http.ts` | Klien HTTP dengan timeout 8 detik, retry, `Retry-After`, daftar putih host, dan penjadwal laju per layanan yang mengikuti batas yang diiklankan Crossref. Kegagalan layanan dilempar sebagai `ServiceUnavailableError`. |
+| Match    | `pipeline/match.ts`, `lib/similarity.ts`                                                      | Levenshtein ternormalisasi, subjudul, nama keluarga (tahan `et al.`, inisial, satu nama), singkatan venue.                                                                                                              |
+| Decide   | `pipeline/decide.ts`                                                                          | Fungsi murni. Diuji pada setiap baris tabel keputusan.                                                                                                                                                                  |
+| Format   | `pipeline/format.ts`                                                                          | Perbandingan field untuk panel bukti.                                                                                                                                                                                   |
+| Run      | `pipeline/run.ts`                                                                             | Orkestrasi, aliran hasil per referensi, ringkasan.                                                                                                                                                                      |
 
 ## Prinsip yang ditegakkan di kode
 

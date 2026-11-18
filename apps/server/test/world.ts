@@ -1,4 +1,5 @@
 import { createCrossrefClient } from '../src/clients/crossref.js'
+import { createDataciteClient } from '../src/clients/datacite.js'
 import { createDoiClient } from '../src/clients/doi.js'
 import type { GeminiClient } from '../src/clients/gemini.js'
 import { createOpenAlexClient } from '../src/clients/openalex.js'
@@ -20,6 +21,11 @@ export const REF_FAKE_DOI =
   'Doe, J. (2022). A made-up article about nothing. Journal of Nothing, 1(1), 1-2. https://doi.org/10.9999/this-doi-does-not-exist-12345'
 export const REF_DATACITE =
   'Doe, J. (2019). A dataset about things. Zenodo. https://doi.org/10.5281/zenodo.3233821'
+export const DATACITE_ARXIV_DOI = '10.48550/arXiv.1706.03762'
+/** A correct citation of an arXiv preprint, whose DOI is registered with DataCite. */
+export const REF_ARXIV_OK = `Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2017). Attention is all you need. arXiv. https://doi.org/${DATACITE_ARXIV_DOI}`
+/** Same preprint, wrong year. */
+export const REF_ARXIV_WRONG_YEAR = REF_ARXIV_OK.replace('(2017)', '(2019)')
 export const THESIS =
   'Wijaya, A. (2020). Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh [Skripsi, Universitas Contoh]. Repositori Universitas Contoh.'
 export const FAKE_JOURNAL =
@@ -44,6 +50,21 @@ export const FIXTURE_RULES: Rule[] = [
   },
   {
     repeat: true,
+    match: urlHas('api.crossref.org/works/10.48550'),
+    respond: () => status(404, 'Resource not found.'),
+  },
+  {
+    repeat: true,
+    match: urlHas('api.datacite.org/dois/10.5281'),
+    respond: () => ok(fixtureText('datacite-zenodo.json')),
+  },
+  {
+    repeat: true,
+    match: urlHas('api.datacite.org/dois/10.48550'),
+    respond: () => ok(fixtureText('datacite-arxiv-vaswani.json')),
+  },
+  {
+    repeat: true,
     match: (u) => u.includes('query.bibliographic') && u.includes('Fabrication'),
     respond: () => ok(fixtureText('crossref-search-walters.json')),
   },
@@ -60,6 +81,11 @@ export const FIXTURE_RULES: Rule[] = [
   {
     repeat: true,
     match: urlHas('doi.org/doiRA/10.5281'),
+    respond: () => ok(fixtureText('doira-datacite.json')),
+  },
+  {
+    repeat: true,
+    match: urlHas('doi.org/doiRA/10.48550'),
     respond: () => ok(fixtureText('doira-datacite.json')),
   },
   {
@@ -89,6 +115,7 @@ export function world(rules: Rule[] = FIXTURE_RULES, gemini?: GeminiClient) {
     retrieve: {
       crossref: createCrossrefClient({ http, cache, scheduler: instant() }),
       openalex: createOpenAlexClient({ http, cache, scheduler: instant() }),
+      datacite: createDataciteClient({ http, cache, scheduler: instant() }),
       doi: createDoiClient({ http, cache, scheduler: instant() }),
     },
     gemini,

@@ -1,10 +1,11 @@
 /**
- * Live smoke test: call the real Crossref, OpenAlex, and doi.org through our clients.
+ * Live smoke test: call the real Crossref, OpenAlex, DataCite, and doi.org through our clients.
  * Usage: npx tsx --env-file=.env scripts/smoke-live.ts     (reads CROSSREF_MAILTO, OPENALEX_API_KEY)
  *        npx tsx scripts/smoke-live.ts                     (public pool, no key)
  * Makes about ten requests. Prints counts and field values, never the contact address.
  */
 import { createCrossrefClient } from '../apps/server/src/clients/crossref.js'
+import { createDataciteClient } from '../apps/server/src/clients/datacite.js'
 import { createDoiClient } from '../apps/server/src/clients/doi.js'
 import { createOpenAlexClient } from '../apps/server/src/clients/openalex.js'
 import { HttpClient } from '../apps/server/src/lib/http.js'
@@ -14,6 +15,7 @@ const apiKey = process.env.OPENALEX_API_KEY || undefined
 const http = new HttpClient({ userAgent: 'CekKutip-smoke/0.1' })
 const crossref = createCrossrefClient({ http, mailto })
 const openalex = createOpenAlexClient({ http, apiKey })
+const datacite = createDataciteClient({ http, mailto })
 const doi = createDoiClient({ http })
 
 console.log(
@@ -53,6 +55,13 @@ await step(
 )
 await step('doiRA crossref', () => doi.getAgency('10.1038/s41598-023-41032-5'))
 await step('doiRA datacite', () => doi.getAgency('10.5281/zenodo.3233821'))
+await step('datacite arXiv DOI', async () => {
+  const r = await datacite.getByDoi('10.48550/arXiv.1706.03762')
+  return r.found
+    ? { title: r.record.title, year: r.record.year, authors: r.record.authors.length }
+    : r
+})
+await step('datacite unknown DOI', () => datacite.getByDoi('10.9999/this-doi-does-not-exist-12345'))
 await step('doiRA unknown', () => doi.getAgency('10.9999/this-doi-does-not-exist-12345'))
 await step('openalex title search', async () =>
   (await openalex.searchTitle(W)).map((r) => ({ doi: r.doi, year: r.year })),

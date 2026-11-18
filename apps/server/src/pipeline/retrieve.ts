@@ -1,5 +1,6 @@
 import type { MatchedRecord, ParsedReference } from '@cekkutip/shared'
 import type { CrossrefClient } from '../clients/crossref.js'
+import type { DataciteClient } from '../clients/datacite.js'
 import type { DoiClient } from '../clients/doi.js'
 import type { OpenAlexClient } from '../clients/openalex.js'
 import { ServiceUnavailableError } from '../lib/http.js'
@@ -10,6 +11,7 @@ import type { PipelineOptions, Retrieval } from './types.js'
 export interface RetrieveDeps {
   crossref: CrossrefClient
   openalex: OpenAlexClient
+  datacite: DataciteClient
   doi: DoiClient
 }
 
@@ -21,7 +23,8 @@ const recordKey = (r: MatchedRecord) =>
 
 /**
  * Look the work up (brief section 6.3).
- * - With a DOI: Crossref by DOI. If Crossref has no record, ask doi.org who registered it.
+ * - With a DOI: Crossref by DOI. If Crossref has no record, ask doi.org who registered it;
+ *   a DataCite DOI (arXiv, Zenodo) is then fetched from DataCite.
  * - Without a DOI: Crossref bibliographic search; OpenAlex only when Crossref has no candidate
  *   whose title reaches TAU_L.
  *
@@ -43,7 +46,13 @@ export async function retrieve(
       // doi.org says Crossref holds it, but Crossref has no record. We cannot tell why, so we do not guess.
       throw new ServiceUnavailableError('crossref', 'bad_response')
     }
-    // DataCite and others: not searched yet (DataCite arrives in P1).
+    if (agency.agency.toLowerCase() === 'datacite') {
+      const dc = await deps.datacite.getByDoi(parsed.doi)
+      if (dc.found) return { kind: 'doi_record', record: dc.record }
+      // doi.org says DataCite holds it, but DataCite has no record: same contradiction as above.
+      throw new ServiceUnavailableError('datacite', 'bad_response')
+    }
+    // Other agencies (mEDRA, JaLC, ...): not searched, so the tool says so.
     return { kind: 'doi_other_registry', agency: agency.agency }
   }
 

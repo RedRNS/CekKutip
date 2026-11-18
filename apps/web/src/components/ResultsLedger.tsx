@@ -2,7 +2,7 @@ import type { ReferenceResult } from '@cekkutip/shared'
 import { Copy, Download } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { fmt, useI18n } from '../i18n'
-import { downloadText, toCsv, toReport } from '../lib/report'
+import { downloadText, summaryLines, toCsv, toReport } from '../lib/report'
 import { countByStatus } from '../state/check'
 import type { CheckState } from '../state/check'
 import { Legend } from './Legend'
@@ -115,8 +115,27 @@ export function ResultsLedger({ state, limits, onRetry }: Props) {
         ? t.errors.generic
         : fmt(t.errors[state.error], { max: limits.maxReferences })
 
+  const printLines = state.summary ? summaryLines(state.summary, t) : null
+
   return (
     <>
+      {hasResults && !waiting && printLines && (
+        <div className="print-only print-head">
+          <p className="print-head__title">{t.report.title}</p>
+          <p>{date}</p>
+          <p>{printLines.totals}</p>
+          <p>{printLines.tool}</p>
+          {filter !== 'all' && (
+            <p>
+              {fmt(t.results.printFiltered, {
+                verdict: t.verdict[filter],
+                shown: visible.length,
+                total: ordered.length,
+              })}
+            </p>
+          )}
+        </div>
+      )}
       <p className="progress" data-lang={lang}>
         {progress}
       </p>

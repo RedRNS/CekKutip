@@ -1,0 +1,265 @@
+{
+  "data": {
+    "id": "10.5281/zenodo.3233821",
+    "type": "dois",
+    "attributes": {
+      "doi": "10.5281/zenodo.3233821",
+      "prefix": "10.5281",
+      "suffix": "zenodo.3233821",
+      "identifiers": [
+        {
+          "identifier": "https://zenodo.org/record/3233822",
+          "identifierType": "URL"
+        }
+      ],
+      "alternateIdentifiers": [
+        {
+          "alternateIdentifierType": "URL",
+          "alternateIdentifier": "https://zenodo.org/record/3233822"
+        }
+      ],
+      "creators": [
+        {
+          "name": "Lambe L., M.",
+          "nameType": "Personal",
+          "givenName": "M.",
+          "familyName": "Lambe L.",
+          "affiliation": [],
+          "nameIdentifiers": []
+        }
+      ],
+      "titles": [
+        {
+          "title": "PLATE X. Fig. 1 in New genera and species from the Belly River Series (mid-Cretaceous)"
+        }
+      ],
+      "publisher": "Zenodo",
+      "container": {
+        "type": "Series",
+        "identifier": "10.5281/zenodo.3233762",
+        "identifierType": "DOI"
+      },
+      "publicationYear": 1902,
+      "subjects": [
+        {
+          "subject": "Biodiversity"
+        },
+        {
+          "subject": "Taxonomy"
+        },
+        {
+          "subject": "Animalia"
+        },
+        {
+          "subject": "Actinopterygii"
+        },
+        {
+          "subject": "Aspidorhynchiformes"
+        },
+        {
+          "subject": "Diphyodus"
+        },
+        {
+          "subject": "Chordata"
+        },
+        {
+          "subject": "Reptilia"
+        },
+        {
+          "subject": "Dinosauria"
+        },
+        {
+          "subject": "Trachodontidae"
+        },
+        {
+          "subject": "Trachodon"
+        }
+      ],
+      "contributors": [],
+      "dates": [
+        {
+          "date": "1902-12-31",
+          "dateType": "Issued"
+        }
+      ],
+      "language": null,
+      "types": {
+        "ris": "FIGURE",
+        "bibtex": "misc",
+        "citeproc": "graphic",
+        "schemaOrg": "ImageObject",
+        "resourceType": "Figure",
+        "resourceTypeGeneral": "Image"
+      },
+      "relatedIdentifiers": [
+        {
+          "relationType": "IsPartOf",
+          "relatedIdentifier": "10.5281/zenodo.3233762",
+          "resourceTypeGeneral": "JournalArticle",
+          "relatedIdentifierType": "DOI"
+        },
+        {
+          "relationType": "IsPartOf",
+          "relatedIdentifier": "urn:lsid:plazi.org:pub:FF83921CB5304075723EFF8AFFC4DF29",
+          "resourceTypeGeneral": "JournalArticle",
+          "relatedIdentifierType": "LSID"
+        },
+        {
+          "relationType": "IsPartOf",
+          "relatedIdentifier": "http://publication.plazi.org/id/FF83921CB5304075723EFF8AFFC4DF29",
+          "resourceTypeGeneral": "JournalArticle",
+          "relatedIdentifierType": "URL"
+        },
+        {
+          "relationType": "IsCitedBy",
+          "relatedIdentifier": "10.5281/zenodo.4583857",
+          "resourceTypeGeneral": "Text",
+          "relatedIdentifierType": "DOI"
+        },
+        {
+          "relationType": "IsCitedBy",
+          "relatedIdentifier": "http://treatment.plazi.org/id/03BAEA64B53540707176FBDAFB7DD420",
+          "resourceTypeGeneral": "Text",
+          "relatedIdentifierType": "URL"
+        },
+        {
+          "relationType": "IsCitedBy",
+          "relatedIdentifier": "10.5281/zenodo.4583919",
+          "resourceTypeGeneral": "Text",
+          "relatedIdentifierType": "DOI"
+        },
+        {
+          "relationType": "IsCitedBy",
+          "relatedIdentifier": "http://treatment.plazi.org/id/03BAEA64B51E40467059FE59FC20DECC",
+          "resourceTypeGeneral": "Text",
+          "relatedIdentifierType": "URL"
+        },
+        {
+          "relationType": "HasVersion",
+          "relatedIdentifier": "10.5281/zenodo.3233822",
+          "relatedIdentifierType": "DOI"
+        },
+        {
+          "relationType": "IsPartOf",
+          "relatedIdentifier": "https://zenodo.org/communities/biosyslit",
+          "relatedIdentifierType": "URL"
+        }
+      ],
+      "relatedItems": [],
+      "sizes": [],
+      "formats": [],
+      "version": null,
+      "rightsList": [
+        {
+          "rights": "Creative Commons Attribution 4.0 International",
+          "rightsUri": "https://creativecommons.org/licenses/by/4.0/legalcode",
+          "schemeUri": "https://spdx.org/licenses/",
+          "rightsIdentifier": "cc-by-4.0",
+          "rightsIdentifierScheme": "SPDX"
+        },
+        {
+          "rights": "Open Access",
+          "rightsUri": "info:eu-repo/semantics/openAccess"
+        }
+      ],
+      "descriptions": [
+        {
+          "description": "PLATE X. Fig. 1. Trachodon (Pteropelyx) marginatus, Lambe, left pubis, external view; one-third the natural size. (Provisionally associated with T. marginatus). Page 74. Fig. Ê. Trachodon (Pteropelyx) marginatus, left ischium, external view, \" one-fifth the natural size. (Provisionaily associated with T. marginatus). Page 75. i, iliac facet; b, acetabular border; g, ischiac facet; ÍL, postpubic process; p, pubic facet; pp, postpubie facet; j, flange.",
+          "descriptionType": "Abstract"
+        },
+        {
+          "description": "Published as part of <i>Lambe L. M., 1902, New genera and species from the Belly River Series (mid-Cretaceous), pp. 25-81 in Geological Survey of Canada Contributions to Canadian Palaeontology 3</i> on page 109, DOI: 10.5281/zenodo.3233762",
+          "descriptionType": "Other"
+        }
+      ],
+      "geoLocations": [],
+      "fundingReferences": [],
+      "xml": "PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPHJlc291cmNlIHhtbG5zOnhzaT0iaHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEtaW5zdGFuY2UiIHhtbG5zPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCIgeHNpOnNjaGVtYUxvY2F0aW9uPSJodHRwOi8vZGF0YWNpdGUub3JnL3NjaGVtYS9rZXJuZWwtNCBodHRwOi8vc2NoZW1hLmRhdGFjaXRlLm9yZy9tZXRhL2tlcm5lbC00LjEvbWV0YWRhdGEueHNkIj4KICA8aWRlbnRpZmllciBpZGVudGlmaWVyVHlwZT0iRE9JIj4xMC41MjgxL1pFTk9ETy4zMjMzODIxPC9pZGVudGlmaWVyPgogIDxjcmVhdG9ycz4KICAgIDxjcmVhdG9yPgogICAgICA8Y3JlYXRvck5hbWU+TGFtYmUgTC4gTS48L2NyZWF0b3JOYW1lPgogICAgPC9jcmVhdG9yPgogIDwvY3JlYXRvcnM+CiAgPHRpdGxlcz4KICAgIDx0aXRsZT5QTEFURSBYLiBGaWcuIDEgaW4gTmV3IGdlbmVyYSBhbmQgc3BlY2llcyBmcm9tIHRoZSBCZWxseSBSaXZlciBTZXJpZXMgKG1pZC1DcmV0YWNlb3VzKTwvdGl0bGU+CiAgPC90aXRsZXM+CiAgPHB1Ymxpc2hlcj5aZW5vZG88L3B1Ymxpc2hlcj4KICA8cHVibGljYXRpb25ZZWFyPjE5MDI8L3B1YmxpY2F0aW9uWWVhcj4KICA8c3ViamVjdHM+CiAgICA8c3ViamVjdD5CaW9kaXZlcnNpdHk8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5UYXhvbm9teTwvc3ViamVjdD4KICAgIDxzdWJqZWN0PkFuaW1hbGlhPC9zdWJqZWN0PgogICAgPHN1YmplY3Q+QWN0aW5vcHRlcnlnaWk8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5Bc3BpZG9yaHluY2hpZm9ybWVzPC9zdWJqZWN0PgogICAgPHN1YmplY3Q+RGlwaHlvZHVzPC9zdWJqZWN0PgogICAgPHN1YmplY3Q+Q2hvcmRhdGE8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5SZXB0aWxpYTwvc3ViamVjdD4KICAgIDxzdWJqZWN0PkRpbm9zYXVyaWE8L3N1YmplY3Q+CiAgICA8c3ViamVjdD5UcmFjaG9kb250aWRhZTwvc3ViamVjdD4KICAgIDxzdWJqZWN0PlRyYWNob2Rvbjwvc3ViamVjdD4KICA8L3N1YmplY3RzPgogIDxkYXRlcz4KICAgIDxkYXRlIGRhdGVUeXBlPSJJc3N1ZWQiPjE5MDItMTItMzE8L2RhdGU+CiAgPC9kYXRlcz4KICA8cmVzb3VyY2VUeXBlIHJlc291cmNlVHlwZUdlbmVyYWw9IkltYWdlIj5GaWd1cmU8L3Jlc291cmNlVHlwZT4KICA8YWx0ZXJuYXRlSWRlbnRpZmllcnM+CiAgICA8YWx0ZXJuYXRlSWRlbnRpZmllciBhbHRlcm5hdGVJZGVudGlmaWVyVHlwZT0idXJsIj5odHRwczovL3plbm9kby5vcmcvcmVjb3JkLzMyMzM4MjI8L2FsdGVybmF0ZUlkZW50aWZpZXI+CiAgPC9hbHRlcm5hdGVJZGVudGlmaWVycz4KICA8cmVsYXRlZElkZW50aWZpZXJzPgogICAgPHJlbGF0ZWRJZGVudGlmaWVyIHJlbGF0ZWRJZGVudGlmaWVyVHlwZT0iRE9JIiByZWxhdGlvblR5cGU9IklzUGFydE9mIiByZXNvdXJjZVR5cGVHZW5lcmFsPSJKb3VybmFsQXJ0aWNsZSI+MTAuNTI4MS96ZW5vZG8uMzIzMzc2MjwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJMU0lEIiByZWxhdGlvblR5cGU9IklzUGFydE9mIiByZXNvdXJjZVR5cGVHZW5lcmFsPSJKb3VybmFsQXJ0aWNsZSI+dXJuOmxzaWQ6cGxhemkub3JnOnB1YjpGRjgzOTIxQ0I1MzA0MDc1NzIzRUZGOEFGRkM0REYyOTwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJVUkwiIHJlbGF0aW9uVHlwZT0iSXNQYXJ0T2YiIHJlc291cmNlVHlwZUdlbmVyYWw9IkpvdXJuYWxBcnRpY2xlIj5odHRwOi8vcHVibGljYXRpb24ucGxhemkub3JnL2lkL0ZGODM5MjFDQjUzMDQwNzU3MjNFRkY4QUZGQzRERjI5PC9yZWxhdGVkSWRlbnRpZmllcj4KICAgIDxyZWxhdGVkSWRlbnRpZmllciByZWxhdGVkSWRlbnRpZmllclR5cGU9IkRPSSIgcmVsYXRpb25UeXBlPSJJc0NpdGVkQnkiIHJlc291cmNlVHlwZUdlbmVyYWw9IlRleHQiPjEwLjUyODEvemVub2RvLjQ1ODM4NTc8L3JlbGF0ZWRJZGVudGlmaWVyPgogICAgPHJlbGF0ZWRJZGVudGlmaWVyIHJlbGF0ZWRJZGVudGlmaWVyVHlwZT0iVVJMIiByZWxhdGlvblR5cGU9IklzQ2l0ZWRCeSIgcmVzb3VyY2VUeXBlR2VuZXJhbD0iVGV4dCI+aHR0cDovL3RyZWF0bWVudC5wbGF6aS5vcmcvaWQvMDNCQUVBNjRCNTM1NDA3MDcxNzZGQkRBRkI3REQ0MjA8L3JlbGF0ZWRJZGVudGlmaWVyPgogICAgPHJlbGF0ZWRJZGVudGlmaWVyIHJlbGF0ZWRJZGVudGlmaWVyVHlwZT0iRE9JIiByZWxhdGlvblR5cGU9IklzQ2l0ZWRCeSIgcmVzb3VyY2VUeXBlR2VuZXJhbD0iVGV4dCI+MTAuNTI4MS96ZW5vZG8uNDU4MzkxOTwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJVUkwiIHJlbGF0aW9uVHlwZT0iSXNDaXRlZEJ5IiByZXNvdXJjZVR5cGVHZW5lcmFsPSJUZXh0Ij5odHRwOi8vdHJlYXRtZW50LnBsYXppLm9yZy9pZC8wM0JBRUE2NEI1MUU0MDQ2NzA1OUZFNTlGQzIwREVDQzwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJET0kiIHJlbGF0aW9uVHlwZT0iSGFzVmVyc2lvbiI+MTAuNTI4MS96ZW5vZG8uMzIzMzgyMjwvcmVsYXRlZElkZW50aWZpZXI+CiAgICA8cmVsYXRlZElkZW50aWZpZXIgcmVsYXRlZElkZW50aWZpZXJUeXBlPSJVUkwiIHJlbGF0aW9uVHlwZT0iSXNQYXJ0T2YiPmh0dHBzOi8vemVub2RvLm9yZy9jb21tdW5pdGllcy9iaW9zeXNsaXQ8L3JlbGF0ZWRJZGVudGlmaWVyPgogIDwvcmVsYXRlZElkZW50aWZpZXJzPgogIDxyaWdodHNMaXN0PgogICAgPHJpZ2h0cyByaWdodHNVUkk9Imh0dHBzOi8vY3JlYXRpdmVjb21tb25zLm9yZy9saWNlbnNlcy9ieS80LjAvbGVnYWxjb2RlIj5DcmVhdGl2ZSBDb21tb25zIEF0dHJpYnV0aW9uIDQuMCBJbnRlcm5hdGlvbmFsPC9yaWdodHM+CiAgICA8cmlnaHRzIHJpZ2h0c1VSST0iaW5mbzpldS1yZXBvL3NlbWFudGljcy9vcGVuQWNjZXNzIj5PcGVuIEFjY2VzczwvcmlnaHRzPgogIDwvcmlnaHRzTGlzdD4KICA8ZGVzY3JpcHRpb25zPgogICAgPGRlc2NyaXB0aW9uIGRlc2NyaXB0aW9uVHlwZT0iQWJzdHJhY3QiPlBMQVRFIFguIEZpZy4gMS4gVHJhY2hvZG9uIChQdGVyb3BlbHl4KSBtYXJnaW5hdHVzLCBMYW1iZSwgbGVmdCBwdWJpcywgZXh0ZXJuYWwgdmlldzsgb25lLXRoaXJkIHRoZSBuYXR1cmFsIHNpemUuIChQcm92aXNpb25hbGx5IGFzc29jaWF0ZWQgd2l0aCBULiBtYXJnaW5hdHVzKS4gUGFnZSA3NC4gRmlnLiDDii4gVHJhY2hvZG9uIChQdGVyb3BlbHl4KSBtYXJnaW5hdHVzLCBsZWZ0IGlzY2hpdW0sIGV4dGVybmFsIHZpZXcsICIgb25lLWZpZnRoIHRoZSBuYXR1cmFsIHNpemUuIChQcm92aXNpb25haWx5IGFzc29jaWF0ZWQgd2l0aCBULiBtYXJnaW5hdHVzKS4gUGFnZSA3NS4gaSwgaWxpYWMgZmFjZXQ7IGIsIGFjZXRhYnVsYXIgYm9yZGVyOyBnLCBpc2NoaWFjIGZhY2V0OyDDjUwsIHBvc3RwdWJpYyBwcm9jZXNzOyBwLCBwdWJpYyBmYWNldDsgcHAsIHBvc3RwdWJpZSBmYWNldDsgaiwgZmxhbmdlLjwvZGVzY3JpcHRpb24+CiAgICA8ZGVzY3JpcHRpb24gZGVzY3JpcHRpb25UeXBlPSJPdGhlciI+UHVibGlzaGVkIGFzIHBhcnQgb2YgJmx0O2kmZ3Q7TGFtYmUgTC4gTS4sIDE5MDIsIE5ldyBnZW5lcmEgYW5kIHNwZWNpZXMgZnJvbSB0aGUgQmVsbHkgUml2ZXIgU2VyaWVzIChtaWQtQ3JldGFjZW91cyksIHBwLiAyNS04MSBpbiBHZW9sb2dpY2FsIFN1cnZleSBvZiBDYW5hZGEgQ29udHJpYnV0aW9ucyB0byBDYW5hZGlhbiBQYWxhZW9udG9sb2d5IDMmbHQ7L2kmZ3Q7IG9uIHBhZ2UgMTA5LCBET0k6ICZsdDthIGhyZWY9Imh0dHA6Ly96ZW5vZG8ub3JnL3JlY29yZC8zMjMzNzYyIiZndDsxMC41MjgxL3plbm9kby4zMjMzNzYyJmx0Oy9hJmd0OzwvZGVzY3JpcHRpb24+CiAgPC9kZXNjcmlwdGlvbnM+CjwvcmVzb3VyY2U+",
+      "url": "https://zenodo.org/record/3233821",
+      "contentUrl": null,
+      "metadataVersion": 16,
+      "schemaVersion": "http://datacite.org/schema/kernel-4",
+      "source": "mds",
+      "isActive": true,
+      "state": "findable",
+      "reason": null,
+      "viewCount": 0,
+      "viewsOverTime": [],
+      "downloadCount": 0,
+      "downloadsOverTime": [],
+      "referenceCount": 2,
+      "citationCount": 0,
+      "citationsOverTime": [
+        {
+          "year": "2021",
+          "total": 1
+        }
+      ],
+      "partCount": 0,
+      "partOfCount": 1,
+      "versionCount": 1,
+      "versionOfCount": 0,
+      "created": "2019-05-28T12:00:38.000Z",
+      "registered": "2019-05-28T12:00:39.000Z",
+      "published": "1902",
+      "updated": "2021-10-20T03:20:00.000Z"
+    },
+    "relationships": {
+      "client": {
+        "data": {
+          "id": "cern.zenodo",
+          "type": "clients"
+        }
+      },
+      "provider": {
+        "data": {
+          "id": "cern",
+          "type": "providers"
+        }
+      },
+      "media": {
+        "data": {
+          "id": "10.5281/zenodo.3233821",
+          "type": "media"
+        }
+      },
+      "references": {
+        "data": [
+          {
+            "id": "10.5281/zenodo.4583919",
+            "type": "dois"
+          },
+          {
+            "id": "10.5281/zenodo.4583857",
+            "type": "dois"
+          }
+        ]
+      },
+      "citations": {
+        "data": []
+      },
+      "parts": {
+        "data": []
+      },
+      "partOf": {
+        "data": [
+          {
+            "id": "10.5281/zenodo.3233762",
+            "type": "dois"
+          }
+        ]
+      },
+      "versions": {
+        "data": [
+          {
+            "id": "10.5281/zenodo.3233822",
+            "type": "dois"
+          }
+        ]
+      },
+      "versionOf": {
+        "data": []
+      }
+    }
+  }
+}
