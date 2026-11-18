@@ -14,7 +14,7 @@
   "scripts": {
     "dev": "npm run dev -w @cekkutip/server",
     "build": "npm run build -w @cekkutip/web",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present && tsc --noEmit -p eval",
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
@@ -25,7 +25,11 @@
     "start": "npm run start -w @cekkutip/server",
     "test:e2e": "playwright test",
     "screenshots": "tsx scripts/screenshots.ts",
-    "e2e:server": "tsx scripts/e2e-server.ts"
+    "e2e:server": "tsx scripts/e2e-server.ts",
+    "eval": "tsx --env-file-if-exists=.env eval/scripts/run.ts",
+    "eval:tune": "tsx --env-file-if-exists=.env eval/scripts/tune.ts",
+    "eval:kappa": "tsx --env-file-if-exists=.env eval/scripts/kappa.ts",
+    "eval:report": "tsx --env-file-if-exists=.env eval/scripts/report.ts"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",

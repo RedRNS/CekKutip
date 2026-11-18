@@ -139,6 +139,33 @@ Entri nomor 2 juga dipakai sebagai contoh di halaman How it works. Sisi record d
 66. **E2E tanpa jaringan.** `scripts/e2e-server.ts` membangun aplikasi web lalu menjalankan server sungguhan dengan cache pencarian rekaman (`apps/web/e2e/cache`, mode putar ulang saja), tanpa kunci AI dan tanpa alamat kontak. Berkas cache berisi metadata publik dengan nama berkas berupa hash. Referensi yang tidak terekam menghasilkan `check_failed`, dan itu dipakai untuk menguji status tersebut.
 67. **"Copy corrected reference" (P1) belum dibuat.** Panel bukti menampilkan "Open record" dan "Search on Google Scholar".
 
+### Uji langsung T1 dan T2 pada kasus aslinya (16 Nov 2026)
+
+- **T1 bekerja.** Halaman WHO "Obesity and overweight" sekarang `out_of_index_type`, bukan `mismatch`.
+- **T2 tidak mengubah kasus Vaswani (2017).** Hasilnya tetap `mismatch_year` (selisih 8 tahun). OpenAlex memang memuat versi 2017 dengan judul dan penulis yang cocok, tetapi sebagai pracetak dengan venue "arXiv (Cornell University)". Venue yang dikutip adalah prosiding NeurIPS, jadi hasil OpenAlex adalah `mismatch_venue`, bukan `verified`, dan menurut T2 jawaban pertama tetap. Kedua indeks tidak memuat versi prosidingnya.
+- **Belum diputuskan (kandidat T4):** venue milik server pracetak (arXiv, SSRN, bioRxiv, dan sejenisnya) tidak dibandingkan sebagai venue. Ini tidak diterapkan. Sebaiknya dinilai di dev set, bukan dari satu contoh.
+- T1 dan T2 selebihnya hanya teruji dengan data buatan di tes unit.
+
+## 2026-11-18 (M5: harness evaluasi)
+
+68. **Harness memanggil pipeline yang sama.** `runSystem` untuk `cekkutip` memanggil `runPipeline`. Ablation adalah sakelar di `PipelineOptions` (A1 abstain, A2 OpenAlex, A3 mode baca, A4 penulis), bukan salinan kode. Sistem hanya menerima `{ id, text }` (dibuktikan tes: id penanda dan label tidak muncul di panggilan model maupun URL pencarian).
+69. **B2 (hasil teratas Crossref).** Kueri adalah seluruh teks referensi. Skor judul dihitung antara judul yang dibaca parser regex dan judul hasil teratas. Bila parser regex tidak menemukan judul, skor 1 jika teks memuat judul hasil kata demi kata, selain itu 0. Ambang dituning pada dev dengan kisi 0,50 sampai 0,95. Kegagalan layanan adalah `check_failed`, bukan `suspect`, juga untuk baseline.
+70. **B3 (cek DOI).** DOI diambil dari teks dengan pembersih yang sama dengan pipeline. `verified` bila Crossref punya record, selain itu `suspect`. Tanpa DOI hasilnya `suspect`.
+71. **B1 (model saja).** Model yang sama dan temperatur yang sama, dengan instruksi sistem yang menyatakan tidak ada alat pencari dan referensi adalah data. Jawaban di luar empat label diabaikan dan dicatat `check_failed`. Bila model tidak terjangkau, seluruh batch `check_failed`.
+72. **Tuning.** Kisi: `TAU_T` {0,80, 0,85, 0,90, 0,95} × `TAU_A` {0,4 sampai 0,8} × `TAU_L` {0,5, 0,6, 0,7} × `TAU_V` {0,3, 0,4, 0,5}, hanya yang `TAU_L < TAU_T` (180 kombinasi). Referensi dibaca sekali, lalu tiap kombinasi menjalankan ulang pencarian (dari cache), pencocokan, dan aturan. Skor tertinggi menang. **Bila seri, yang terdekat dengan nilai awal yang dipilih**, supaya set dev kecil tidak menggeser ambang tanpa bukti. Skrip menolak split `test` (`--split test` keluar dengan kode 2 sebelum membaca data), dan `assertDevOnly` memeriksa lagi sebelum apa pun dibaca.
+73. **Data templat tidak bisa menjadi hasil.** Berkas yang namanya memuat "template" ditandai `sample`. Hasilnya default ke `eval/results-sample/` (diabaikan git), dan skrip menolak menulisnya ke `eval/results/`. Ringkasan dari data contoh membawa `"sample": true`, dan laporan Markdown-nya diawali peringatan. Halaman Evaluation (M6) harus mengabaikan ringkasan bertanda `sample`.
+74. **Metrik.** Macro-F1 dirata-rata hanya atas verdict yang muncul di label emas. `check_failed` dihitung salah, dan bukan tuduhan maupun abstain. False accusation rate dihitung atas referensi berlabel emas `verified` atau `out_of_index`, dan bernilai `null` bila tidak ada. Tingkat abstain dihitung atas semua referensi. Interval: bootstrap persentil 95%, 1.000 resampel, seed 20261209, resampel yang statistiknya tidak terdefinisi dibuang. Kappa tidak terdefinisi (`null`) bila kedua pelabel hanya memakai satu label.
+75. **Cache evaluasi.** Pencarian di `eval/cache/retrieval` (cache berkas yang sama dengan server). Jawaban model di `eval/cache/model`, kuncinya hash dari (tujuan, model, teks), isinya keluaran model dan token per referensi. Berkas tidak memuat teks referensi. `--replay-only` tidak memakai jaringan dan model. Bukti: jalan ulang `--replay-only` pada data contoh memberi prediksi, macro-F1, interval, dan token yang identik.
+76. **Latensi hanya bermakna pada jalan yang mengisi cache.** Pada jalan ulang, latensi turun dari ribuan ke belasan milidetik karena pencarian diputar ulang. Laporan memuat catatan ini. Token dan biaya tetap valid karena diputar ulang dari cache.
+77. **Biaya.** Token terukur dikali `PRICE_INPUT_PER_M` dan `PRICE_OUTPUT_PER_M` dari lingkungan. Tanpa harga, biaya tertulis `n/a`. Tidak ada harga yang ditanam di kode.
+78. **Item `perturbed`.** Setiap hasil memuat angka dengan semua item dan tanpa item `perturbed`, dan jumlahnya.
+
+### Uji harness pada data templat (18 Nov 2026) bukan bukti
+
+Seluruh alur dijalankan terhadap layanan nyata dan Gemini pada 12 baris templat (8 dev, 4 test): tuning, `cekkutip`, A1 sampai A4, B1 sampai B3, kappa, laporan. Angkanya **tidak boleh dikutip**. Empat referensi tidak berarti apa-apa secara statistik. Yang terbukti: semuanya berjalan, hasil bisa diulang persis, dan data templat tidak bisa masuk ke `eval/results`.
+
+Satu pengamatan yang layak diperhatikan karena menyangkut aturan, bukan angka: **efek samping T1.** Referensi templat T003 adalah karya nyata dengan penulis yang seluruhnya diganti. Sebelum T1 hasilnya `mismatch_authors`. Sekarang `suspect_no_record_journal`, karena T1 menganggap "judul cocok tetapi tidak satu pun penulis ditemukan" sebagai karya lain. Keduanya masuk akal, tetapi ini pola yang umum pada referensi buatan asisten AI (judul asli, penulis keliru), dan label emas bergantung pada definisi: "mismatch = karya ada, detail keliru". Usul perbaikan (**T1', belum diterapkan**): T1 hanya berlaku untuk judul pendek atau umum (misalnya sampai 4 kata), tempat tabrakan judul memang terjadi (kasus WHO). Judul panjang yang khas dan cocok persis hampir pasti karya yang sama dengan penulis keliru, sehingga tetap `mismatch_authors`. Ini perubahan aturan, jadi menunggu keputusan pengguna, lalu diukur di dev set.
+
 ## Ambang final
 
 Belum dituning. Nilai sementara: `TAU_T` 0,90, `TAU_A` 0,60, `TAU_L` 0,60, `TAU_V` 0,40. Diisi setelah `npm run eval:tune` pada dev set (M5): ambang, hash commit, tanggal.

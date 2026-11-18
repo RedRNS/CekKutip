@@ -38,8 +38,8 @@ npm run screenshots       # tangkapan layar 375/768/1280 + axe (butuh e2e:server
 npx tsx scripts/check-examples.ts <baseUrl> llm|regex   # verdict daftar contoh
 npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)
 npm run fixtures:record   # rekam ulang fixture tes dari layanan nyata
-npm run eval -- --split test --system cekkutip --out eval/results   # M5
-npm run eval:tune | eval:kappa | eval:report                         # M5
+npm run eval -- --split test --system cekkutip --out eval/results   # lihat eval/README.md
+npm run eval:tune | eval:kappa | eval:report
 ```
 
 Catatan alat: di alat Bash, heredoc besar berisi kutip bisa gagal diparse, jadi untuk berkas panjang pakai alat Write. Di Write dan Bash, escape Unicode (garis miring terbalik, huruf u, empat digit heksadesimal) diubah menjadi karakter aslinya sebelum sampai ke berkas, dan karakter tak terlihat lolos ke kode sumber. Untuk escape semacam itu di kode, bangun lewat skrip yang memakai `String.fromCharCode(92)`, lalu pastikan tidak ada karakter tak terlihat yang tersisa di sumber (ESLint `no-irregular-whitespace` menangkapnya).
@@ -51,7 +51,7 @@ Catatan alat: di alat Bash, heredoc besar berisi kutip bisa gagal diparse, jadi 
 - `packages/shared`: skema zod dan tipe (dipakai server dan klien).
 - `apps/server`: Express + pipeline (`split`, `parse`, `retrieve`, `match`, `decide`, `format`, `run`), klien API, konfigurasi (`config/thresholds.ts`, `config/limits.ts`).
 - `apps/web`: Vite + React + CSS biasa. Token di `styles/tokens.css`. i18n buatan sendiri di `i18n/`.
-- `eval/`: harness evaluasi memanggil `runPipeline` langsung dengan konfigurasi sistem dan ablation.
+- `eval/`: harness evaluasi memanggil `runPipeline` langsung dengan konfigurasi sistem dan ablation (`lib/`, `scripts/`, `test/`, `data/`). `eval/results/` hanya boleh berisi hasil dari data sungguhan; data templat masuk `eval/results-sample/` (diabaikan git). Aturan lengkap di `eval/README.md`.
 
 ## Pipeline
 

@@ -11,3 +11,4 @@ test-results/
 eval/cache/
 .cache/
 blob-report/
+eval/results-sample/
