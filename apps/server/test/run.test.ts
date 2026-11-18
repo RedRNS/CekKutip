@@ -608,6 +608,16 @@ describe('T1 and T2: namesakes and reposts in Crossref', () => {
     expect(w.calls.some((c) => c.url.includes('openalex'))).toBe(true)
   })
 
+  it("T1': a long, specific title with wholly wrong authors is the same work cited wrongly (Mismatch)", async () => {
+    const wrongAuthors = `Doe, J., & Roe, R. (2023). ${WALTERS_TITLE}. Scientific Reports, 13(1), 14045.`
+    const r = await only(wrongAuthors)
+    expect(r).toMatchObject({
+      status: 'mismatch',
+      reasons: ['mismatch_authors'],
+      record: { doi: DOI },
+    })
+  })
+
   it('T1: among candidates, one with a cited author beats a namesake with a better title score', async () => {
     const real = {
       DOI: '10.1000/real-obesity',

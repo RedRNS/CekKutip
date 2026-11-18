@@ -1,4 +1,6 @@
 import type { CheckStatus, ParsedReference, ReasonCode, ReferenceType } from '@cekkutip/shared'
+import { MIN_SPECIFIC_TITLE_TOKENS } from '../config/thresholds.js'
+import { tokenize } from '../lib/normalize.js'
 import type { PipelineOptions, Retrieval, Scored } from './types.js'
 
 export interface DecideInput {
@@ -36,6 +38,8 @@ export interface Decision {
  * Three refinements approved on 2026-11-16 after live runs (docs/DECISIONS.md, T1 to T3):
  * - T1: a search candidate whose title matches but in which none of the cited authors is found is
  *   another work with the same title, not this work cited wrongly. It does not count as a match.
+ *   T1' (2026-11-19): only when the title is short or common (fewer than MIN_SPECIFIC_TITLE_TOKENS
+ *   words). A long, specific title with wholly wrong authors is the same work, cited wrongly.
  * - T2 lives in run.ts (a second look in OpenAlex), not here.
  * - T3: for a thesis, book, book chapter, report, or web page, a venue is not "a journal name" (row 6).
  */
@@ -124,7 +128,8 @@ const VENUE_IS_NOT_A_JOURNAL: ReadonlySet<ReferenceType> = new Set([
 
 /**
  * Whether a search candidate counts as the cited work: its title reaches TAU_T, and (T1) it is not a
- * title collision, meaning authors were cited and compared and none of them is in the record.
+ * title collision, meaning authors were cited and compared and none of them is in the record, and the
+ * title is short or common (T1').
  */
 export function isSameWorkCandidate(
   scored: Scored,
@@ -133,7 +138,8 @@ export function isSameWorkCandidate(
   if (scored.scores.title < options.thresholds.tauT) return false
   const noAuthorFound =
     options.checkAuthors && scored.flags.authorsCited && scored.scores.authors === 0
-  return !noAuthorFound
+  const commonTitle = tokenize(scored.record.title).length < MIN_SPECIFIC_TITLE_TOKENS
+  return !(noAuthorFound && commonTitle)
 }
 
 /** A candidate whose title matches but that T1 rejects as another work. Used to trigger the second look. */

@@ -16,6 +16,14 @@ export const TAU_A = 0.6
 export const TAU_L = 0.6
 export const TAU_V = 0.4
 
+/**
+ * T1' (DECISIONS 109): T1 (a matching title with none of the cited authors is another work) applies
+ * only to titles shorter than this many words. A longer title is specific enough that the same title
+ * on a different work is unlikely, so the work exists and its authors were cited wrongly: Mismatch.
+ * Fixed in advance, not tuned on data. Like the thresholds it may be revisited on the dev split only.
+ */
+export const MIN_SPECIFIC_TITLE_TOKENS = 6
+
 export const DEFAULT_THRESHOLDS: Thresholds = {
   tauT: TAU_T,
   tauA: TAU_A,

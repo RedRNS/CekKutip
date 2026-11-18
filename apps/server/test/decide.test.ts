@@ -1,6 +1,6 @@
 import type { MatchedRecord, ParsedReference, ReasonCode, CheckStatus } from '@cekkutip/shared'
 import { describe, expect, it } from 'vitest'
-import { DEFAULT_THRESHOLDS } from '../src/config/thresholds.js'
+import { DEFAULT_THRESHOLDS, MIN_SPECIFIC_TITLE_TOKENS } from '../src/config/thresholds.js'
 import { decide } from '../src/pipeline/decide.js'
 import type { DecideInput } from '../src/pipeline/decide.js'
 import type { MatchFlags, Retrieval, Scored } from '../src/pipeline/types.js'
@@ -282,6 +282,33 @@ describe('T1: a matching title with none of the cited authors is another work', 
 
   it('some authors found, but too few, is still a mismatch', () => {
     expect(run(candidates(), scored({ authors: 0.34 })).reasons).toEqual(['mismatch_authors'])
+  })
+
+  describe("T1': only for a short or common title", () => {
+    const withTitle = (title: string): Scored => ({
+      ...scored({ title: 1, authors: 0 }),
+      record: { ...record, title },
+    })
+    const words = (n: number) => Array.from({ length: n }, (_, i) => `word${i}`).join(' ')
+
+    it('a title just under the limit is still a collision', () => {
+      const d = run(candidates(), withTitle(words(MIN_SPECIFIC_TITLE_TOKENS - 1)))
+      expect(d).toMatchObject({ rule: 6, status: 'suspect' })
+    })
+
+    it('a title at the limit is the same work cited with the wrong authors: Mismatch', () => {
+      const d = run(candidates(), withTitle(words(MIN_SPECIFIC_TITLE_TOKENS)))
+      expect(d).toEqual({ rule: 5, status: 'mismatch', reasons: ['mismatch_authors'] })
+    })
+
+    it('a long title with a web page type is also read as the same work', () => {
+      const d = run(candidates(), withTitle(words(10)), parsed({ type: 'web_page', venue: null }))
+      expect(d).toMatchObject({ status: 'mismatch', reasons: ['mismatch_authors'] })
+    })
+
+    it('the limit is 6 words', () => {
+      expect(MIN_SPECIFIC_TITLE_TOKENS).toBe(6)
+    })
   })
 
   it('does not apply when no authors were cited', () => {

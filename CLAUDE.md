@@ -64,9 +64,9 @@ split, Parse (satu-satunya yang memakai model), Retrieve, Match, Decide. Streami
 - **Celah A:** baris 4 (`verified`) juga mensyaratkan venue tidak jelas berbeda (venue dikutip dan ditemukan, skor `< TAU_V` berarti berbeda). Jika berbeda, jatuh ke baris 5 (`mismatch_venue`).
 - **Celah B:** record yang diambil lewat DOI dengan skor judul di antara `TAU_L` dan `TAU_T` diperlakukan seolah melewati `TAU_T` untuk baris 4 dan 5.
 
-Tiga penyempurnaan yang disetujui pengguna pada 16 Nov 2026 (DECISIONS butir 55 sampai 57):
+Tiga penyempurnaan yang disetujui pengguna pada 16 Nov 2026 (DECISIONS butir 55 sampai 57), dengan T1' pada butir 109:
 
-- **T1:** kandidat pencarian berjudul cocok tetapi tanpa satu pun penulis yang dikutip adalah karya lain, bukan `mismatch`.
+- **T1:** kandidat pencarian berjudul cocok tetapi tanpa satu pun penulis yang dikutip adalah karya lain, bukan `mismatch`. **T1' (19 Nov 2026, butir 109):** hanya untuk judul pendek atau umum (kurang dari 6 kata); judul yang lebih panjang dengan semua penulis keliru tetap `mismatch_authors`.
 - **T2:** bila Crossref punya judul yang cocok tetapi hasilnya bukan `verified`, cari juga di OpenAlex dan pakai hasilnya hanya bila `verified`.
 - **T3:** venue pada skripsi, buku, bab buku, laporan, dan halaman web bukan "nama jurnal" untuk baris 6.
 
