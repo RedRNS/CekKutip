@@ -107,6 +107,7 @@ const states: State[] = [
   },
   { name: 'how-it-works', path: '/how-it-works' },
   { name: 'evaluation-empty', path: '/evaluation' },
+  { name: 'extension', path: '/extension' },
   { name: 'about', path: '/about' },
   { name: 'privacy', path: '/privacy' },
 ]

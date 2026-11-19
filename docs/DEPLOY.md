@@ -103,6 +103,7 @@ Variabel yang diatur image: `NODE_ENV=production`, `STATIC_DIR=/app/web`, `EVALU
 curl https://<alamat>/api/health          # {"status":"ok","version":...}
 curl https://<alamat>/api/config          # aiAvailable true bila kunci terbaca
 curl -I https://<alamat>/                 # content-security-policy, content-encoding: gzip bila diminta
+curl -sI https://<alamat>/downloads/cekkutip-extension.zip   # 200, content-type zip (dibuat otomatis saat build)
 npx tsx scripts/check-examples.ts https://<alamat> llm
 npx tsx scripts/lighthouse.ts https://<alamat>
 ```

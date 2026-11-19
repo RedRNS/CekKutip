@@ -43,6 +43,16 @@ export default function Home() {
         </p>
       </section>
 
+      <section className="section print-hide" aria-labelledby="ext-title">
+        <h2 id="ext-title">{t.home.extTitle}</h2>
+        <p>{t.home.extText}</p>
+        <p className="section__more">
+          <Link className="btn btn--secondary" to="/extension">
+            {t.home.extLink}
+          </Link>
+        </p>
+      </section>
+
       <section className="section print-hide" aria-labelledby="not-title">
         <h2 id="not-title">{t.home.notTitle}</h2>
         <ul className="plain-list">

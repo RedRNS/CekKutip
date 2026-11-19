@@ -14,6 +14,7 @@ import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { readZip } from './package-extension.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const bundle = path.join(root, 'dist', 'server')
@@ -163,6 +164,32 @@ try {
   check(
     '/api/evaluation says there are no results yet',
     JSON.stringify(await (await get('/api/evaluation')).json()) === '{"available":false}',
+  )
+
+  // The Extension page offers this file: it must be a real zip with the extension inside, not the web page.
+  const zipRes = await get('/downloads/cekkutip-extension.zip')
+  let zipProblem = ''
+  try {
+    const entries = readZip(Buffer.from(await zipRes.arrayBuffer()))
+    const manifest = JSON.parse(
+      entries.find((e) => e.name === 'manifest.json')?.data.toString() ?? '{}',
+    ) as { manifest_version?: number; name?: string; host_permissions?: string[] }
+    if (manifest.manifest_version !== 3 || manifest.name !== 'CekKutip')
+      zipProblem = 'manifest is not the CekKutip extension'
+    else if (manifest.host_permissions?.length !== 1) zipProblem = 'expected one host permission'
+  } catch (err) {
+    zipProblem = err instanceof Error ? err.message : String(err)
+  }
+  check(
+    'the extension download is a valid zip with the extension manifest',
+    zipRes.status === 200 &&
+      (zipRes.headers.get('content-type') ?? '').includes('zip') &&
+      !zipProblem,
+    zipProblem || `status ${zipRes.status}`,
+  )
+  check(
+    'a download that is not there answers 404, not the web page',
+    (await get('/downloads/none.zip')).status === 404,
   )
 
   const asset = /assets\/index-[^"']+\.js/.exec(html)?.[0]

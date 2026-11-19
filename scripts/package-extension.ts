@@ -1,20 +1,38 @@
 /**
- * Build the extension and pack it into one zip file that can be shared (Drive, GitHub release).
+ * Build the extension and pack it into one zip file that can be shared.
  *
- *   npm run package:extension          ->  extension/cekkutip-extension-<version>.zip
+ *   npm run package:extension          ->  extension/cekkutip-extension-<version>.zip   (for Drive, a release)
+ *   tsx scripts/package-extension.ts --site
+ *                                      ->  apps/web/dist/downloads/cekkutip-extension.zip
+ *
+ * The second form runs at the end of every web build (apps/web `build` script), so the file the site
+ * offers on its Extension page is always built from the same commit as the site itself. It is always
+ * built for the address in site.config.ts, whatever CEKKUTIP_URL says, and it never touches
+ * extension/dist.
  *
  * The zip holds the built extension at its top level. To install it, unzip it, open
  * chrome://extensions, turn on Developer mode, choose "Load unpacked", and pick the folder.
- * No zip library is used: the format is small, and the file is checked by unzipping it.
+ * No zip library is used: the format is small, and tests read the file back with readZip.
  */
 import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs'
+import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { deflateRawSync } from 'node:zlib'
+import { deflateRawSync, inflateRawSync } from 'node:zlib'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
-const dist = path.join(root, 'extension/dist')
+
+/** Where the site serves the file from (the web build output). The Extension page links to /downloads/... */
+export const SITE_ZIP = 'apps/web/dist/downloads/cekkutip-extension.zip'
 
 const CRC_TABLE = (() => {
   const table = new Uint32Array(256)
@@ -95,7 +113,45 @@ export function writeZip(entries: ZipEntry[]): Buffer {
   return Buffer.concat([...parts, centralBytes, end])
 }
 
-function collect(dir: string, base = dir): ZipEntry[] {
+/**
+ * Reads a zip back (stored or deflated entries, no zip64). Throws when the file is not a zip or an
+ * entry does not match its checksum. Used by tests and by verify-production to check the download.
+ */
+export function readZip(zip: Buffer): ZipEntry[] {
+  let end = -1
+  for (let i = zip.length - 22; i >= Math.max(0, zip.length - 22 - 0xffff); i--) {
+    if (zip.readUInt32LE(i) === 0x06054b50) {
+      end = i
+      break
+    }
+  }
+  if (end < 0) throw new Error('Not a zip file: no end-of-directory record.')
+  const count = zip.readUInt16LE(end + 10)
+  let at = zip.readUInt32LE(end + 16)
+  const out: ZipEntry[] = []
+  for (let n = 0; n < count; n++) {
+    if (zip.readUInt32LE(at) !== 0x02014b50) throw new Error('Broken zip: bad directory entry.')
+    const method = zip.readUInt16LE(at + 10)
+    const crc = zip.readUInt32LE(at + 16)
+    const packedSize = zip.readUInt32LE(at + 20)
+    const nameLength = zip.readUInt16LE(at + 28)
+    const extraLength = zip.readUInt16LE(at + 30)
+    const commentLength = zip.readUInt16LE(at + 32)
+    const localAt = zip.readUInt32LE(at + 42)
+    const name = zip.subarray(at + 46, at + 46 + nameLength).toString('utf8')
+    if (zip.readUInt32LE(localAt) !== 0x04034b50) throw new Error(`Broken zip: bad entry ${name}.`)
+    const dataAt = localAt + 30 + zip.readUInt16LE(localAt + 26) + zip.readUInt16LE(localAt + 28)
+    const packed = zip.subarray(dataAt, dataAt + packedSize)
+    if (method !== 0 && method !== 8) throw new Error(`Unsupported zip method ${method}: ${name}.`)
+    const data = method === 8 ? inflateRawSync(packed) : Buffer.from(packed)
+    if (crc32(data) !== crc) throw new Error(`Broken zip: checksum mismatch in ${name}.`)
+    out.push({ name, data })
+    at += 46 + nameLength + extraLength + commentLength
+  }
+  return out
+}
+
+export function collect(dir: string, base = dir): ZipEntry[] {
   const out: ZipEntry[] = []
   for (const name of readdirSync(dir).sort()) {
     const full = path.join(dir, name)
@@ -109,18 +165,37 @@ function collect(dir: string, base = dir): ZipEntry[] {
   return out
 }
 
-// Run only when called as a script, so the functions above can be imported by a test.
-if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  execFileSync('npx', ['tsx', 'scripts/build-extension.ts'], {
+function build(outDir: string, forSite: boolean) {
+  const env: Record<string, string | undefined> = { ...process.env, EXTENSION_OUT: outDir }
+  // The file the site offers always points at the site itself.
+  if (forSite) delete env.CEKKUTIP_URL
+  // Node with the tsx loader, not npx: no shell, so the same call works on Windows and in the image.
+  execFileSync(process.execPath, ['--import', 'tsx', 'scripts/build-extension.ts'], {
     cwd: root,
     stdio: 'inherit',
-    shell: true,
+    env,
   })
-  const version = (
-    JSON.parse(readFileSync(path.join(dist, 'manifest.json'), 'utf8')) as { version: string }
-  ).version
-  const files = collect(dist)
-  const target = path.join(root, `extension/cekkutip-extension-${version}.zip`)
-  writeFileSync(target, writeZip(files))
-  console.log(`packed ${files.length} files: ${target}`)
+}
+
+// Run only when called as a script, so the functions above can be imported by a test.
+if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
+  const forSite = process.argv.includes('--site')
+  const outDir = forSite
+    ? mkdtempSync(path.join(tmpdir(), 'cekkutip-ext-'))
+    : path.join(root, 'extension/dist')
+  try {
+    build(outDir, forSite)
+    const manifest = JSON.parse(readFileSync(path.join(outDir, 'manifest.json'), 'utf8')) as {
+      version: string
+    }
+    const files = collect(outDir)
+    const target = forSite
+      ? path.join(root, SITE_ZIP)
+      : path.join(root, `extension/cekkutip-extension-${manifest.version}.zip`)
+    mkdirSync(path.dirname(target), { recursive: true })
+    writeFileSync(target, writeZip(files))
+    console.log(`packed ${files.length} files: ${target}`)
+  } finally {
+    if (forSite) rmSync(outDir, { recursive: true, force: true })
+  }
 }

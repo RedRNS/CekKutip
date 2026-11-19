@@ -15,6 +15,7 @@ const PAGES = [
   },
   { path: '/how-it-works', title: 'How it works', h1: 'How a check works' },
   { path: '/evaluation', title: 'Evaluation', h1: 'Evaluation' },
+  { path: '/extension', title: 'Browser extension', h1: 'Browser extension' },
   { path: '/about', title: 'About', h1: 'About CekKutip' },
   { path: '/privacy', title: 'Privacy', h1: 'Privacy' },
 ]

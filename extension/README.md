@@ -9,6 +9,7 @@ Untuk Chrome, Edge, dan Brave versi 127 ke atas (Manifest V3). Firefox belum diu
 Ekstensi ini belum ada di toko ekstensi, jadi dipasang dari berkas.
 
 1. Dapatkan berkasnya, salah satu:
+   - **Dari situs (paling mudah):** buka halaman **Extension** di situs CekKutip dan tekan **Download the extension**. Berkasnya `cekkutip-extension.zip`. Ekstrak ke satu folder. Halaman itu juga memuat langkah pemasangan dalam EN dan ID.
    - **Zip dari tim:** `cekkutip-extension-<versi>.zip`. Ekstrak ke satu folder.
    - **Dari kode:** jalankan `npm install` lalu `npm run build:extension`. Hasilnya di `extension/dist`.
 2. Buka `chrome://extensions` (di Edge: `edge://extensions`).
@@ -16,7 +17,7 @@ Ekstensi ini belum ada di toko ekstensi, jadi dipasang dari berkas.
 4. Klik **Load unpacked**, lalu pilih folder hasil ekstrak (atau `extension/dist`).
 5. Klik ikon puzzle di toolbar dan **sematkan** CekKutip supaya mudah dibuka.
 
-Untuk membuat zip yang bisa dibagikan: `npm run package:extension` (hasilnya `extension/cekkutip-extension-<versi>.zip`).
+Untuk membuat zip yang bisa dibagikan: `npm run package:extension` (hasilnya `extension/cekkutip-extension-<versi>.zip`). Zip yang ditawarkan situs dibuat terpisah dan otomatis pada setiap build situs (`tsx scripts/package-extension.ts --site`, hasilnya `apps/web/dist/downloads/cekkutip-extension.zip`); jangan di-commit.
 
 ## Cara memakai
 

@@ -23,5 +23,7 @@ eval/results-sample
 apps/web/e2e/cache
 *.log
 
-# The browser extension is built separately and is not part of the server image.
-extension
+# The extension is built from source inside the image (its zip is the site's download). Its build
+# output and archives are not copied in.
+extension/dist
+extension/*.zip

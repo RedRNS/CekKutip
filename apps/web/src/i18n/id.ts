@@ -11,6 +11,7 @@ export const id: Dict = {
       how: 'Cara kerja',
       evaluation: 'Evaluasi',
       about: 'Tentang',
+      extension: 'Ekstensi browser',
       privacy: 'Privasi',
       notFound: 'Halaman tidak ditemukan',
     },
@@ -21,6 +22,7 @@ export const id: Dict = {
     how: 'Cara kerja',
     evaluation: 'Evaluasi',
     about: 'Tentang',
+    extension: 'Ekstensi',
     language: 'Bahasa',
     skip: 'Langsung ke isi',
     switchTo: { en: 'Ganti ke English', id: 'Ganti ke Bahasa Indonesia' },
@@ -102,6 +104,10 @@ export const id: Dict = {
         text: 'Aturan tetap mengubah hasil perbandingan menjadi satu dari empat verdict.',
       },
     ],
+    extTitle: 'Periksa dari halaman web mana pun',
+    extText:
+      'Pasang ekstensi browser gratis untuk memeriksa referensi tanpa membuka situs ini. Kamu juga bisa memilih teks di halaman mana pun lalu klik kanan.',
+    extLink: 'Ambil ekstensi browser',
     notTitle: 'Yang tidak dilakukan CekKutip',
     notItems: [
       'CekKutip tidak memeriksa apakah sebuah sumber mendukung klaimmu.',
@@ -477,6 +483,74 @@ export const id: Dict = {
     openSite: 'Buka situs CekKutip',
     keyNote: 'Kunci ini juga dipakai di situs CekKutip begitu kamu membukanya di browser ini.',
     menuTitle: 'Periksa teks terpilih dengan CekKutip',
+  },
+  extensionPage: {
+    h1: 'Ekstensi browser',
+    lede: 'Periksa referensi di halaman web mana pun, tanpa membuka situs ini. Pemeriksaannya sama dengan di sini: pencarian yang sama, aturan yang sama, verdict yang sama.',
+    getTitle: 'Ambil ekstensinya',
+    download: 'Unduh ekstensi (.zip)',
+    getNote:
+      'Gratis. Ekstensi ini belum ada di toko ekstensi browser, jadi dipasang dari berkas ini. Langkahnya ada di bawah.',
+    factsWorks: 'Berjalan di',
+    factsWorksValue:
+      'Chrome, Edge, dan Brave versi 127 atau lebih baru. Belum diuji di Firefox dan Safari.',
+    factsCost: 'Biaya',
+    factsCostValue: 'Gratis, tanpa akun.',
+    factsServer: 'Terhubung ke',
+    factsServerValue: '{host}, untuk mencari referensi yang kamu pilih untuk diperiksa.',
+    installTitle: 'Cara memasang, langkah demi langkah',
+    installSteps: [
+      {
+        name: 'Unduh dan ekstrak',
+        text: 'Tekan "Unduh ekstensi" di atas. Lalu ekstrak berkas yang terunduh ke folder yang akan kamu simpan, misalnya folder bernama CekKutip-extension di Documents. Di Windows, klik kanan berkasnya lalu pilih Extract All atau Ekstrak Semua. Jangan hapus foldernya setelah itu: browser membaca ekstensi dari folder tersebut.',
+      },
+      {
+        name: 'Buka halaman ekstensi',
+        text: 'Ketik `chrome://extensions` di bilah alamat lalu tekan Enter. Di Edge, ketik `edge://extensions`. Di Brave, ketik `brave://extensions`.',
+      },
+      {
+        name: 'Nyalakan Developer mode',
+        text: 'Di halaman itu, nyalakan Developer mode. Di Chrome letaknya berupa saklar di kanan atas. Di Edge letaknya di menu sebelah kiri. Kalau browsermu berbahasa Indonesia, namanya mungkin tertulis "Mode pengembang".',
+      },
+      {
+        name: 'Muat foldernya',
+        text: 'Tekan Load unpacked, lalu pilih folder dari langkah 1. Pilih folder yang langsung berisi berkas `manifest.json`. CekKutip kini muncul di daftar ekstensimu. Kalau browsermu berbahasa Indonesia, tombolnya mungkin tertulis "Muat yang belum dikemas".',
+      },
+      {
+        name: 'Sematkan di toolbar',
+        text: 'Tekan ikon kepingan puzzle di samping bilah alamat, lalu tekan pin di samping CekKutip. Ikonnya kini tetap ada di toolbar.',
+      },
+    ],
+    installNote:
+      'Saat dijalankan, Chrome mungkin mengingatkan bahwa ada ekstensi dalam mode pengembang yang aktif. Itu wajar untuk ekstensi yang dipasang dari berkas. Pesan itu boleh ditutup.',
+    useTitle: 'Cara memakai',
+    useItems: [
+      'Tekan ikon CekKutip di toolbar. Tempel referensimu lalu tekan Periksa referensi. Hasilnya tampil sama seperti di situs ini.',
+      'Atau pilih teks di halaman web mana pun, klik kanan, lalu pilih "{menu}". Teksnya masuk ke jendela ekstensi. Belum ada yang dikirim sampai kamu menekan Periksa referensi.',
+    ],
+    keyTitle: 'Kunci Gemini milikmu sendiri',
+    key: 'Pembaca AI memakai kunci Gemini bersama yang punya batas harian. Kamu bisa menambahkan kunci gratismu sendiri, di situs ini atau di ekstensi. Tambahkan di salah satunya, yang lain ikut mengenalinya. Ini berlaku di satu browser pada satu perangkat, setelah kamu membuka situs ini sekali di browser yang punya ekstensinya.',
+    keyLink: 'Ke kotak kunci di halaman Periksa',
+    accessTitle: 'Apa yang bisa diakses ekstensi',
+    accessItems: [
+      'Situs ini saja. Satu skrip kecil berjalan di halamannya untuk membagi kunci Gemini-mu dengan situs. Ekstensi tidak bisa membaca halaman web lain, tab, riwayat, atau cookie-mu.',
+      'Teks yang kamu pilih, hanya saat kamu klik kanan lalu memilih item CekKutip. Teks itu tetap di perangkatmu sampai kamu menekan Periksa referensi.',
+      'Kunci Gemini-mu, bila kamu menambahkannya. Kunci itu tetap di perangkatmu.',
+      'Referensi yang kamu periksa dikirim ke server kami dengan aturan privasi yang sama seperti situs: tidak kami simpan dan tidak kami tulis ke log.',
+    ],
+    privacyLink: 'Baca rincian privasi',
+    sourceLink: 'Baca kode sumber ekstensi di GitHub',
+    updateTitle: 'Memperbarui atau menghapus',
+    updateItems: [
+      'Untuk memperbarui, unduh berkas barunya lalu ekstrak ke folder yang sama dan timpa berkasnya. Setelah itu buka halaman ekstensi dan tekan ikon muat ulang di kartu CekKutip.',
+      'Untuk menghapus, buka halaman ekstensi dan tekan Remove (Hapus) di kartu CekKutip. Lalu hapus foldernya.',
+    ],
+    helpTitle: 'Kalau ada yang tidak berjalan',
+    helpItems: [
+      '"Manifest file is missing or unreadable": folder yang kamu pilih salah. Pilih folder yang langsung berisi `manifest.json`, bukan folder di luarnya.',
+      'Chrome bilang ekstensi butuh versi yang lebih baru: ekstensi ini butuh Chrome 127 atau lebih baru. Perbarui browsermu.',
+      'Pemeriksaan tidak mulai: buka situs ini sekali untuk memastikan situs sedang hidup, lalu coba lagi.',
+    ],
   },
   upload: {
     button: 'Unggah .txt atau .bib',

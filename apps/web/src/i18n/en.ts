@@ -15,6 +15,7 @@ export const en = {
       how: 'How it works',
       evaluation: 'Evaluation',
       about: 'About',
+      extension: 'Browser extension',
       privacy: 'Privacy',
       notFound: 'Page not found',
     },
@@ -25,6 +26,7 @@ export const en = {
     how: 'How it works',
     evaluation: 'Evaluation',
     about: 'About',
+    extension: 'Extension',
     language: 'Language',
     skip: 'Skip to content',
     switchTo: { en: 'Switch to English', id: 'Switch to Bahasa Indonesia' },
@@ -98,6 +100,10 @@ export const en = {
       { name: 'Match', text: 'We compare title, authors, year, and venue.' },
       { name: 'Decide', text: 'Fixed rules turn the comparison into one of four verdicts.' },
     ],
+    extTitle: 'Check from any web page',
+    extText:
+      'Install the free browser extension to check references without opening this site. You can also select text on any page and right-click it.',
+    extLink: 'Get the browser extension',
     notTitle: 'What CekKutip does not do',
     notItems: [
       'It does not check whether a source supports your claim.',
@@ -470,6 +476,74 @@ export const en = {
     openSite: 'Open the CekKutip website',
     keyNote: 'This key is also used on the CekKutip website once you open it in this browser.',
     menuTitle: 'Check selection with CekKutip',
+  },
+  extensionPage: {
+    h1: 'Browser extension',
+    lede: 'Check references on any web page, without opening this site. It is the same check as here: the same lookups, the same rules, the same verdicts.',
+    getTitle: 'Get the extension',
+    download: 'Download the extension (.zip)',
+    getNote:
+      'It is free. It is not in a browser extension store yet, so you install it from this file. The steps are below.',
+    factsWorks: 'Works in',
+    factsWorksValue:
+      'Chrome, Edge, and Brave, version 127 or later. Not tested in Firefox or Safari.',
+    factsCost: 'Cost',
+    factsCostValue: 'Free. No account.',
+    factsServer: 'Talks to',
+    factsServerValue: '{host}, to look up the references you choose to check.',
+    installTitle: 'Install it, step by step',
+    installSteps: [
+      {
+        name: 'Download and unzip',
+        text: 'Press "Download the extension" above. Then extract the downloaded file into a folder you will keep, for example a folder named CekKutip-extension in Documents. On Windows, right-click the file and choose Extract All. Do not delete the folder afterwards: the browser reads the extension from it.',
+      },
+      {
+        name: 'Open the extensions page',
+        text: 'Type `chrome://extensions` in the address bar and press Enter. In Edge, type `edge://extensions`. In Brave, type `brave://extensions`.',
+      },
+      {
+        name: 'Turn on Developer mode',
+        text: 'On that page, switch on Developer mode. In Chrome it is a switch at the top right. In Edge it is in the menu on the left.',
+      },
+      {
+        name: 'Load the folder',
+        text: 'Press Load unpacked, then choose the folder from step 1. Choose the folder that has the file `manifest.json` directly inside it. CekKutip now appears in your list of extensions.',
+      },
+      {
+        name: 'Pin it to the toolbar',
+        text: 'Press the puzzle-piece icon next to the address bar, then the pin next to CekKutip. Its icon now stays in the toolbar.',
+      },
+    ],
+    installNote:
+      'When it starts, Chrome may remind you that an extension in developer mode is on. That is expected for an extension installed from a file. You can dismiss the message.',
+    useTitle: 'Use it',
+    useItems: [
+      'Press the CekKutip icon in the toolbar. Paste your references and press Check references. The results look the same as on this site.',
+      'Or select text on any web page, right-click, and choose "{menu}". The text goes into the extension window. Nothing is sent until you press Check references.',
+    ],
+    keyTitle: 'Your own Gemini key',
+    key: 'The AI reader uses a shared Gemini key with a daily limit. You can add your own free key, on this site or in the extension. Add it in one place and the other picks it up. This works inside one browser on one device, after you have opened this site once in a browser that has the extension.',
+    keyLink: 'Go to the key box on the Check page',
+    accessTitle: 'What the extension can access',
+    accessItems: [
+      'This site, and only this site. A small script runs on its pages to share your Gemini key with the website. The extension cannot read other web pages, your tabs, your history, or your cookies.',
+      'Text you select, only when you right-click it and choose the CekKutip item. It stays on your device until you press Check references.',
+      'Your Gemini key, if you add one. It stays on your device.',
+      'The references you check go to our server, with the same privacy rules as the site: we do not store them or write them to logs.',
+    ],
+    privacyLink: 'Read the privacy details',
+    sourceLink: 'Read the extension source code on GitHub',
+    updateTitle: 'Update or remove',
+    updateItems: [
+      'To update, download the new file and extract it over the same folder, replacing the files. Then open the extensions page and press the reload icon on the CekKutip card.',
+      'To remove it, open the extensions page and press Remove on the CekKutip card. Then delete the folder.',
+    ],
+    helpTitle: 'If something goes wrong',
+    helpItems: [
+      '"Manifest file is missing or unreadable": you chose the wrong folder. Choose the folder that has `manifest.json` directly inside it, not the folder around it.',
+      'Chrome says the extension needs a newer version: it needs Chrome 127 or later. Update your browser.',
+      'A check does not start: open this site once to make sure it is online, then try again.',
+    ],
   },
   upload: {
     button: 'Upload .txt or .bib',

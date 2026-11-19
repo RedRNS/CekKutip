@@ -470,6 +470,24 @@ describe('serving the built web app', () => {
     expect((await fetch(`${base}/favicon.svg`)).status).toBe(200)
   })
 
+  it('serves a download as a file, and answers a missing download with 404, not the web page', async () => {
+    const dir = await site()
+    await mkdir(path.join(dir, 'downloads'))
+    await writeFile(path.join(dir, 'downloads', 'tool.zip'), Buffer.from([0x50, 0x4b, 3, 4]))
+    const { base } = await start({ staticDir: dir })
+    const found = await fetch(`${base}/downloads/tool.zip`)
+    expect(found.status).toBe(200)
+    expect(found.headers.get('content-type')).toContain('zip')
+    expect(
+      Buffer.from(await found.arrayBuffer())
+        .subarray(0, 2)
+        .toString(),
+    ).toBe('PK')
+    const missing = await fetch(`${base}/downloads/gone.zip`)
+    expect(missing.status).toBe(404)
+    expect((await errorOf(missing)).code).toBe('not_found')
+  })
+
   it('never answers an unknown API path with the web page', async () => {
     const { base } = await start({ staticDir: await site() })
     const res = await fetch(`${base}/api/unknown`)

@@ -8,6 +8,7 @@ export function Header() {
     { to: '/', label: t.nav.check, end: true },
     { to: '/how-it-works', label: t.nav.how },
     { to: '/evaluation', label: t.nav.evaluation },
+    { to: '/extension', label: t.nav.extension },
     { to: '/about', label: t.nav.about },
   ]
 

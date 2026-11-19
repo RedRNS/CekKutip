@@ -82,6 +82,11 @@ export function createApp(ctx: AppContext): express.Express {
       express.static(path.join(dir, 'assets'), { immutable: true, maxAge: '1y', index: false }),
     )
     app.use(express.static(dir, { index: false, maxAge: '1h' }))
+    // A file that is not there must not be answered with the web page: a download would look fine
+    // and be an HTML file.
+    app.use('/downloads', (_req, res) =>
+      sendError(res, 404, 'not_found', 'There is nothing at this address.'),
+    )
     const indexFile = path.join(dir, 'index.html')
     app.use(async (req, res, next) => {
       if (req.method !== 'GET' && req.method !== 'HEAD') return next()

@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { useI18n } from './i18n'
 
-type TitleKey = 'home' | 'how' | 'evaluation' | 'about' | 'privacy' | 'notFound'
+type TitleKey = 'home' | 'how' | 'evaluation' | 'about' | 'extension' | 'privacy' | 'notFound'
 
 /** Keeps the document title and meta description in step with the page and language. */
 export function usePageTitle(key: TitleKey) {

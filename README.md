@@ -30,7 +30,7 @@ Video demo, buku manual, dan arsip lain untuk pengguna ada di [folder Google Dri
 ## Kunci Gemini sendiri dan ekstensi browser
 
 - **Kunci Gemini milik pengguna:** di situs, buka "Use your own Gemini API key", tempel kuncinya. Dengan begitu pembacaan referensi memakai jatah kuncimu, bukan kunci bersama yang bisa habis. Kunci tetap di browser, dikirim ke server dalam satu header, tidak disimpan dan tidak dicatat di log.
-- **Ekstensi browser** (Chrome, Edge, Brave): periksa referensi dari popup, atau pilih teks di halaman web lalu klik kanan. Kunci Gemini dibagi otomatis antara situs dan ekstensi. Pasang dan pakai: [extension/README.md](extension/README.md).
+- **Ekstensi browser** (Chrome, Edge, Brave): periksa referensi dari popup, atau pilih teks di halaman web lalu klik kanan. Kunci Gemini dibagi otomatis antara situs dan ekstensi. Situs punya halaman **Extension** (`/extension`) dengan tombol unduh dan langkah pemasangan; berkas zipnya dibangun otomatis pada setiap build situs. Panduan teknis: [extension/README.md](extension/README.md).
 
 ## Menjalankan di komputermu
 

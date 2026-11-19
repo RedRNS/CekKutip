@@ -6,6 +6,7 @@ import { Header } from './components/Header'
 import { useI18n } from './i18n'
 import About from './pages/About'
 import Evaluation from './pages/Evaluation'
+import Extension from './pages/Extension'
 import Home from './pages/Home'
 import HowItWorks from './pages/HowItWorks'
 import NotFound from './pages/NotFound'
@@ -42,6 +43,7 @@ export default function App() {
             <Route path="/" element={<Home />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/evaluation" element={<Evaluation />} />
+            <Route path="/extension" element={<Extension />} />
             <Route path="/about" element={<About />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="*" element={<NotFound />} />

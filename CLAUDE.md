@@ -19,7 +19,7 @@ CekKutip memeriksa daftar pustaka mahasiswa Indonesia. Pengguna menempelkan refe
 - UI: tanpa emoji, gradien, blur kaca, ilustrasi stok, tombol pil, bayangan dekoratif, Tailwind, atau pustaka komponen. Kata terlarang di teks: supercharge, seamless, unlock, revolutionize, magic, powerful, cutting-edge, "Welcome to".
 - Jangan menulis teks referensi pengguna ke log.
 - Host keluar hanya: `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`.
-- Kunci Gemini milik pengguna dan ekstensi browser (DECISIONS butir 112 sampai 119, atas permintaan pemilik produk): kunci dikirim hanya lewat header `x-gemini-key`, **tidak boleh disimpan, masuk log, atau muncul di respons** (ada tes). Folder `extension/` **bukan** workspace npm (jangan jadikan workspace: `npm ci` di Dockerfile gagal). Sinkronisasi kunci situs dan ekstensi ada di `packages/shared/src/apikey.ts`.
+- Kunci Gemini milik pengguna dan ekstensi browser (DECISIONS butir 112 sampai 119, atas permintaan pemilik produk): kunci dikirim hanya lewat header `x-gemini-key`, **tidak boleh disimpan, masuk log, atau muncul di respons** (ada tes). Folder `extension/` **bukan** workspace npm (jangan jadikan workspace: `npm ci` di Dockerfile gagal). Sinkronisasi kunci situs dan ekstensi ada di `packages/shared/src/apikey.ts`. Halaman `/extension` menawarkan zip yang dibangun pada setiap build situs (DECISIONS butir 120 sampai 123): build web gagal bila build ekstensi gagal, dan `/downloads/*` yang tidak ada dijawab 404.
 - P1 selesai (DECISIONS butir 99 sampai 108): DataCite, pratinjau pemisahan, unggah `.txt`/`.bib`, APA 7 dari record, cetak. Berkas dibaca di browser dan tidak diunggah. Referensi APA dan BibTeX dibuat deterministik di `packages/shared` (`apa.ts`, `bibtex.ts`), tanpa model.
 
 ## Perintah
@@ -43,7 +43,7 @@ npm run screenshots       # tangkapan layar 375/768/1280 + axe (butuh e2e:server
 npx tsx scripts/check-examples.ts <baseUrl> llm|regex   # verdict daftar contoh
 npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)
 npm run build:extension   # ekstensi browser ke extension/dist (CEKKUTIP_URL untuk server lain)
-npm run package:extension # zip ekstensi untuk dibagikan
+npm run package:extension # zip berversi di extension/ untuk dibagikan (Drive). Zip untuk halaman /extension dibuat otomatis tiap build web (apps/web/dist/downloads/), jangan di-commit
 npm run test:extension    # Playwright, Chromium sungguhan memuat ekstensi (server putar-ulang)
 npm run fixtures:record   # rekam ulang fixture tes dari layanan nyata; argumen opsional: crossref|doira|openalex|datacite
 npm run eval -- --split test --system cekkutip --out eval/results   # lihat eval/README.md
