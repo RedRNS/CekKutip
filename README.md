@@ -1,44 +1,353 @@
 # CekKutip
 
-Pemeriksa referensi untuk mahasiswa Indonesia. Tempel daftar pustaka, dan CekKutip mencari tiap referensi di Crossref dan OpenAlex lalu memberi satu dari empat verdict (arXiv dan Zenodo lewat DataCite):
+Pemeriksa daftar pustaka untuk mahasiswa Indonesia. Kamu menempelkan referensi, CekKutip mencari tiap referensi di Crossref dan OpenAlex (dan DataCite untuk DOI arXiv dan Zenodo), lalu memberi satu dari empat verdict. **Verdict adalah ajakan memeriksa ulang, bukan tuduhan.**
 
-| Verdict          | Arti                                                                                                                                 |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **Verified**     | Karyanya ditemukan, dan judul, penulis, serta tahunnya sesuai.                                                                       |
-| **Mismatch**     | Karyanya ditemukan, tetapi sebagian detail yang dikutip tidak sesuai dengan recordnya.                                               |
-| **Suspect**      | Karyanya tidak ditemukan, padahal ditulis seperti artikel jurnal (atau DOI-nya tidak terdaftar).                                     |
-| **Out-of-index** | Jenis sumber yang sering tidak ada di indeks (buku, skripsi, laporan), jadi alat ini tidak bisa memastikan dan berkata terus terang. |
+- Situs: <https://cekkutip.onrender.com> (layanan gratis Render: tidur setelah 15 menit tanpa kunjungan dan butuh sekitar satu menit untuk bangun, jadi kunjungan pertama bisa lambat)
+- Kode: <https://github.com/RedRNS/CekKutip>
+- Dibuat untuk GYIIF 2027, kategori Engineering and Technology, oleh tim Halu Hunters (lihat [Tim](#tim)).
 
-Model bahasa **hanya membaca** teks referensi menjadi field (penulis, tahun, judul, dan seterusnya). Model tidak pernah memutuskan verdict. Verdict datang dari aturan tetap yang bisa diaudit atas data Crossref dan OpenAlex. Kalau bukti kurang, hasilnya `Out-of-index` atau `Could not check`, bukan tebakan. Verdict adalah ajakan untuk memeriksa ulang, bukan temuan pelanggaran.
+Tiga prinsip yang menentukan seluruh rancangan:
 
-Dibuat untuk GYIIF 2027 (kategori Engineering and Technology). Pembeda dari pemeriksa lain: verdict `Mismatch` untuk karya nyata yang dikutip keliru, verdict abstain `Out-of-index`, dan evaluasi pada referensi mahasiswa Indonesia.
+1. **Model bahasa tidak pernah memutuskan verdict.** Gemini hanya membaca teks referensi menjadi field (penulis, tahun, judul, dan seterusnya). Verdict datang dari fungsi murni `decide()` dengan aturan tetap, dan teks penjelasan datang dari templat per kode alasan.
+2. **Abstain adalah fitur.** Kalau buktinya kurang, hasilnya `Out-of-index` atau `Could not check`, bukan tebakan. Layanan yang gagal tidak pernah berubah menjadi `Suspect`.
+3. **Tidak ada angka karangan.** Tidak ada klaim akurasi, jumlah pengguna, atau testimoni. Halaman Evaluation kosong sampai ada hasil dari data sungguhan.
 
-## Tim
+## Daftar isi
 
-Kelompok **Halu Hunters**, Teknik Informatika, Telkom University Purwokerto. Anggota: Renisa Assyifa Putri (ketua), Shellyn Euriska Putri, Nadira Hikmah Fatheena, Fauza Kaizaku Setiawan, Arkaan Wisnu Pratama, Regita Hutri Cahyaningrum. Dosen pembimbing: Dany Candra Febrianto, S.Kom., M.Eng.
+- [Masalah yang ditangani](#masalah-yang-ditangani)
+- [Cara memakai](#cara-memakai)
+- [Empat verdict dan satu status](#empat-verdict-dan-satu-status)
+- [Cara kerja](#cara-kerja)
+- [Aturan keputusan](#aturan-keputusan)
+- [Peran model bahasa](#peran-model-bahasa)
+- [Sumber data](#sumber-data)
+- [Fitur](#fitur)
+- [Ekstensi browser](#ekstensi-browser)
+- [Privasi dan keamanan](#privasi-dan-keamanan)
+- [Batasan](#batasan)
+- [Evaluasi](#evaluasi)
+- [Teknologi dan struktur repo](#teknologi-dan-struktur-repo)
+- [Menjalankan di komputermu](#menjalankan-di-komputermu)
+- [API](#api)
+- [Tes](#tes)
+- [Deploy](#deploy)
+- [Desain](#desain)
+- [Status proyek](#status-proyek)
+- [Dokumen lain](#dokumen-lain)
+- [Tim](#tim)
 
-Video demo, buku manual, dan arsip lain untuk pengguna ada di [folder Google Drive tim](https://drive.google.com/drive/folders/1vPRw8e8778n8S_w2c4RgPBTmzjuVsklV?usp=sharing).
+## Masalah yang ditangani
 
-## Fitur selain pemeriksaan dasar (P1)
+Daftar pustaka mahasiswa dikumpulkan dari banyak tempat, dan kini sering dibantu asisten AI. Kekeliruannya macam-macam: tahun atau nama jurnal salah, penulis tertukar, DOI salah ketik sehingga menuju karya lain, sampai karya yang tidak bisa ditemukan sama sekali. Memeriksanya satu per satu lewat Google Scholar memakan waktu, dan pemeriksaan yang terlewat baru ketahuan saat dosen atau penguji membukanya.
+
+Alat pemeriksa yang hanya menjawab "ada" atau "tidak ada" punya dua kelemahan untuk konteks ini:
+
+- Karya yang nyata tetapi dikutip keliru (judul benar, tahun atau jurnal salah) tidak punya tempat. Padahal inilah kesalahan yang paling bisa diperbaiki.
+- Buku, skripsi, dan laporan lembaga, yang sangat umum di daftar pustaka Indonesia, sering tidak ada di Crossref dan OpenAlex. Alat yang menganggap "tidak ditemukan" berarti "bermasalah" akan menuduh referensi yang sah.
+
+CekKutip menjawabnya dengan dua keputusan rancangan: verdict `Mismatch` untuk karya yang ada tetapi dikutip keliru, dan verdict `Out-of-index` untuk jenis sumber yang memang tidak bisa dipastikan alat ini. Keduanya bisa diuji lewat evaluasi pada referensi mahasiswa Indonesia (lihat [Evaluasi](#evaluasi), yang hasilnya belum ada).
+
+## Cara memakai
+
+1. Buka halaman Check. Tempel daftar pustaka (batas bawaan: 40 referensi, tiap referensi sampai 600 karakter), atau unggah berkas `.txt` atau `.bib`. Berkas dibaca di browser, tidak diunggah.
+2. Lihat **pratinjau pemisahan** di bawah kotak teks. Kalau satu referensi terpotong jadi dua, atau dua referensi tergabung, gabungkan atau ubah di situ.
+3. Pilih **Check references**. Hasil tiba satu per satu, tidak berurutan, tanpa menunggu seluruh daftar selesai.
+4. Buka sebuah baris untuk melihat **panel bukti**: tabel perbandingan field yang dikutip dan yang ditemukan, kode alasan, tautan ke record, dan pencarian Google Scholar.
+5. Untuk `Mismatch` yang recordnya adalah karya yang sama, **salin referensi yang dikoreksi** (APA 7, ditulis dari record).
+6. Saring daftar menurut verdict, **ekspor CSV**, **salin laporan**, atau **cetak** hasilnya (Ctrl+P).
+
+Tombol **Try an example** mengisi sepuluh referensi contoh (lima nyata, satu nyata dengan tahun dan jurnal sengaja diubah, empat karangan). Contoh dua di antaranya:
+
+```
+Walters, W. H., & Wilder, E. I. (2023). Fabrication and errors in the bibliographic citations
+generated by ChatGPT. Scientific Reports, 13(1), 14045. https://doi.org/10.1038/s41598-023-41032-5
+-> Verified
+
+Walters, W. H., & Wilder, E. I. (2021). Fabrication and errors in the bibliographic citations
+generated by ChatGPT. Nature Communications, 12(1), 100.
+-> Mismatch (tahun dan jurnal tidak sesuai dengan recordnya)
+```
+
+Antarmuka tersedia dalam bahasa Inggris dan Indonesia (tombol **EN | ID**). Kamu juga bisa memilih **mode tanpa AI** supaya teks tidak dikirim ke layanan model bahasa.
+
+## Empat verdict dan satu status
+
+| Verdict          | Arti                                                                                                                     | Langkah berikutnya                                                                      |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| **Verified**     | Karyanya ditemukan, dan judul, penulis, serta tahun yang tertulis sesuai dengan recordnya.                               | Tetap baca sumbernya. Verdict ini bukan tanda bahwa sumber mendukung klaimmu.           |
+| **Mismatch**     | Karyanya ditemukan, tetapi sebagian detail yang dikutip tidak sesuai dengan recordnya (penulis, tahun, venue, atau DOI). | Buka record, bandingkan, lalu koreksi. Salin referensi terkoreksi bila karya yang sama. |
+| **Suspect**      | Karyanya tidak ditemukan padahal ditulis seperti artikel jurnal, atau DOI-nya tidak terdaftar di mana pun.               | Cari sendiri, periksa ejaan dan DOI. Kalau tetap tidak ada, pertimbangkan sumbernya.    |
+| **Out-of-index** | Jenis sumber yang sering tidak ada di indeks (buku, skripsi, laporan), atau data yang tertulis terlalu sedikit.          | Periksa manual (perpustakaan, repositori kampus, situs penerbit).                       |
+
+Ada satu status lagi, **Could not check**: layanan pencarian gagal dijangkau setelah percobaan ulang. Ini bukan verdict dan tidak pernah dihitung memberatkan sebuah referensi. Tombol Try again tersedia.
+
+Verdict terbaca tanpa warna: tiap verdict punya bentuk glif, pola bilah, dan teks sendiri. Kata seperti "fake", "fraud", atau "cheating" tidak dipakai untuk menyifati referensi di antarmuka. Yang dipakai: could not be found, does not match, cannot be checked.
+
+### Kode alasan
+
+Setiap hasil membawa satu atau lebih kode alasan. Antarmuka menampilkan teks tetap dari templat per kode (dua bahasa), bukan teks buatan model.
+
+| Kode                             | Arti                                                                                             |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `verified_all_match`             | Semua yang tertulis cocok dengan record.                                                         |
+| `mismatch_authors`               | Karya ditemukan, tetapi kurang dari 60% nama keluarga penulis yang dikutip ada di record.        |
+| `mismatch_year`                  | Karya ditemukan, tetapi tahunnya berselisih lebih dari satu tahun.                               |
+| `mismatch_venue`                 | Karya ditemukan, tetapi jurnal atau prosiding yang dikutip jelas berbeda dengan recordnya.       |
+| `mismatch_doi_other_work`        | DOI yang dikutip terdaftar, tetapi menuju karya lain (judulnya jelas berbeda).                   |
+| `suspect_doi_not_found`          | DOI yang dikutip tidak terdaftar di registri mana pun.                                           |
+| `suspect_no_record_journal`      | Tidak ada record yang cocok, padahal referensi ditulis seperti artikel jurnal.                   |
+| `out_of_index_type`              | Jenis sumber yang sering tidak terindeks (buku, bab buku, skripsi, laporan, halaman web).        |
+| `out_of_index_insufficient_data` | Terlalu sedikit yang tertulis untuk dibandingkan, atau tidak ada yang bisa dijadikan kata kunci. |
+| `out_of_index_other_registry`    | DOI milik registri yang tidak dicari CekKutip.                                                   |
+| `check_failed_network`           | Layanan gagal dijangkau setelah percobaan ulang.                                                 |
+
+## Cara kerja
+
+Satu layanan Node (Express) melayani API dan aplikasi web hasil build. Alurnya:
+
+```
+Browser (React)                      Server (Express, satu proses)                    Layanan luar
+---------------                      -----------------------------                    ------------
+tempel / unggah
+pisahkan referensi (shared) --+
+                              v
+POST /api/check ----------> validasi zod -> batas laju -> batas jumlah dan panjang
+                                   |
+NDJSON: started, result*, done     v
+daftar hasil <------------- split -> PARSE (satu-satunya tahap berbasis model) ----> Gemini, atau parser regex
+                                   |
+                                   v
+                              RETRIEVE  (3 sekaligus, cache 24 jam)
+                                   |   ber-DOI:  Crossref /works/{doi}
+                                   |               tidak ada -> doi.org/doiRA -> DataCite -------> DataCite
+                                   |   tanpa DOI: Crossref bibliographic --------------------> Crossref
+                                   |               tanpa kandidat memadai -> OpenAlex ----------> OpenAlex
+                                   v
+                              MATCH   skor judul, penulis, tahun, venue
+                                   |
+                                   v
+                              DECIDE  fungsi murni: verdict + kode alasan
+                                   |
+                                   v
+                              hasil per referensi (tanpa prosa; teks dibuat di klien dari templat)
+```
+
+**Split.** Deterministik, dipakai browser dan server (satu kode di `packages/shared`) supaya angka "N found" sama dengan yang diperiksa. Memisah pada baris kosong, nomor daftar, atau pola penulis. Batas jumlah dan panjang ditolak, tidak dipotong diam-diam.
+
+**Parse.** Satu-satunya tahap yang memakai model. Daftar dibagi menjadi batch seimbang (maksimum 8 referensi per batch, sampai 3 batch paralel). Keluaran divalidasi dengan zod, dan setiap DOI, judul, venue, penulis, tahun, volume, nomor, dan halaman harus benar-benar tertulis di teks referensi. Bila tidak, keluaran ditolak, diulang sekali sebagai panggilan tunggal, lalu jatuh ke parser regex. Rinciannya di [Peran model bahasa](#peran-model-bahasa).
+
+**Retrieve.** Klien HTTP dengan timeout 8 detik, percobaan ulang dengan backoff, penghormatan `Retry-After`, dan penjadwal laju per layanan. Referensi ber-DOI dicari lewat DOI: Crossref dulu, lalu bila Crossref tidak punya, doi.org/doiRA ditanya siapa registrarnya. DOI yang tidak terdaftar menjadi `Suspect`, DOI DataCite (arXiv, Zenodo) diambil dari DataCite, dan DOI registri lain menjadi `Out-of-index`. Referensi tanpa DOI dicari lewat pencarian bibliografi Crossref, dengan OpenAlex sebagai cadangan bila Crossref tidak punya kandidat yang cukup mirip. Hasil pencarian (hanya metadata publik) disimpan di cache memori 24 jam dengan kunci berupa hash. Kegagalan layanan tidak pernah di-cache dan tidak pernah menjadi verdict.
+
+**Match.** Menghitung empat skor untuk kandidat terbaik:
+
+- **Judul:** kemiripan Levenshtein ternormalisasi (huruf kecil, tanpa diakritik dan tanda baca). Kutipan tanpa subjudul dibandingkan dengan bagian judul sebelum titik dua.
+- **Penulis:** porsi nama keluarga yang dikutip yang ditemukan di record. Tahan terhadap inisial, `Nama, I.` dan `I. Nama`, nama majemuk, dan `et al.` (penulis pertama harus cocok).
+- **Tahun:** selisih tahun. Selisih satu tahun masih ditoleransi.
+- **Venue:** kemiripan yang sengaja longgar, tahan terhadap singkatan ("J. Pers. Soc. Psychol.") dan kata umum ("Journal of"). Bila ragu, skornya tinggi, jadi venue hanya disebut berbeda bila memang jelas berbeda.
+
+**Decide.** Fungsi murni tanpa jaringan dan tanpa model, diuji pada setiap baris tabel keputusan. Lihat bagian berikut.
+
+**Format.** Menyusun perbandingan field untuk panel bukti. Teks penjelasan dibuat di klien dari templat per kode alasan.
+
+Hasil dialirkan sebagai NDJSON (`started`, lalu `result` satu per referensi tanpa urutan tetap, lalu `done` berisi ringkasan). NDJSON dipilih dibanding SSE karena SSE bawaan browser hanya GET, sedangkan teks pengguna tidak boleh ada di URL.
+
+## Aturan keputusan
+
+`decide()` mengevaluasi baris berikut **berurutan** (nomor baris mengikuti rencana awal dan tercatat di hasil untuk audit):
+
+| Urutan | Baris | Kondisi                                                                                 | Hasil                                             |
+| ------ | ----- | --------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| 1      | 1     | Layanan gagal setelah percobaan ulang                                                   | `check_failed` (`check_failed_network`)           |
+| 2      | 2     | DOI yang dikutip tidak terdaftar di mana pun                                            | `suspect` (`suspect_doi_not_found`)               |
+| 3      | 9     | DOI milik registri yang tidak dicari                                                    | `out_of_index` (`out_of_index_other_registry`)    |
+| 4      | 8     | Tidak ada yang bisa dipakai untuk mencari                                               | `out_of_index` (`out_of_index_insufficient_data`) |
+| 5      | 3     | Record dari DOI, judul yang dikutip skornya di bawah `TAU_L`                            | `mismatch` (`mismatch_doi_other_work`)            |
+| 6      | 5     | Ada record yang dianggap karya yang sama, tetapi penulis, tahun, atau venue tidak cocok | `mismatch` (satu atau lebih `mismatch_*`)         |
+| 7      | 8     | Record cocok, tetapi kurang dari dua dari (judul, penulis, tahun) yang tertulis         | `out_of_index` (`out_of_index_insufficient_data`) |
+| 8      | 4     | Record cocok dan semua yang tertulis sesuai                                             | `verified` (`verified_all_match`)                 |
+| 9      | 6     | Tanpa record, ditulis seperti artikel jurnal                                            | `suspect` (`suspect_no_record_journal`)           |
+| 10     | 7     | Tanpa record, jenis sumber yang sering tidak terindeks                                  | `out_of_index` (`out_of_index_type`)              |
+
+"Di atas" ambang berarti `>=`, "di bawah" berarti `<`. Field yang tidak ditulis tidak pernah merugikan referensi: penulis, tahun, atau venue yang tidak dikutip tidak dihitung "berbeda".
+
+### Ambang
+
+| Ambang  | Nilai sementara | Arti                                                               |
+| ------- | --------------- | ------------------------------------------------------------------ |
+| `TAU_T` | 0,90            | Skor judul tinggi: kandidat pencarian dianggap karya yang sama.    |
+| `TAU_A` | 0,60            | Porsi nama keluarga penulis yang dikutip yang harus ada di record. |
+| `TAU_L` | 0,60            | Skor judul rendah: di bawahnya, record adalah karya lain.          |
+| `TAU_V` | 0,40            | Skor venue di bawahnya berarti venue yang dikutip jelas berbeda.   |
+
+Nilai ini **sementara dan belum dituning**. Aturan mainnya: ambang hanya boleh dituning di dev set (`npm run eval:tune`), lalu dibekukan di [docs/DECISIONS.md](docs/DECISIONS.md) bersama hash commit. Ambang tidak diubah agar hasil terlihat bagus, dan tidak diubah setelah melihat hasil test.
+
+### Penyempurnaan atas tabel awal
+
+Tabel awal punya dua celah dan tiga kasus yang ditemukan lewat uji langsung. Semuanya disetujui pemilik produk dan dicatat di DECISIONS:
+
+- **Celah A (butir 6):** `verified` juga mensyaratkan venue tidak jelas berbeda. Tanpa ini `mismatch_venue` tidak pernah bisa muncul sendirian.
+- **Celah B (butir 7):** record yang diambil lewat DOI dengan skor judul di antara `TAU_L` dan `TAU_T` diperlakukan sebagai karya yang sama. DOI adalah pengenal eksak, jadi hanya skor di bawah `TAU_L` yang menandakan karya lain.
+- **Aturan bukti (butir 35):** `verified` butuh minimal dua dari judul, penulis, dan tahun yang tertulis dan terbandingkan. DOI telanjang atau judul saja tidak bisa menjadi `Verified`.
+- **T1 dan T1' (butir 55 dan 109):** kandidat pencarian yang judulnya cocok tetapi tanpa satu pun penulis yang dikutip adalah karya lain (tabrakan judul), bukan `Mismatch`. Ini hanya untuk judul pendek atau umum (kurang dari 6 kata). Judul yang lebih panjang dengan penulis yang semuanya keliru tetap `mismatch_authors`.
+- **T2 (butir 56):** bila Crossref punya judul yang cocok tetapi hasilnya bukan `Verified`, pipeline mencari juga di OpenAlex dan memakai hasilnya **hanya bila `Verified`**.
+- **T3 (butir 57):** untuk skripsi, buku, bab buku, laporan, dan halaman web, venue bukan "nama jurnal" bagi aturan `Suspect`.
+
+## Peran model bahasa
+
+Gemini (bawaan `gemini-3.1-flash-lite`, temperatur 0, keluaran terstruktur) dipakai di **satu tempat**: membaca satu teks referensi menjadi field. Model tidak memilih kandidat, tidak memutuskan verdict, dan tidak menulis penjelasan.
+
+Penjagaan terhadap model:
+
+- **Harus tertulis di teks.** Setiap nilai dari model dibandingkan dengan teks referensi setelah normalisasi. Model yang "melengkapi" DOI atau membetulkan judul ditolak. Field tambahan seperti "verdict" dibuang oleh skema.
+- **Teks referensi adalah data.** Referensi yang berisi perintah ("abaikan instruksi sebelumnya") diperlakukan sebagai teks biasa. Ada tes untuk ini, juga terhadap Gemini sungguhan.
+- **Gagal dengan aman.** Keluaran ditolak: ulang sekali sebagai panggilan tunggal, lalu parser regex. Gemini tidak terjangkau: seluruh batch langsung ke parser regex. Hasilnya ditandai `parseMode: regex` dan antarmuka mengatakannya. Ini bukan `Could not check`, karena pemeriksaan tetap bisa dilakukan.
+- **Tanpa kunci server atau pilih "tanpa AI":** parser regex yang membaca. Semua fitur tetap jalan.
+
+### Kunci Gemini milikmu sendiri
+
+Kunci bersama milik situs punya batas harian (tier gratis), jadi bisa habis kalau banyak orang memakainya. Di situs, buka **Use your own Gemini API key** dan tempel kunci gratismu dari [Google AI Studio](https://aistudio.google.com/apikey).
+
+- Kunci disimpan di browsermu dan dikirim ke server CekKutip dalam satu header (`x-gemini-key`) hanya bila pembaca AI dipakai.
+- Server membangun klien Gemini untuk permintaan itu saja. Kunci **tidak disimpan, tidak masuk log, dan tidak muncul di respons** (ada tes yang memeriksa log dan semua respons di setiap jalur).
+- Yang perlu kamu tahu: kunci memang melewati server CekKutip. Itu tidak bisa dihindari tanpa memindahkan tahap Parse ke browser, yang menghilangkan validasi "harus tertulis di teks".
+- Bila Google menolak kunci atau jatahnya habis, hasil tetap keluar (dibaca parser regex) dan ada pemberitahuan yang menjelaskannya.
+
+## Sumber data
+
+| Layanan  | Dipakai untuk                                                         | Catatan                                                                                                                                                          |
+| -------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Crossref | Pencarian DOI dan pencarian bibliografi (sumber utama)                | Dengan alamat kontak (`CROSSREF_MAILTO`) masuk "polite pool": 10 permintaan per detik dan 3 bersamaan, dibanding 5 dan 1. Klien mengikuti batas yang diiklankan. |
+| OpenAlex | Cadangan bila Crossref tidak punya kandidat, dan pandangan kedua (T2) | Berbiaya per pencarian. Anggaran gratis $0,10 per hari per IP tanpa kunci, $1 per hari dengan kunci gratis (`OPENALEX_API_KEY`).                                 |
+| DataCite | DOI non-Crossref (arXiv, Zenodo)                                      | Penerbit seperti Zenodo atau arXiv bukan venue, jadi preprint tidak kena `mismatch_venue` untuk DOI ini.                                                         |
+| doi.org  | Menanyakan registrar sebuah DOI (`doiRA`)                             | Membedakan "tidak terdaftar" (`Suspect`) dari "milik registri lain" (`Out-of-index`).                                                                            |
+
+Host keluar **hanya** `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, dan `doi.org`, juga pada setiap redirect (diikuti manual, maksimum 3 lompatan, daftar putih diperiksa tiap lompatan).
+
+## Fitur
+
+**Inti**
+
+- Pemeriksaan daftar pustaka dengan empat verdict, hasil mengalir per referensi.
+- Panel bukti dengan tabel perbandingan field (`table` sungguhan dengan `caption` dan `th scope`, bukan tabel bersarang).
+- Mode tanpa AI (parser regex), dan pemberitahuan jujur saat model tidak bisa dipakai.
+- Dua bahasa (EN dan ID), tanpa teks yang hilang di salah satunya (tipe `Dict` memaksa kuncinya sama).
+
+**Tambahan (P1)**
 
 - **DOI arXiv dan Zenodo** diperiksa lewat DataCite, bukan langsung `Out-of-index`.
-- **Pratinjau pemisahan** di bawah kotak teks: gabungkan atau ubah referensi yang terpotong salah.
-- **Unggah `.txt` atau `.bib`** (dibaca di browser, sampai 256 KB).
-- **Salin referensi yang dikoreksi** (APA 7) dari record untuk hasil `Mismatch`, ditulis dengan aturan tetap, bukan model bahasa.
-- **Cetak** hanya hasil sebagai laporan (Ctrl+P).
+- **Pratinjau pemisahan** yang bisa diedit: gabung dengan sebelumnya, ubah, atau hapus.
+- **Unggah `.txt` atau `.bib`**, dibaca di browser (sampai 256 KB). Pembaca BibTeX deterministik (`packages/shared/src/bibtex.ts`) dan tidak menambah informasi: `eprint` arXiv tanpa DOI tidak diubah menjadi DOI karena itu menebak yang tidak dikutip penulisnya.
+- **Salin referensi yang dikoreksi (APA 7)** dari record, untuk `Mismatch` yang recordnya karya yang sama. Ditulis dengan aturan tetap di `packages/shared/src/apa.ts`, tanpa model. Tidak ditawarkan untuk `mismatch_doi_other_work`, karena itu akan menyalin referensi karya lain.
+- **Ekspor CSV** (dengan BOM dan CRLF, sel yang diawali `=`, `+`, `-`, `@` dinetralkan agar tidak dijalankan sebagai rumus), **salin laporan**, dan **cetak** (hanya hasil, verdict tetap terbaca tanpa warna).
+- **Kunci Gemini sendiri** dan **ekstensi browser** (di bawah).
 
-## Kunci Gemini sendiri dan ekstensi browser
+**Halaman situs:** Check (`/`), How it works, Evaluation, Extension, About, Privacy.
 
-- **Kunci Gemini milik pengguna:** di situs, buka "Use your own Gemini API key", tempel kuncinya. Dengan begitu pembacaan referensi memakai jatah kuncimu, bukan kunci bersama yang bisa habis. Kunci tetap di browser, dikirim ke server dalam satu header, tidak disimpan dan tidak dicatat di log.
-- **Ekstensi browser** (Chrome, Edge, Brave): periksa referensi dari popup, atau pilih teks di halaman web lalu klik kanan. Kunci Gemini dibagi otomatis antara situs dan ekstensi. Situs punya halaman **Extension** (`/extension`) dengan tombol unduh dan langkah pemasangan; berkas zipnya dibangun otomatis pada setiap build situs. Panduan teknis: [extension/README.md](extension/README.md).
+## Ekstensi browser
+
+Ekstensi untuk Chrome dan Edge versi 127 ke atas (Manifest V3) memeriksa referensi dari panel samping browser, tanpa membuka situs. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab. Kamu juga bisa memilih teks di halaman web mana pun, klik kanan, lalu pilih "Check selection with CekKutip". **Belum ada yang dikirim** sampai kamu memilih Check references.
+
+- Memakai komponen yang sama dengan situs, jadi fiturnya setara, termasuk kunci Gemini sendiri (dibagi otomatis dengan situs di satu browser; perubahan terakhir yang menang).
+- Izinnya sedikit: `storage`, `contextMenus`, dan akses ke situs CekKutip saja. Tidak ada akses ke tab lain, riwayat, atau cookie (ada tes yang memeriksa manifes).
+- **Belum ada di toko ekstensi.** Dipasang dari berkas zip lewat Load unpacked. Halaman **Extension** di situs (`/extension`) menyediakan tombol unduh dan langkah pemasangan; zipnya dibangun otomatis pada setiap build situs dan tidak di-commit.
+- Folder `extension/` bukan workspace npm. Menjadikannya workspace membuat `npm ci` di Dockerfile gagal dan merusak deploy.
+
+Panduan lengkap (pemasangan, izin, privasi, pengembangan): [extension/README.md](extension/README.md).
+
+## Privasi dan keamanan
+
+**Privasi**
+
+- Teks referensi dikirim ke Google Gemini **hanya** untuk membaca field, kecuali kamu memilih mode tanpa AI. Google menyatakan konten yang dikirim lewat tier gratis dapat dipakai untuk meningkatkan produknya.
+- Judul, penulis, dan DOI hasil bacaan dikirim ke Crossref, OpenAlex, dan DataCite untuk pencarian.
+- Server **tidak menyimpan teks pengguna**. `AppLogger` hanya punya metode bertipe tetap (id, jumlah, waktu, kode galat), jadi teks tidak bisa masuk log. Tes memastikan teks penanda tidak muncul di log pada pemeriksaan sukses, layanan gagal, masukan tidak valid, dan batas terlampaui.
+- Cache hanya memuat metadata publik dengan kunci berupa hash.
+- Berkas yang diunggah dibaca di browser dan tidak diunggah ke server.
+- Rincian untuk pengguna ada di halaman Privacy aplikasi.
+
+**Keamanan**
+
+- `helmet` dengan CSP ketat (hanya same-origin, tanpa skrip atau gaya inline), tanpa CORS, validasi `zod` pada setiap permintaan, batas badan 64 KB, dan batas laju per IP (bawaan 10 pemeriksaan per 10 menit).
+- Mode eksperimen (`system`, `ablation`) ditolak di produksi apa pun isi variabelnya.
+- Rahasia hanya di variabel lingkungan. `.env` tidak di-commit, dan tidak ada rahasia di klien.
+- Image Docker berjalan sebagai pengguna `node`, tanpa menulis ke disk.
+- `npm audit --omit=dev`: 0 kerentanan pada dependensi produksi (diperiksa 18 Nov 2026). Sisa temuan hanya di alat build dan uji, tanpa versi tambalan saat itu (DECISIONS butir 79).
+
+## Batasan
+
+**Yang tidak dilakukan CekKutip**
+
+- Tidak memeriksa apakah sebuah sumber mendukung klaimmu.
+- Tidak mendeteksi plagiarisme.
+- Tidak bisa melihat buku, skripsi, dan laporan yang tidak dimuat Crossref dan OpenAlex, jadi berkata terus terang (`Out-of-index`).
+- Hasilnya bukan bukti pelanggaran, dan bukan pengganti membaca sumbermu.
+
+**Batasan yang diketahui**
+
+- **Karya yang hanya ada sebagai unggahan ulang.** `Vaswani et al. (2017). Attention is all you need` (NeurIPS) mendapat `mismatch_year`, karena Crossref hanya memuat unggahan ulang tahun 2025 dan OpenAlex hanya memuat versi pracetak arXiv. Aturan bekerja sesuai tabel, tetapi kesimpulannya keliru bagi pengguna. Aturan tidak diubah karena satu contoh. Dampaknya akan diukur di dev set (DECISIONS butir 70 dan 145).
+- **Venue server pracetak** (arXiv, SSRN, bioRxiv) tanpa DOI belum dikecualikan dari perbandingan venue. Itu "T4" yang belum diputuskan.
+- **Kecepatan bergantung Crossref.** Dengan pencarian dingin di pool publik, 12 referensi bisa butuh 30 sampai 45 detik. Dengan cache hangat dan pool polite jauh lebih cepat.
+- **Referensi tanpa DOI bergantung pada pencarian bibliografi**, yang bisa melewatkan karya dengan judul yang ditulis sangat berbeda.
+
+## Evaluasi
+
+Harness di [eval/](eval/) mengukur CekKutip terhadap tiga baseline dan empat ablation pada data berlabel. Harness memanggil `runPipeline` langsung, jadi baseline dan ablation hanyalah konfigurasi, bukan salinan kode.
+
+| Sistem             | Isi                                                                |
+| ------------------ | ------------------------------------------------------------------ |
+| `cekkutip`         | pipeline penuh                                                     |
+| `b1_llm_only`      | model yang sama menjawab satu dari empat verdict tanpa pencarian   |
+| `b2_crossref_top1` | hasil teratas Crossref, `verified` bila skor judul mencapai ambang |
+| `b3_doi_check`     | `verified` bila ada DOI di teks dan terdaftar di Crossref          |
+| ablation `a1`      | tanpa abstain (`out_of_index` menjadi `suspect`)                   |
+| ablation `a2`      | tanpa OpenAlex (juga tanpa pandangan kedua T2)                     |
+| ablation `a3`      | parser regex menggantikan model                                    |
+| ablation `a4`      | tanpa pengecekan penulis                                           |
+
+Metrik utamanya macro-F1, ditambah precision, recall, dan F1 per verdict, **false accusation rate** (dari referensi berlabel emas `Verified` atau `Out-of-index`, berapa yang diberi `Suspect` atau `Mismatch`), tingkat abstain, latensi median, serta token dan biaya per 1.000 referensi. Interval kepercayaan 95% memakai bootstrap persentil (1.000 resampel, seed tetap). Hasil `Could not check` dihitung salah, dan bukan tuduhan maupun abstain.
+
+Yang dijaga supaya hasilnya jujur:
+
+- **Dev dan test dipisah.** Ambang dituning hanya di dev set. Skrip tuning menolak split `test`. Split test dijalankan sekali, setelah ambang dibekukan.
+- **Label emas tidak pernah masuk ke pipeline.** Sistem hanya menerima id dan teks referensi (dibuktikan tes).
+- **Bisa diulang persis.** Pencarian dan jawaban model disimpan di cache berkas. `--replay-only` memberi prediksi, metrik, dan interval yang identik tanpa jaringan.
+- **Data templat tidak bisa menjadi hasil.** Berkas bertanda `sample` ditulis ke `eval/results-sample/` (diabaikan git) dan ditolak masuk ke `eval/results/`.
+
+**Status:** harness selesai dan teruji end-to-end pada data templat kecil, tetapi **belum ada hasil evaluasi**. Data sungguhan (130 referensi: 80 dev dan 50 test, dua pelabel) belum diisi, jadi halaman Evaluation menampilkan keadaan kosong yang jujur, tanpa satu pun angka. Angka dari uji pada data templat tidak boleh dikutip. Panduan lengkap dan urutan kerja: [eval/README.md](eval/README.md).
+
+## Teknologi dan struktur repo
+
+| Lapisan   | Teknologi                                                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Bahasa    | TypeScript (strict), Node.js 22 atau lebih baru                                                                                            |
+| Server    | Express 5, `zod`, `helmet`, `express-rate-limit`, `compression`, `pino`, `@google/genai`                                                   |
+| Klien web | React 19, `react-router-dom`, Vite, CSS biasa dengan token (tanpa Tailwind dan tanpa pustaka komponen), `lucide-react` untuk ikon utilitas |
+| Font      | Newsreader (judul), IBM Plex Sans (UI), IBM Plex Mono (DOI, kode), self-host lewat `@fontsource`                                           |
+| Tes       | Vitest (unit dan integrasi), Playwright (E2E situs dan ekstensi), axe-core (aksesibilitas), Lighthouse                                     |
+| Build     | Vite untuk web, esbuild untuk server, Docker tiga tahap (`node:22-alpine`)                                                                 |
+
+```
+packages/shared/   skema dan tipe (zod), pemisah referensi, normalisasi, pembaca BibTeX, penulis APA 7,
+                   protokol kunci Gemini, validator ringkasan evaluasi
+apps/server/       Express, pipeline (split, parse, retrieve, match, decide, format, run),
+                   klien Crossref/OpenAlex/DataCite/doi.org/Gemini, konfigurasi (ambang, batas)
+apps/web/          React + CSS biasa (token di styles/tokens.css), i18n EN dan ID, halaman, tes E2E
+extension/         ekstensi browser (di luar workspace npm), tes Playwright dengan Chromium sungguhan
+eval/              harness evaluasi, data, cache, hasil
+scripts/           alat bantu: build server dan ekstensi, tangkapan layar, Lighthouse, verifikasi produksi,
+                   pemeriksaan langsung ke layanan nyata
+docs/              PLAN, ARCHITECTURE, DECISIONS, DESIGN, DEPLOY
+```
+
+Paket `shared` tidak di-build: server dan klien mengimpor sumber TypeScript-nya langsung. Server dibundel esbuild menjadi satu berkas, dan paket pihak ketiga dipasang di image dari `package-lock.json`.
 
 ## Menjalankan di komputermu
 
-Butuh Node.js 22 atau lebih baru (image Docker memakai 22; skrip `dev` dan `start` memakai opsi `--env-file-if-exists`).
+Butuh Node.js 22 atau lebih baru (`.nvmrc` berisi 22).
 
 ```
 npm install
-cp .env.example .env        # di Windows: copy .env.example .env. Lalu isi, lihat tabel di bawah
+cp .env.example .env        # di Windows: copy .env.example .env, lalu isi
 npm run dev                 # server API di http://localhost:8787
 npm run dev:web             # aplikasi web di http://localhost:5173 (di terminal lain)
 ```
@@ -46,28 +355,55 @@ npm run dev:web             # aplikasi web di http://localhost:5173 (di terminal
 `npm run dev:web` meneruskan `/api` ke server di `:8787`. Untuk menjalankan seperti produksi (satu proses yang melayani API dan web):
 
 ```
-npm run build               # butuh site.config.ts terisi, lihat "Yang harus diisi tim"
+npm run build
 npm start                   # http://localhost:8787
 ```
 
-Tanpa `GEMINI_API_KEY` semuanya tetap jalan dengan pembaca pola (mode tanpa AI), dan antarmuka mengatakannya.
+Tanpa `GEMINI_API_KEY` semuanya tetap jalan dengan parser regex (mode tanpa AI), dan antarmuka mengatakannya. Di `npm run dev:web`, tautan unduh ekstensi belum berfungsi karena zip dibuat saat build.
 
 ### Variabel lingkungan
 
-Daftar lengkap dengan komentar ada di `.env.example`. Yang utama:
+Daftar lengkap dengan komentar ada di [.env.example](.env.example). Yang utama:
 
-| Variabel                                  | Untuk apa                                                                             |
-| ----------------------------------------- | ------------------------------------------------------------------------------------- |
-| `GEMINI_API_KEY`                          | Kunci Google Gemini (hanya di server). Tanpa ini, mode AI tidak tersedia.             |
-| `GEMINI_MODEL`                            | Bawaan `gemini-3.1-flash-lite`.                                                       |
-| `CROSSREF_MAILTO`                         | Alamat kontak untuk "polite pool" Crossref. Disimpan di `.env`, tidak pernah di repo. |
-| `OPENALEX_API_KEY`                        | Kunci gratis OpenAlex (anggaran harian 10 kali lipat dibanding tanpa kunci).          |
-| `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS`  | Batas laju `/api/check`. Bawaan 10 per 10 menit per IP.                               |
-| `MAX_REFERENCES`, `MAX_REFERENCE_CHARS`   | Batas masukan, ditegakkan di server. Bawaan 40 dan 600.                               |
-| `ENABLE_EXPERIMENT_MODES`                 | Hanya untuk harness evaluasi. Selalu mati di produksi.                                |
-| `RETRIEVAL_CACHE_DIR`                     | Cache berkas untuk evaluasi (merekam dan memutar ulang pencarian).                    |
-| `PRICE_INPUT_PER_M`, `PRICE_OUTPUT_PER_M` | Harga per juta token, untuk biaya per 1.000 referensi di laporan evaluasi.            |
-| `PUBLIC_SITE_URL`                         | Alamat publik situs.                                                                  |
+| Variabel                                  | Untuk apa                                                                                       |
+| ----------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`                          | Kunci Google Gemini (hanya di server). Tanpa ini, mode AI tidak tersedia.                       |
+| `GEMINI_MODEL`                            | Bawaan `gemini-3.1-flash-lite`.                                                                 |
+| `GEMINI_TEMPERATURE`                      | Bawaan `0`. Tulis `off` untuk berhenti mengirimnya bila model berikutnya menolak parameter itu. |
+| `CROSSREF_MAILTO`                         | Alamat kontak untuk "polite pool" Crossref. Disimpan di `.env`, tidak pernah di repo.           |
+| `OPENALEX_API_KEY`                        | Kunci gratis OpenAlex (anggaran harian 10 kali lipat dibanding tanpa kunci).                    |
+| `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS`  | Batas laju `/api/check`. Bawaan 10 per 10 menit per IP.                                         |
+| `MAX_REFERENCES`, `MAX_REFERENCE_CHARS`   | Batas masukan, ditegakkan di server. Bawaan 40 dan 600.                                         |
+| `TRUST_PROXY`                             | Jumlah proxy di depan server, supaya batas laju memakai IP pengguna yang benar.                 |
+| `ENABLE_EXPERIMENT_MODES`                 | Hanya untuk harness evaluasi. Selalu mati di produksi.                                          |
+| `RETRIEVAL_CACHE_DIR`                     | Cache berkas untuk evaluasi (merekam dan memutar ulang pencarian).                              |
+| `PRICE_INPUT_PER_M`, `PRICE_OUTPUT_PER_M` | Harga per juta token, untuk biaya per 1.000 referensi di laporan evaluasi.                      |
+| `PUBLIC_SITE_URL`                         | Alamat publik situs.                                                                            |
+
+## API
+
+| Rute                  | Fungsi                                                                                                   |
+| --------------------- | -------------------------------------------------------------------------------------------------------- |
+| `POST /api/check`     | Aliran NDJSON: `started`, `result` (tidak berurutan), `done`. Batas badan 64 KB dan batas laju per IP.   |
+| `GET /api/health`     | Status dan versi. Dipakai pemeriksa kesehatan host.                                                      |
+| `GET /api/config`     | Batas publik, versi, dan `aiAvailable`.                                                                  |
+| `GET /api/evaluation` | Ringkasan evaluasi bila lengkap dan dari data sungguhan, selain itu `{"available": false}` (status 200). |
+
+```
+curl -N -X POST http://localhost:8787/api/check \
+  -H "Content-Type: application/json" \
+  -d '{"references": ["Walters, W. H., & Wilder, E. I. (2023). Fabrication and errors in the bibliographic citations generated by ChatGPT. Scientific Reports, 13(1), 14045. https://doi.org/10.1038/s41598-023-41032-5"], "options": {"parseMode": "regex"}}'
+```
+
+`references` boleh berupa satu string (dipisah oleh server) atau larik string (dianggap sudah terpisah). `options.parseMode` bernilai `llm` (bawaan) atau `regex`. Header `x-gemini-key` bersifat opsional (lihat [kunci Gemini sendiri](#kunci-gemini-milikmu-sendiri)). Satu baris per kejadian:
+
+```
+{"type":"started","total":1}
+{"type":"result","result":{"index":0,"status":"verified","reasons":["verified_all_match"], ...}}
+{"type":"done","summary":{"total":1,"verified":1,"mismatch":0,"suspect":0,"outOfIndex":0,"checkFailed":0, ...}}
+```
+
+Galat dikembalikan sebagai `{"error":{"code":"...","message":"..."}}`.
 
 ## Tes
 
@@ -75,68 +411,92 @@ Daftar lengkap dengan komentar ada di `.env.example`. Yang utama:
 npm test                 # unit dan integrasi (Vitest), tanpa jaringan
 npm run lint
 npm run typecheck
+npm run build            # build web dan server (gagal bila build ekstensi gagal)
 npm run test:e2e         # Playwright terhadap server sungguhan dengan cache pencarian rekaman, tanpa jaringan
+npm run test:extension   # Playwright, Chromium sungguhan memuat ekstensi
 ```
 
-Tes tidak memakai jaringan dan tidak butuh kunci: respons Crossref, OpenAlex, dan doi.org direkam sebagai fixture. Alat bantu pemeriksaan langsung (memakai jaringan, dijalankan sendiri):
+Kali pertama menjalankan Playwright, pasang browsernya dengan `npx playwright install chromium` bila belum ada.
+
+Tes tidak memakai jaringan dan tidak butuh kunci: respons Crossref, OpenAlex, DataCite, dan doi.org direkam sebagai fixture (`npm run fixtures:record` merekam ulang). Alat bantu pemeriksaan langsung (memakai jaringan, dijalankan sendiri):
 
 ```
-npm run smoke:live                              # klien nyata terhadap Crossref, OpenAlex, doi.org
-npx tsx --env-file=.env scripts/smoke-gemini.ts # tahap Parse terhadap Gemini nyata
+npm run smoke:live                                            # klien nyata terhadap Crossref, OpenAlex, doi.org
+npx tsx --env-file=.env scripts/smoke-gemini.ts               # tahap Parse terhadap Gemini nyata
+npx tsx scripts/smoke-check.ts                                # 12 referensi ke server yang sedang jalan
 npx tsx scripts/check-examples.ts http://localhost:8787 llm   # verdict daftar contoh
-npm run e2e:server && npm run lighthouse        # skor Lighthouse semua halaman
-npm run screenshots                             # tangkapan layar 375/768/1280 + axe
+npm run e2e:server && npm run lighthouse                      # skor Lighthouse semua halaman
+npm run screenshots                                           # tangkapan layar 375/768/1280 + axe
+npm run build && npx tsx scripts/verify-production.ts         # artefak produksi di folder bersih, tanpa Docker
 ```
 
-## Evaluasi
-
-Harness di `eval/` mengukur CekKutip terhadap tiga baseline dan empat ablation pada data berlabel, dengan interval kepercayaan bootstrap dan hasil yang bisa diulang persis. Panduan lengkap, termasuk format data dan urutan kerja, ada di [eval/README.md](eval/README.md).
-
-```
-npm run eval:kappa
-npm run eval:tune
-npm run eval -- --split test --system cekkutip --out eval/results
-npm run eval:report
-```
-
-Halaman Evaluation hanya menampilkan `eval/results/summary.json` bila lengkap dan berasal dari data sungguhan. Sampai itu ada, halaman menampilkan keadaan kosong, bukan angka.
+Tes yang menegakkan prinsip produk, bukan hanya fungsi: logger tidak pernah memuat teks pengguna, kunci Gemini tidak pernah muncul di log atau respons, label emas tidak masuk ke pipeline, data templat tidak bisa masuk ke hasil evaluasi, kata terlarang dan emoji tidak ada di teks antarmuka, dan tidak ada pelanggaran axe pada semua halaman. Jumlah tes terkini dilaporkan oleh `npm test`.
 
 ## Deploy
 
-Satu image Docker (`Dockerfile`) dan satu `render.yaml`. Langkah, pilihan host, perilaku tidur dan bangun host gratis, dan daftar periksa sebelum demo ada di [docs/DEPLOY.md](docs/DEPLOY.md).
+Satu image Docker ([Dockerfile](Dockerfile)) dan satu [render.yaml](render.yaml) (Render, web service gratis, region Singapore, `healthCheckPath: /api/health`).
 
 ```
 docker build -t cekkutip .
 docker run --rm -p 8787:8787 --env-file .env cekkutip
 ```
 
-## Yang harus diisi tim
+- Build gagal bila `apps/web/src/site.config.ts` masih berisi `TODO`, karena nilainya tampil di halaman publik. Untuk mencoba image tanpa mengisinya: `--build-arg ALLOW_TODO=1`.
+- Setelah deploy, periksa `/api/health` dan `/api/config` (`aiAvailable` harus `true` bila kunci terbaca).
+- Untuk demo ke juri: bangunkan layanan beberapa menit sebelumnya, jalankan daftar contoh sekali supaya pencarian ada di cache, dan naikkan `RATE_LIMIT_MAX` bila banyak orang berbagi satu IP jaringan.
 
-- **`apps/web/src/site.config.ts`**: nama tim, anggota, pembimbing, kampus, email kontak, tautan GitHub dan demo. Selama masih ada `TODO`, build produksi **gagal dengan sengaja**, karena nilai itu tampil di halaman publik.
-- **`eval/data/references.csv`**: data evaluasi (130 referensi, 80 dev dan 50 test, dua pelabel). Templatnya ada di `eval/data/references.template.csv`.
-- **Daftar demo akhir**: contoh di `apps/web/src/data/example-list.ts` adalah daftar sementara dengan verdict yang sudah diperiksa.
-- **Kunci dan alamat kontak** di `.env` dan di host.
+Pilihan host, perilaku tidur dan bangun host gratis, UptimeRobot, dan daftar periksa sebelum demo ada di [docs/DEPLOY.md](docs/DEPLOY.md).
 
-## Struktur
+## Desain
 
-```
-packages/shared/   skema dan tipe (zod), pemisah referensi, normalisasi, tipe ringkasan evaluasi
-apps/server/       Express, pipeline (parse, retrieve, match, decide), klien Crossref/OpenAlex/doi.org/Gemini
-apps/web/          React + CSS biasa (token di styles/tokens.css), i18n EN dan ID, tes E2E
-eval/              harness evaluasi, data, hasil
-scripts/           alat bantu: build server, tangkapan layar, Lighthouse, verifikasi produksi, pemeriksaan langsung
-docs/              PLAN, ARCHITECTURE, DECISIONS, DESIGN, DEPLOY
-```
+Antarmuka dirancang agar tiap layar menjawab tiga hal: apa yang bisa kulakukan, apa hasilnya, dan apa langkah berikutnya. Gayanya netral dan editorial: tanpa emoji, gradien, blur kaca, ilustrasi stok, tombol pil, atau bayangan dekoratif.
 
-Mulai dari [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) untuk alur data. Semua keputusan teknis, penyimpangan dari rencana, dan hasil pengukuran ada di [docs/DECISIONS.md](docs/DECISIONS.md).
+- **Warna netral:** paper `#F6F8F7`, surface `#FFFFFF`, ink `#12232E`, brand `#12343B`, accent `#0B6B63`. Tiap verdict punya warna solid, warna teks, dan warna latar sendiri. Rasio kontras dihitung oleh `scripts/contrast.ts`.
+- **Verdict terbaca tanpa warna:** bentuk glif, pola bilah, dan teks.
+- **Responsif:** diperiksa pada lebar 375, 768, dan 1280 px dalam EN dan ID, lebar maksimum 1180 px.
+- **Aksesibilitas:** tautan lompat ke konten, daftar hasil berupa `ol` yang bisa dibuka dengan keyboard, tabel perbandingan sungguhan, dan tes axe pada semua halaman.
+- **Performa:** JS awal 105 KB gzip pada pengukuran 18 Nov 2026. Lighthouse ponsel pada situs publik (19 Nov 2026): Performance 96 sampai 100 menurut halaman, Accessibility, Best Practices, dan SEO 100, CLS 0. Skor Performance bergerak 5 sampai 10 poin antar-putaran, jadi angka itu satu pengukuran, bukan jaminan.
 
-## Yang tidak dilakukan CekKutip
+Token dan komponen lengkap ada di [docs/DESIGN.md](docs/DESIGN.md).
 
-- Tidak memeriksa apakah sebuah sumber mendukung klaimmu.
-- Tidak mendeteksi plagiarisme.
-- Tidak bisa melihat buku, skripsi, dan laporan yang tidak dimuat Crossref dan OpenAlex, jadi berkata terus terang.
-- Hasilnya bukan bukti pelanggaran, dan bukan pengganti membaca sumbermu.
+## Status proyek
 
-## Privasi
+Per 20 November 2026 (tenggat versi online: 29 November 2026).
 
-Teks yang ditempel dikirim ke Google Gemini hanya untuk membaca field, kecuali pengguna memilih mode tanpa AI. Google menyatakan konten yang dikirim lewat tier gratis dapat dipakai untuk meningkatkan produknya. Judul, penulis, dan DOI hasil bacaan dikirim ke Crossref dan OpenAlex. Server tidak menyimpan teks pengguna, dan log hanya memuat id, jumlah, waktu, dan kode galat (dibuktikan tes). Rinciannya ada di halaman Privacy aplikasi.
+**Sudah jalan**
+
+- Pipeline lengkap, termasuk DataCite, pandangan kedua OpenAlex, dan semua penyempurnaan aturan (T1 sampai T3).
+- Situs dua bahasa dengan enam halaman, dan situs publik di Render.
+- Fitur P1: pratinjau pemisahan, unggah `.txt` dan `.bib`, APA 7 dari record, cetak.
+- Kunci Gemini milik pengguna dan ekstensi browser, beserta halaman `/extension`.
+- Harness evaluasi (tiga baseline, empat ablation, tuning, kappa, laporan).
+- Deploy dengan image Docker, diuji lokal dan di situs publik (daftar contoh memberi 3 Verified, 2 Mismatch, 2 Suspect, 3 Out-of-index; ini uji asap pada daftar pilihan sendiri, **bukan ukuran akurasi**).
+
+**Belum selesai atau belum diuji**
+
+- **Data evaluasi sungguhan** (`eval/data/references.csv`) belum diisi, jadi belum ada hasil, belum ada ambang yang dituning, dan halaman Evaluation masih kosong. Ambang di atas adalah nilai sementara.
+- Daftar demo akhir: contoh di `apps/web/src/data/example-list.ts` masih daftar sementara.
+- PageSpeed Insights pada URL publik, uji di perangkat nyata, dan lama bangun dari tidur di Render belum diukur.
+- Jalur kunci Gemini milik pengguna diuji dengan klien Gemini tiruan dan pemetaan kode HTTP, belum dengan kunci pengguna sungguhan (DECISIONS butir 119).
+- Ekstensi: klik kanan sungguhan, tulisan tombol browser berbahasa Indonesia, dan Firefox belum diuji.
+- Belum ada berkas `LICENSE`.
+
+Daftar lengkap keputusan, penyimpangan dari rencana awal, dan hasil pengukuran dengan tanggalnya ada di [docs/DECISIONS.md](docs/DECISIONS.md).
+
+## Dokumen lain
+
+| Dokumen                                      | Isi                                                                                      |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Alur data, tahap pipeline, prinsip yang ditegakkan di kode, rute server, build dan image |
+| [docs/DECISIONS.md](docs/DECISIONS.md)       | Semua keputusan teknis bernomor, penyimpangan dari rencana, hasil pengukuran             |
+| [docs/PLAN.md](docs/PLAN.md)                 | Rencana pembangunan awal, hasil pemeriksaan dokumentasi, risiko                          |
+| [docs/DESIGN.md](docs/DESIGN.md)             | Token, tipografi, komponen, daftar periksa desain                                        |
+| [docs/DEPLOY.md](docs/DEPLOY.md)             | Memilih host, cold start, langkah Render, uji deploy                                     |
+| [eval/README.md](eval/README.md)             | Harness evaluasi: data, urutan kerja, metrik, dapat diulang                              |
+| [extension/README.md](extension/README.md)   | Ekstensi browser: pemasangan, izin, privasi, pengembangan                                |
+
+## Tim
+
+Kelompok **Halu Hunters**, Teknik Informatika, Telkom University Purwokerto. Anggota: Renisa Assyifa Putri (ketua), Shellyn Euriska Putri, Nadira Hikmah Fatheena, Fauza Kaizaku Setiawan, Arkaan Wisnu Pratama, Regita Hutri Cahyaningrum. Dosen pembimbing: Dany Candra Febrianto, S.Kom., M.Eng.
+
+Video demo, buku manual, dan arsip lain untuk pengguna ada di [folder Google Drive tim](https://drive.google.com/drive/folders/1vPRw8e8778n8S_w2c4RgPBTmzjuVsklV?usp=sharing).

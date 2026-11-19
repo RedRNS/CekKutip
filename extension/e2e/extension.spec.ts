@@ -3,7 +3,7 @@ import path from 'node:path'
 import { AxeBuilder } from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
 import { EXAMPLES } from '../../apps/web/src/data/example-list'
-import { SITE, expect, keyStatus, openPopup, saveKey, summary, test } from './fixtures'
+import { SITE, expect, keyStatus, openPanel, saveKey, summary, test } from './fixtures'
 
 const KEY = 'AIzaSyA-1234567890abcdefghijklmnopqrstu'
 const OTHER = 'AIzaSyB-0987654321zyxwvutsrqponmlkjihgf'
@@ -42,10 +42,13 @@ async function watchCheck(page: Page, change: (done: Record<string, unknown>) =>
 }
 
 test.describe('what the extension is allowed to do', () => {
-  test('asks for one site and two small permissions, nothing else', async ({ extensionDir }) => {
+  test('asks for one site and three small permissions, nothing else', async ({ extensionDir }) => {
     const manifest = JSON.parse(readFileSync(path.join(extensionDir, 'manifest.json'), 'utf8'))
     expect(manifest.manifest_version).toBe(3)
-    expect(manifest.permissions).toEqual(['storage', 'contextMenus'])
+    expect(manifest.permissions).toEqual(['storage', 'contextMenus', 'sidePanel'])
+    // A side panel, not a popup: a popup closes when the person clicks outside it.
+    expect(manifest.side_panel).toEqual({ default_path: 'panel.html' })
+    expect(manifest.action.default_popup).toBeUndefined()
     expect(manifest.host_permissions).toEqual(['http://localhost/*'])
     expect(manifest.content_scripts).toHaveLength(1)
     expect(manifest.content_scripts[0].matches).toEqual(['http://localhost/*'])
@@ -63,9 +66,9 @@ test.describe('what the extension is allowed to do', () => {
       expect(text, `manifest must not mention ${broad}`).not.toContain(broad)
   })
 
-  test('has no remote code and no inline script in the popup', async ({ extensionDir }) => {
-    const html = readFileSync(path.join(extensionDir, 'popup.html'), 'utf8')
-    expect(html).toContain('<script src="popup.js"></script>')
+  test('has no remote code and no inline script in the side panel', async ({ extensionDir }) => {
+    const html = readFileSync(path.join(extensionDir, 'panel.html'), 'utf8')
+    expect(html).toContain('<script src="panel.js"></script>')
     expect(html.match(/<script/g)).toHaveLength(1)
     expect(html).not.toMatch(/https?:\/\//)
   })
@@ -76,7 +79,7 @@ test.describe('what the extension is allowed to do', () => {
   })
 })
 
-test.describe('the popup', () => {
+test.describe('the side panel', () => {
   test('is the CekKutip tool, with the key panel and the link to the site', async ({
     page,
     extensionId,
@@ -84,7 +87,7 @@ test.describe('the popup', () => {
     const errors: string[] = []
     page.on('console', (m) => m.type() === 'error' && errors.push(m.text()))
     page.on('pageerror', (e) => errors.push(e.message))
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await expect(page.getByText('CekKutip', { exact: true }).first()).toBeVisible()
     await expect(references(page)).toBeVisible()
     await expect(check(page)).toBeDisabled()
@@ -101,7 +104,7 @@ test.describe('the popup', () => {
     page,
     extensionId,
   }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await references(page).fill(REF)
     await expect(page.getByText('1 found', { exact: true })).toBeVisible()
     await check(page).click()
@@ -114,7 +117,7 @@ test.describe('the popup', () => {
     page,
     extensionId,
   }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await references(page).fill(EXAMPLES[1]?.text as string)
     await check(page).click()
     await expect(page.locator('.ledger > li').nth(0).locator('.verdict')).toHaveText('Mismatch')
@@ -122,26 +125,101 @@ test.describe('the popup', () => {
     await expect(page.getByText('Corrected reference (APA 7)')).toBeVisible()
   })
 
-  test('has no accessibility violations, and fits the 400 px window', async ({
+  test('has no accessibility violations, and fits a narrow, a medium, and a wide panel', async ({
     page,
     extensionId,
   }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await references(page).fill(REF)
     await check(page).click()
     await expect(page.getByText('1 of 1 checked')).toBeVisible()
-    const result = await new AxeBuilder({ page })
-      .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
-      .analyze()
-    expect(result.violations.map((v) => `${v.id} (${v.nodes.length})`)).toEqual([])
-    const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    )
-    expect(overflow).toBeLessThanOrEqual(0)
+    // The width of a side panel is the person's to choose: it can be dragged.
+    for (const width of [320, 400, 600]) {
+      await page.setViewportSize({ width, height: 800 })
+      const result = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa', 'wcag22aa'])
+        .analyze()
+      expect(result.violations.map((v) => `${v.id} (${v.nodes.length})`)).toEqual([])
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      )
+      expect(overflow, `horizontal overflow at ${width} px`).toBeLessThanOrEqual(0)
+    }
+  })
+
+  test('opens from the toolbar icon: the icon is set to open the side panel', async ({
+    worker,
+  }) => {
+    await expect
+      .poll(() => worker.evaluate(() => chrome.sidePanel.getPanelBehavior()))
+      .toEqual({ openPanelOnActionClick: true })
+  })
+
+  test('takes a selection sent while it is open, and leaves the results alone', async ({
+    page,
+    extensionId,
+    worker,
+  }) => {
+    const MORE = EXAMPLES[1]?.text as string
+    await openPanel(page, extensionId)
+    await references(page).fill(REF)
+    await check(page).click()
+    await expect(page.getByText('1 of 1 checked')).toBeVisible()
+
+    await worker.evaluate((text) => chrome.storage.session.set({ pendingText: text }), MORE)
+    await expect(references(page)).toHaveValue(MORE)
+    // The earlier result is still on screen, and nothing was sent for the new text.
+    await expect(page.locator('.ledger > li')).toHaveCount(1)
+    await expect(page.locator('.ledger > li').nth(0).locator('.verdict')).toHaveText('Verified')
+    // The text was taken, so it does not come back the next time the panel opens.
+    await expect
+      .poll(() => worker.evaluate(() => chrome.storage.session.get('pendingText')))
+      .toEqual({})
+  })
+
+  test('takes the same selection again after the text was changed', async ({
+    page,
+    extensionId,
+    worker,
+  }) => {
+    await openPanel(page, extensionId)
+    const send = () =>
+      worker.evaluate((text) => chrome.storage.session.set({ pendingText: text }), REF)
+    await send()
+    await expect(references(page)).toHaveValue(REF)
+    await references(page).fill('something else')
+    await expect(references(page)).toHaveValue('something else')
+    await send()
+    await expect(references(page)).toHaveValue(REF)
+  })
+
+  test('keeps a check running when a new selection arrives, and still shows its result', async ({
+    page,
+    extensionId,
+    worker,
+  }) => {
+    // Hold the answer back, so the check is still running when the selection arrives. A popup
+    // would have been closed by now, and the check lost with it.
+    await page.route('**/api/check', async (route) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      await route.continue()
+    })
+    await openPanel(page, extensionId)
+    await references(page).fill(REF)
+    await check(page).click()
+    await expect(page.locator('.progress')).toHaveText('0 of 1 checked')
+
+    const MORE = EXAMPLES[1]?.text as string
+    await worker.evaluate((text) => chrome.storage.session.set({ pendingText: text }), MORE)
+    await expect(references(page)).toHaveValue(MORE)
+    await expect(page.locator('.progress')).toHaveText('0 of 1 checked') // still running
+
+    await expect(page.getByText('1 of 1 checked')).toBeVisible()
+    await expect(page.locator('.ledger > li').nth(0).locator('.verdict')).toHaveText('Verified')
   })
 
   test('switches to Indonesian', async ({ page, extensionId }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await page.getByRole('button', { name: /Switch to Bahasa Indonesia/ }).click()
     await expect(page.getByRole('textbox', { name: 'Referensi' })).toBeVisible()
     await expect(page.getByRole('link', { name: /Buka situs CekKutip/ })).toBeVisible()
@@ -153,13 +231,13 @@ test.describe('the popup', () => {
     worker,
   }) => {
     await worker.evaluate((text) => chrome.storage.session.set({ pendingText: text }), REF)
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await expect(references(page)).toHaveValue(REF)
     // Nothing was sent: the person still chooses "Check references".
     await expect(page.getByText('0 of')).toHaveCount(0)
     await expect(check(page)).toBeEnabled()
-    // The text was taken, so the next time the popup opens it is empty.
-    await openPopup(page, extensionId)
+    // The text was taken, so the next time the side panel opens it is empty.
+    await openPanel(page, extensionId)
     await expect(references(page)).toHaveValue('')
   })
 
@@ -188,13 +266,13 @@ test.describe('the popup', () => {
   })
 })
 
-test.describe('your own key in the popup', () => {
+test.describe('your own key in the side panel', () => {
   test('is saved in the extension and shows only its ends', async ({
     page,
     extensionId,
     worker,
   }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await saveKey(page, KEY)
     await expect(keyStatus(page)).toHaveText('Using your key: AIza...rstu')
     await expect(page.getByText(KEY)).toHaveCount(0)
@@ -202,10 +280,10 @@ test.describe('your own key in the popup', () => {
     expect(JSON.parse(stored['cekkutip.geminiKey'] as string).key).toBe(KEY)
   })
 
-  test('is kept when the popup is closed and opened again', async ({ page, extensionId }) => {
-    await openPopup(page, extensionId)
+  test('is kept when the side panel is closed and opened again', async ({ page, extensionId }) => {
+    await openPanel(page, extensionId)
     await saveKey(page, KEY)
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await summary(page).click()
     await expect(keyStatus(page)).toHaveText('Using your key: AIza...rstu')
   })
@@ -215,7 +293,7 @@ test.describe('your own key in the popup', () => {
     extensionId,
   }) => {
     const seen = await watchCheck(page)
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await saveKey(page, KEY)
     await references(page).fill(REF)
     await check(page).click()
@@ -233,7 +311,7 @@ test.describe('your own key in the popup', () => {
 
   test('tells the person when Google refused it', async ({ page, extensionId }) => {
     await watchCheck(page, (done) => void (done.aiIssue = 'rejected'))
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await saveKey(page, KEY)
     await references(page).fill(REF)
     await check(page).click()
@@ -241,13 +319,13 @@ test.describe('your own key in the popup', () => {
   })
 })
 
-test.describe('the key is shared between the popup and the website', () => {
+test.describe('the key is shared between the side panel and the website', () => {
   test('a key saved in the extension is there when the website is opened', async ({
     context,
     page,
     extensionId,
   }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await saveKey(page, KEY)
 
     const site = await context.newPage()
@@ -261,7 +339,7 @@ test.describe('the key is shared between the popup and the website', () => {
     expect(local.key).toBe(KEY)
   })
 
-  test('a key saved on the website is there when the popup is opened', async ({
+  test('a key saved on the website is there when the side panel is opened', async ({
     context,
     page,
     extensionId,
@@ -269,10 +347,10 @@ test.describe('the key is shared between the popup and the website', () => {
     await openSite(page)
     await saveKey(page, KEY)
 
-    const popup = await context.newPage()
-    await openPopup(popup, extensionId)
-    await summary(popup).click()
-    await expect(keyStatus(popup)).toHaveText('Using your key: AIza...rstu')
+    const panel = await context.newPage()
+    await openPanel(panel, extensionId)
+    await summary(panel).click()
+    await expect(keyStatus(panel)).toHaveText('Using your key: AIza...rstu')
   })
 
   test('a key saved in the extension appears on an open website at once', async ({
@@ -284,18 +362,18 @@ test.describe('the key is shared between the popup and the website', () => {
     await summary(page).click()
     await expect(keyStatus(page)).toHaveText('No key saved. The shared reader is used.')
 
-    const popup = await context.newPage()
-    await openPopup(popup, extensionId)
-    await saveKey(popup, KEY)
+    const panel = await context.newPage()
+    await openPanel(panel, extensionId)
+    await saveKey(panel, KEY)
     await expect(keyStatus(page)).toHaveText('Using your key: AIza...rstu')
   })
 
-  test('a key saved on an open website appears in an open popup at once', async ({
+  test('a key saved on an open website appears in an open side panel at once', async ({
     context,
     page,
     extensionId,
   }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await summary(page).click()
 
     const site = await context.newPage()
@@ -309,7 +387,7 @@ test.describe('the key is shared between the popup and the website', () => {
     page,
     extensionId,
   }) => {
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await saveKey(page, KEY)
     const site = await context.newPage()
     await openSite(site)
@@ -323,7 +401,7 @@ test.describe('the key is shared between the popup and the website', () => {
     await site.reload()
     await summary(site).click()
     await expect(keyStatus(site)).toHaveText('No key saved. The shared reader is used.')
-    await openPopup(page, extensionId)
+    await openPanel(page, extensionId)
     await summary(page).click()
     await expect(keyStatus(page)).toHaveText('No key saved. The shared reader is used.')
   })
@@ -335,10 +413,10 @@ test.describe('the key is shared between the popup and the website', () => {
   }) => {
     await openSite(page)
     await saveKey(page, KEY)
-    const popup = await context.newPage()
-    await openPopup(popup, extensionId)
-    await summary(popup).click()
-    await popup.getByRole('button', { name: 'Remove key' }).click()
+    const panel = await context.newPage()
+    await openPanel(panel, extensionId)
+    await summary(panel).click()
+    await panel.getByRole('button', { name: 'Remove key' }).click()
     await expect(keyStatus(page)).toHaveText('No key saved. The shared reader is used.')
   })
 
@@ -347,9 +425,9 @@ test.describe('the key is shared between the popup and the website', () => {
     page,
     extensionId,
   }) => {
-    const popup = await context.newPage()
-    await openPopup(popup, extensionId)
-    await saveKey(popup, KEY)
+    const panel = await context.newPage()
+    await openPanel(panel, extensionId)
+    await saveKey(panel, KEY)
 
     const seen = await watchCheck(page)
     await openSite(page)

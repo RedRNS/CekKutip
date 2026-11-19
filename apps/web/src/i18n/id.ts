@@ -493,7 +493,7 @@ export const id: Dict = {
       'Gratis. Ekstensi ini belum ada di toko ekstensi browser, jadi dipasang dari berkas ini. Langkahnya ada di bawah.',
     factsWorks: 'Berjalan di',
     factsWorksValue:
-      'Chrome, Edge, dan Brave versi 127 atau lebih baru. Belum diuji di Firefox dan Safari.',
+      'Chrome dan Edge versi 127 atau lebih baru. Belum diuji di Brave, Firefox, dan Safari.',
     factsCost: 'Biaya',
     factsCostValue: 'Gratis, tanpa akun.',
     factsServer: 'Terhubung ke',
@@ -506,7 +506,7 @@ export const id: Dict = {
       },
       {
         name: 'Buka halaman ekstensi',
-        text: 'Ketik `chrome://extensions` di bilah alamat lalu tekan Enter. Di Edge, ketik `edge://extensions`. Di Brave, ketik `brave://extensions`.',
+        text: 'Ketik `chrome://extensions` di bilah alamat lalu tekan Enter. Di Edge, ketik `edge://extensions`.',
       },
       {
         name: 'Nyalakan Developer mode',
@@ -525,8 +525,8 @@ export const id: Dict = {
       'Saat dijalankan, Chrome mungkin mengingatkan bahwa ada ekstensi dalam mode pengembang yang aktif. Itu wajar untuk ekstensi yang dipasang dari berkas. Pesan itu boleh ditutup.',
     useTitle: 'Cara memakai',
     useItems: [
-      'Tekan ikon CekKutip di toolbar. Tempel referensimu lalu tekan Periksa referensi. Hasilnya tampil sama seperti di situs ini.',
-      'Atau pilih teks di halaman web mana pun, klik kanan, lalu pilih "{menu}". Teksnya masuk ke jendela ekstensi. Belum ada yang dikirim sampai kamu menekan Periksa referensi.',
+      'Tekan ikon CekKutip di toolbar. Sebuah panel samping terbuka di sebelah halaman. Tempel referensimu lalu tekan Periksa referensi. Hasilnya tampil sama seperti di situs ini. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab, jadi pemeriksaan terus berjalan. Tutup dengan tombol tutupnya.',
+      'Atau pilih teks di halaman web mana pun, klik kanan, lalu pilih "{menu}". Teksnya masuk ke panel samping dan menggantikan isi kotaknya. Belum ada yang dikirim sampai kamu menekan Periksa referensi.',
     ],
     keyTitle: 'Kunci Gemini milikmu sendiri',
     key: 'Pembaca AI memakai kunci Gemini bersama yang punya batas harian. Kamu bisa menambahkan kunci gratismu sendiri, di situs ini atau di ekstensi. Tambahkan di salah satunya, yang lain ikut mengenalinya. Ini berlaku di satu browser pada satu perangkat, setelah kamu membuka situs ini sekali di browser yang punya ekstensinya.',

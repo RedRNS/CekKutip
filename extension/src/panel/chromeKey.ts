@@ -4,7 +4,7 @@ import type { KeyStore } from '../../../apps/web/src/lib/apiKey'
 import { PENDING_KEY } from '../menu'
 
 /**
- * The popup's key store. It is the website's store (same rules: validate, newer change wins), kept
+ * The side panel's key store. It is the website's store (same rules: validate, newer change wins), kept
  * in chrome.storage.local instead of the page's local storage. chrome.storage is asynchronous, so the
  * value is read once up front and mirrored in memory; every change is written through.
  * The content script on the website reads the same storage, which is how the two stay in step.
@@ -29,7 +29,7 @@ export async function createExtensionKeyStore(): Promise<KeyStore> {
     },
   })
 
-  // A change made elsewhere (the website, through the content script) while the popup is open.
+  // A change made elsewhere (the website, through the content script) while the side panel is open.
   chrome.storage.onChanged.addListener((changes, area) => {
     const change = changes[KEY_STORAGE_NAME]
     if (area !== 'local' || !change) return
@@ -39,12 +39,33 @@ export async function createExtensionKeyStore(): Promise<KeyStore> {
   return store
 }
 
+/** The text has been picked up: remove it, and clear the badge that told the person it was waiting. */
+async function clearPending(): Promise<void> {
+  await chrome.storage.session.remove(PENDING_KEY)
+  await chrome.action.setBadgeText({ text: '' })
+}
+
 /** Text waiting from the right-click menu. Taken once: it is removed as it is read. */
 export async function takePendingText(): Promise<string> {
   const stored = await chrome.storage.session.get(PENDING_KEY)
   const text = stored[PENDING_KEY]
   if (typeof text !== 'string') return ''
-  await chrome.storage.session.remove(PENDING_KEY)
-  await chrome.action.setBadgeText({ text: '' })
+  await clearPending()
   return text
+}
+
+/**
+ * Text sent from the right-click menu while the side panel is already open. The panel stays open
+ * when the person clicks the page or changes tab, so this is the normal way for a selection to arrive.
+ * Returns a function that stops listening.
+ */
+export function watchPendingText(onText: (text: string) => void): () => void {
+  const listener = (changes: Record<string, chrome.storage.StorageChange>, area: string) => {
+    const next = changes[PENDING_KEY]?.newValue
+    if (area !== 'session' || typeof next !== 'string') return
+    onText(next)
+    void clearPending()
+  }
+  chrome.storage.onChanged.addListener(listener)
+  return () => chrome.storage.onChanged.removeListener(listener)
 }

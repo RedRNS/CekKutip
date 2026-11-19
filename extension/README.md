@@ -2,7 +2,7 @@
 
 Memeriksa daftar pustaka langsung dari browser, tanpa membuka situs. Ini alat yang sama dengan situs CekKutip: referensi dikirim ke server CekKutip, dicari di Crossref, OpenAlex, dan DataCite, lalu diberi satu verdict oleh aturan tetap (bukan oleh AI). Verdict adalah ajakan memeriksa, bukan tuduhan.
 
-Untuk Chrome, Edge, dan Brave versi 127 ke atas (Manifest V3). Firefox belum diuji.
+Untuk Chrome dan Edge versi 127 ke atas (Manifest V3, memakai API panel samping). Brave, Firefox, dan Safari belum diuji.
 
 ## Memasang
 
@@ -21,16 +21,16 @@ Untuk membuat zip yang bisa dibagikan: `npm run package:extension` (hasilnya `ex
 
 ## Cara memakai
 
-- **Klik ikon CekKutip.** Tempel referensi, lalu pilih **Check references**. Hasilnya sama seperti di situs: verdict, bukti, dan referensi yang dikoreksi (APA 7) untuk `Mismatch`.
-- **Pilih teks di halaman web mana pun, klik kanan, lalu pilih "Check selection with CekKutip".** Teksnya dimasukkan ke popup. **Belum ada yang dikirim** sampai kamu memilih Check references. Kalau browser tidak mau membuka popup sendiri, ikon menampilkan tanda "1": klik ikonnya.
-- Bahasa: tombol **EN | ID** di popup.
+- **Klik ikon CekKutip.** Sebuah **panel samping** terbuka di sebelah halaman. Tempel referensi, lalu pilih **Check references**. Hasilnya sama seperti di situs: verdict, bukti, dan referensi yang dikoreksi (APA 7) untuk `Mismatch`. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab, jadi pemeriksaan yang sedang berjalan tidak terputus. Lebarnya bisa kamu geser. Tutup dengan tombol tutup panel.
+- **Pilih teks di halaman web mana pun, klik kanan, lalu pilih "Check selection with CekKutip".** Teksnya dimasukkan ke panel samping (menggantikan isi kotaknya; hasil di layar dan pemeriksaan yang berjalan tidak disentuh). **Belum ada yang dikirim** sampai kamu memilih Check references. Kalau browser tidak mau membuka panel sendiri, ikon menampilkan tanda "1": klik ikonnya.
+- Bahasa: tombol **EN | ID** di panel.
 
 ## Kunci Gemini milikmu sendiri
 
 Secara bawaan, pembacaan referensi memakai kunci Gemini bersama milik situs, yang punya batas harian. Kalau banyak orang memakainya, jatah itu bisa habis. Kamu bisa memakai kunci gratismu sendiri:
 
 1. Buat kunci di https://aistudio.google.com/apikey.
-2. Di popup, buka **Use your own Gemini API key (optional)**, tempel kuncinya, lalu **Save key**.
+2. Di panel, buka **Use your own Gemini API key (optional)**, tempel kuncinya, lalu **Save key**.
 
 **Kunci dibagi otomatis dengan situs CekKutip.** Simpan di ekstensi, dan situs mengenalinya begitu dibuka di browser yang sama. Simpan atau hapus di situs, dan ekstensi mengikutinya. Perubahan terakhir yang menang, dan penghapusan ikut tersampaikan. Sinkronisasi ini hanya terjadi di satu browser pada satu perangkat: kunci tidak dikirim ke akun Google atau ke perangkat lain.
 
@@ -40,9 +40,10 @@ Kalau Google menolak kuncinya, atau jatahnya habis, hasil tetap keluar (dibaca o
 
 | Izin                         | Untuk apa                                                                                          |
 | ---------------------------- | -------------------------------------------------------------------------------------------------- |
-| `storage`                    | Menyimpan kunci Gemini milikmu di perangkatmu, dan teks pilihan yang menunggu popup.               |
+| `storage`                    | Menyimpan kunci Gemini milikmu di perangkatmu, dan teks pilihan yang menunggu panel.               |
 | `contextMenus`               | Item klik kanan "Check selection with CekKutip".                                                   |
-| Akses ke situs CekKutip saja | Popup memanggil API CekKutip, dan satu skrip kecil di halaman CekKutip membagi kunci dengan situs. |
+| `sidePanel`                  | Menampilkan panel milik ekstensi ini. Tidak memberi akses ke halaman web mana pun.                 |
+| Akses ke situs CekKutip saja | Panel memanggil API CekKutip, dan satu skrip kecil di halaman CekKutip membagi kunci dengan situs. |
 
 Tidak ada akses ke tab lain, riwayat, cookie, atau situs lain. Ekstensi tidak membaca isi halaman yang kamu kunjungi: yang diterimanya hanya teks yang kamu pilih lalu klik kanan.
 
@@ -71,7 +72,7 @@ npm test                     # termasuk logika sinkronisasi dan menu (extension/
 npm run test:extension       # Playwright: Chromium sungguhan memuat ekstensi
 ```
 
-- `src/popup/`: popup. Memakai komponen yang sama dengan situs (`WorkbenchCore`), diarahkan ke server CekKutip.
+- `src/panel/`: panel samping. Memakai komponen yang sama dengan situs (`WorkbenchCore`), diarahkan ke server CekKutip, dan menerima teks dari klik kanan walau sedang terbuka.
 - `src/bridge.ts` dan `src/bridge-core.ts`: skrip yang berjalan di halaman CekKutip dan membagi kunci. Logikanya (`bridge-core.ts`) murni dan diuji tanpa browser.
-- `src/background.ts` dan `src/menu.ts`: item klik kanan.
+- `src/background.ts`, `src/menu.ts`, dan `src/open-panel.ts`: ikon yang membuka panel, item klik kanan, dan cadangan tab bila browser tidak punya panel samping.
 - Protokol sinkronisasi dan aturan kunci ada di `packages/shared/src/apikey.ts`.

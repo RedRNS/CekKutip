@@ -486,7 +486,7 @@ export const en = {
       'It is free. It is not in a browser extension store yet, so you install it from this file. The steps are below.',
     factsWorks: 'Works in',
     factsWorksValue:
-      'Chrome, Edge, and Brave, version 127 or later. Not tested in Firefox or Safari.',
+      'Chrome and Edge, version 127 or later. Not tested in Brave, Firefox, or Safari.',
     factsCost: 'Cost',
     factsCostValue: 'Free. No account.',
     factsServer: 'Talks to',
@@ -499,7 +499,7 @@ export const en = {
       },
       {
         name: 'Open the extensions page',
-        text: 'Type `chrome://extensions` in the address bar and press Enter. In Edge, type `edge://extensions`. In Brave, type `brave://extensions`.',
+        text: 'Type `chrome://extensions` in the address bar and press Enter. In Edge, type `edge://extensions`.',
       },
       {
         name: 'Turn on Developer mode',
@@ -518,8 +518,8 @@ export const en = {
       'When it starts, Chrome may remind you that an extension in developer mode is on. That is expected for an extension installed from a file. You can dismiss the message.',
     useTitle: 'Use it',
     useItems: [
-      'Press the CekKutip icon in the toolbar. Paste your references and press Check references. The results look the same as on this site.',
-      'Or select text on any web page, right-click, and choose "{menu}". The text goes into the extension window. Nothing is sent until you press Check references.',
+      'Press the CekKutip icon in the toolbar. A side panel opens next to the page. Paste your references and press Check references. The results look the same as on this site. The panel stays open when you click on the page or switch tabs, so a check keeps running. Close it with its close button.',
+      'Or select text on any web page, right-click, and choose "{menu}". The text goes into the side panel, replacing what is in its box. Nothing is sent until you press Check references.',
     ],
     keyTitle: 'Your own Gemini key',
     key: 'The AI reader uses a shared Gemini key with a daily limit. You can add your own free key, on this site or in the extension. Add it in one place and the other picks it up. This works inside one browser on one device, after you have opened this site once in a browser that has the extension.',

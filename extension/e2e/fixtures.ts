@@ -63,10 +63,10 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   },
 })
 
-export const popupUrl = (id: string) => `chrome-extension://${id}/popup.html`
+export const panelUrl = (id: string) => `chrome-extension://${id}/panel.html`
 
-export async function openPopup(page: Page, id: string) {
-  await page.goto(popupUrl(id))
+export async function openPanel(page: Page, id: string) {
+  await page.goto(panelUrl(id))
   await page.evaluate(() => document.fonts.ready)
 }
 

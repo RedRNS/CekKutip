@@ -60,14 +60,14 @@ Teks penjelasan untuk pengguna dibuat di klien dari templat per kode alasan (`i1
 ## Kunci Gemini milik pengguna dan ekstensi
 
 ```
-Situs (localStorage)  <--postMessage-->  bridge.js (skrip konten, hanya di halaman CekKutip)  <--->  chrome.storage.local  <--->  Popup
+Situs (localStorage)  <--postMessage-->  bridge.js (skrip konten, hanya di halaman CekKutip)  <--->  chrome.storage.local  <--->  Panel samping
          |                                                                                                              |
          +----------------- POST /api/check, header x-gemini-key (hanya bila pembaca AI dipakai) ---------------------------+
                                                          |
                                                   server: klien Gemini untuk permintaan itu saja; tidak disimpan, tidak masuk log
 ```
 
-Aturan dan protokol di `packages/shared/src/apikey.ts`. Perubahan terakhir menang; penghapusan tercatat dengan waktu. Ringkasan `done` membawa `aiIssue` (`rejected` atau `quota`) bila model tidak bisa dipakai. Folder `extension/` (di luar workspace npm) membangun popup dengan komponen yang sama dengan situs. Lihat `extension/README.md` dan DECISIONS butir 112 sampai 119.
+Aturan dan protokol di `packages/shared/src/apikey.ts`. Perubahan terakhir menang; penghapusan tercatat dengan waktu. Ringkasan `done` membawa `aiIssue` (`rejected` atau `quota`) bila model tidak bisa dipakai. Folder `extension/` (di luar workspace npm) membangun panel samping (bukan popup, yang tertutup saat pengguna mengklik di luarnya) dengan komponen yang sama dengan situs. Lihat `extension/README.md` dan DECISIONS butir 112 sampai 119.
 
 ## Server
 

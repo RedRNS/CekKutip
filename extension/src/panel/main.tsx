@@ -7,12 +7,12 @@ import '../../../apps/web/src/styles/tokens.css'
 import '../../../apps/web/src/styles/base.css'
 import '../../../apps/web/src/styles/components.css'
 import '../../../apps/web/src/styles/workbench.css'
-import './popup.css'
+import './panel.css'
 
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { I18nProvider } from '../../../apps/web/src/i18n'
-import { Popup } from './Popup'
+import { Panel } from './Panel'
 import { createExtensionKeyStore, takePendingText } from './chromeKey'
 
 async function boot() {
@@ -21,7 +21,7 @@ async function boot() {
   createRoot(document.getElementById('root')!).render(
     <StrictMode>
       <I18nProvider>
-        <Popup store={store} initialText={pending} />
+        <Panel store={store} initialText={pending} />
       </I18nProvider>
     </StrictMode>,
   )

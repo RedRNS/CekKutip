@@ -1,31 +1,30 @@
-/* The popup reuses the website's tokens and components. These rules only fit them to a 400 px window. */
-
-html {
-  width: 400px;
-}
+/*
+ * The side panel reuses the website's tokens and components. Its width belongs to the person (the
+ * edge of the panel can be dragged), so nothing here fixes a width: the layout follows the panel.
+ */
 
 body {
-  width: 400px;
-  min-height: 240px;
+  min-height: 100vh;
 }
 
-/* The print heading belongs to the website's print stylesheet, which the popup does not load. */
+/* The print heading belongs to the website's print stylesheet, which the panel does not load. */
 .print-only {
   display: none;
 }
 
-.popup {
+.ext {
+  min-width: 0;
   padding: var(--s-12) var(--s-16) var(--s-16);
 }
 
-.popup__head {
+.ext__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--s-12);
 }
 
-.popup__title {
+.ext__title {
   margin: 0;
   font-family: var(--font-display);
   font-size: var(--fs-22);
@@ -33,20 +32,20 @@ body {
   color: var(--brand);
 }
 
-.popup .workbench {
+.ext .workbench {
   margin-top: var(--s-12);
   gap: var(--s-16);
 }
 
-.popup .panel {
+.ext .panel {
   padding: var(--s-12);
 }
 
-.popup .textarea {
+.ext .textarea {
   min-height: 140px;
 }
 
-.popup__foot {
+.ext__foot {
   margin-top: var(--s-16);
   padding-top: var(--s-12);
   border-top: 1px solid var(--rule);

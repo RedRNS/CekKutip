@@ -17,7 +17,7 @@ export interface ApiKeyPanelProps {
 
 /**
  * Lets a person use their own Gemini key instead of the site's shared one. Used by the website and
- * by the extension popup: where the key is kept is up to the caller.
+ * by the extension's side panel: where the key is kept is up to the caller.
  */
 export function ApiKeyPanel({
   keyValue,

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { MAX_PENDING_CHARS, MENU_ID, handleMenuClick } from '../src/menu'
 import type { MenuApi } from '../src/menu'
 
-function api(opts: { popupFails?: boolean } = {}) {
+function api(opts: { panelFails?: boolean } = {}) {
   const log: string[] = []
   const pending: string[] = []
   const menu: MenuApi = {
@@ -10,9 +10,9 @@ function api(opts: { popupFails?: boolean } = {}) {
       log.push('pending')
       pending.push(text)
     },
-    openPopup: async () => {
-      log.push('popup')
-      if (opts.popupFails) throw new Error('not allowed')
+    openPanel: async () => {
+      log.push('panel')
+      if (opts.panelFails) throw new Error('not allowed')
     },
     setBadge: async (text) => void log.push(`badge:${text}`),
   }
@@ -20,25 +20,40 @@ function api(opts: { popupFails?: boolean } = {}) {
 }
 
 describe('the right-click item', () => {
-  it('puts the selection aside, then opens the popup', async () => {
+  it('opens the side panel and puts the selection aside', async () => {
     const a = api()
     const out = await handleMenuClick(
       { menuItemId: MENU_ID, selectionText: '  Doe, J. (2020). A.  ' },
       a.menu,
     )
     expect(out).toBe('opened')
-    expect(a.log).toEqual(['pending', 'popup'])
+    expect(a.log).toEqual(['panel', 'pending'])
     expect(a.pending).toEqual(['Doe, J. (2020). A.'])
   })
 
-  it('shows a badge on the icon when the browser will not open the popup, and still keeps the text', async () => {
-    const a = api({ popupFails: true })
+  it('opens the panel before it awaits anything, because the click gesture lapses', async () => {
+    // openPanel is called in the same turn as the click: nothing has been awaited yet.
+    const calls: string[] = []
+    const menu: MenuApi = {
+      setPending: async () => void calls.push('pending'),
+      openPanel: async () => void calls.push('panel'),
+      setBadge: async () => undefined,
+    }
+    const done = handleMenuClick({ menuItemId: MENU_ID, selectionText: 'text' }, menu)
+    // Called synchronously, before anything was awaited, and before the text was stored.
+    expect(calls[0]).toBe('panel')
+    await done
+    expect(calls).toEqual(['panel', 'pending'])
+  })
+
+  it('shows a badge on the icon when the browser will not open the panel, and still keeps the text', async () => {
+    const a = api({ panelFails: true })
     const out = await handleMenuClick(
       { menuItemId: MENU_ID, selectionText: 'Doe, J. (2020). A.' },
       a.menu,
     )
     expect(out).toBe('badge')
-    expect(a.log).toEqual(['pending', 'popup', 'badge:1'])
+    expect(a.log).toEqual(['panel', 'pending', 'badge:1'])
     expect(a.pending).toHaveLength(1)
   })
 
@@ -63,10 +78,10 @@ describe('the right-click item', () => {
     expect(a.pending[0]?.length).toBe(MAX_PENDING_CHARS)
   })
 
-  it('sends nothing anywhere: it only stores text and opens the popup', async () => {
+  it('sends nothing anywhere: it only stores text and opens the panel', async () => {
     const a = api()
     await handleMenuClick({ menuItemId: MENU_ID, selectionText: 'text' }, a.menu)
     // The API has no way to reach a server: the only three actions are the ones the test recorded.
-    expect(Object.keys(a.menu).sort()).toEqual(['openPopup', 'setBadge', 'setPending'])
+    expect(Object.keys(a.menu).sort()).toEqual(['openPanel', 'setBadge', 'setPending'])
   })
 })

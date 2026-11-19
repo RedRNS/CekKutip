@@ -15,8 +15,8 @@ const KEY_A = 'AIzaSyA-1234567890abcdefghijklmnopqrstu'
 const KEY_B = 'AIzaSyB-0987654321zyxwvutsrqponmlkjihgf'
 
 /**
- * The website's store, the bridge, and the popup's store, wired the way the browser wires them:
- * the page talks to the bridge by messages, and the bridge and the popup share one storage.
+ * The website's store, the bridge, and the panel's store, wired the way the browser wires them:
+ * the page talks to the bridge by messages, and the bridge and the panel share one storage.
  * Messages are delivered one at a time and counted, so a loop would show up as a runaway count.
  */
 function world(opts: { start?: number } = {}) {
@@ -38,10 +38,10 @@ function world(opts: { start?: number } = {}) {
     },
   })
 
-  /** The extension's storage changed: the popup and the bridge hear about it (chrome.storage.onChanged). */
+  /** The extension's storage changed: the panel and the bridge hear about it (chrome.storage.onChanged). */
   function setExtension(state: StoredKey) {
     extension = state
-    popup?.reload()
+    panel?.reload()
     if (pageOpen) bridge.changed(state)
   }
 
@@ -63,7 +63,7 @@ function world(opts: { start?: number } = {}) {
     return page
   }
 
-  const popup: KeyStore = createKeyStore({
+  const panel: KeyStore = createKeyStore({
     storage: {
       getItem: (k) =>
         k === KEY_STORAGE_NAME && extension.updatedAt > 0 ? JSON.stringify(extension) : null,
@@ -76,7 +76,7 @@ function world(opts: { start?: number } = {}) {
   })
 
   return {
-    popup,
+    panel,
     get page() {
       return page
     },
@@ -114,7 +114,7 @@ function world(opts: { start?: number } = {}) {
 describe('a key saved in the extension', () => {
   it('shows up on the website when it is opened', async () => {
     const w = world()
-    w.popup.save(KEY_A)
+    w.panel.save(KEY_A)
     await w.openPage()
     expect(w.page.getState().key).toBe(KEY_A)
     expect(w.page.isConnected()).toBe(true)
@@ -124,7 +124,7 @@ describe('a key saved in the extension', () => {
     const w = world()
     await w.openPage()
     expect(w.page.getState().key).toBeNull()
-    w.popup.save(KEY_A)
+    w.panel.save(KEY_A)
     await w.settle()
     expect(w.page.getState().key).toBe(KEY_A)
   })
@@ -134,7 +134,7 @@ describe('a key saved in the extension', () => {
     await w.openPage()
     w.page.save(KEY_A)
     await w.settle()
-    w.popup.save(KEY_B)
+    w.panel.save(KEY_B)
     await w.settle()
     expect(w.page.getState().key).toBe(KEY_B)
     expect(w.extension().key).toBe(KEY_B)
@@ -148,7 +148,7 @@ describe('a key saved on the website', () => {
     w.page.save(KEY_A)
     await w.settle()
     expect(w.extension().key).toBe(KEY_A)
-    expect(w.popup.getState().key).toBe(KEY_A)
+    expect(w.panel.getState().key).toBe(KEY_A)
   })
 
   it('reaches the extension when the website held it from before the extension was installed', async () => {
@@ -178,18 +178,18 @@ describe('a key saved on the website', () => {
 describe('removing the key', () => {
   it('on the website removes it from the extension, and the old copy does not come back', async () => {
     const w = world()
-    w.popup.save(KEY_A)
+    w.panel.save(KEY_A)
     await w.openPage()
     expect(w.page.getState().key).toBe(KEY_A)
     w.page.clear()
     await w.settle()
     expect(w.extension().key).toBeNull()
-    expect(w.popup.getState().key).toBeNull()
+    expect(w.panel.getState().key).toBeNull()
     // Closing and reopening the website must not bring the key back from either side.
     w.closePage()
     await w.reopenPage()
     expect(w.page.getState().key).toBeNull()
-    expect(w.popup.getState().key).toBeNull()
+    expect(w.panel.getState().key).toBeNull()
   })
 
   it('in the extension removes it from the website', async () => {
@@ -197,7 +197,7 @@ describe('removing the key', () => {
     await w.openPage()
     w.page.save(KEY_A)
     await w.settle()
-    w.popup.clear()
+    w.panel.clear()
     await w.settle()
     expect(w.page.getState().key).toBeNull()
   })
@@ -208,7 +208,7 @@ describe('removing the key', () => {
     w.page.save(KEY_A)
     await w.settle()
     w.closePage()
-    w.popup.clear()
+    w.panel.clear()
     await w.reopenPage()
     expect(w.page.getState().key).toBeNull()
   })
@@ -223,7 +223,7 @@ describe('two changes made while apart', () => {
     w.closePage()
     // While the website is closed, the extension changes the key, then later the website's storage is
     // changed by another tab (simulated by saving on the closed store, which only reaches its storage).
-    w.popup.save(KEY_B)
+    w.panel.save(KEY_B)
     await w.reopenPage()
     expect(w.page.getState().key).toBe(KEY_B)
     expect(w.extension().key).toBe(KEY_B)
@@ -233,11 +233,11 @@ describe('two changes made while apart', () => {
 describe('the messages', () => {
   it('stay few: no loop between the two sides', async () => {
     const w = world()
-    w.popup.save(KEY_A)
+    w.panel.save(KEY_A)
     await w.openPage()
     w.page.save(KEY_B)
     await w.settle()
-    w.popup.save(KEY_A)
+    w.panel.save(KEY_A)
     await w.settle()
     w.page.clear()
     await w.settle()

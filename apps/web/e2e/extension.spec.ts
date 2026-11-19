@@ -16,7 +16,7 @@ test.describe('the Extension page', () => {
     const saved = await download.path()
     const entries = readZip(readFileSync(saved)) // throws if it is not a zip or is damaged
     const names = entries.map((e) => e.name)
-    for (const must of ['manifest.json', 'popup.html', 'popup.js', 'background.js', 'bridge.js'])
+    for (const must of ['manifest.json', 'panel.html', 'panel.js', 'background.js', 'bridge.js'])
       expect(names).toContain(must)
     expect(names.some((n) => n.startsWith('icons/'))).toBe(true)
 
@@ -27,12 +27,18 @@ test.describe('the Extension page', () => {
       name: string
       permissions: string[]
       host_permissions: string[]
+      side_panel?: { default_path: string }
+      action?: { default_popup?: string }
     }
     expect(manifest.manifest_version).toBe(3)
     expect(manifest.name).toBe('CekKutip')
     // It asks for this one site and nothing broader.
     expect(manifest.host_permissions).toEqual([`${new URL(siteConfig.demoUrl).origin}/*`])
-    expect(manifest.permissions.sort()).toEqual(['contextMenus', 'storage'])
+    expect(manifest.permissions.sort()).toEqual(['contextMenus', 'sidePanel', 'storage'])
+    // A side panel, not a popup: a popup closes when the person clicks outside it.
+    expect(manifest.side_panel?.default_path).toBe('panel.html')
+    expect(manifest.action?.default_popup).toBeUndefined()
+    expect(names).toContain(manifest.side_panel!.default_path)
   })
 
   test('gives the installation steps in order, with addresses in monospace and no stray markers', async ({

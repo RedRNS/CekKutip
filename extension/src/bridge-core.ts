@@ -42,7 +42,7 @@ export function createBridgeCore(deps: BridgeDeps) {
         say({ type: 'state', state: pageIsNewer ? message.state : mine })
     },
 
-    /** The extension's key changed (in the popup, or by this bridge): tell the open page. */
+    /** The extension's key changed (in the side panel, or by this bridge): tell the open page. */
     changed(state: StoredKey): void {
       say({ type: 'state', state })
     },

@@ -26,6 +26,12 @@ export interface WorkbenchCoreProps {
   baseUrl?: string
   /** Text to start with, for example a selection sent from the extension's menu. */
   initialText?: string
+  /**
+   * Text that arrives while the tool is already open (a selection sent from the menu to an open side
+   * panel). It replaces what is in the box and leaves the results, and any check in progress, alone.
+   * `n` changes with every arrival, so the same text sent twice still counts.
+   */
+  incomingText?: { text: string; n: number } | null
   /** An absolute address for the Privacy page, for places that have no router (the extension). */
   privacyHref?: string
   /** A sentence about how the key is shared. The website derives it from the connection when empty. */
@@ -41,13 +47,14 @@ export function Workbench() {
 /**
  * The tool itself. Left: paste references. Right: results, one row per reference, as they arrive.
  * The list is split in the browser with the same code the server uses, so "N found" is what gets checked.
- * The website and the extension popup both render this.
+ * The website and the extension's side panel both render this.
  */
 export function WorkbenchCore({
   keyApi: apiKey,
   getKey,
   baseUrl,
   initialText = '',
+  incomingText = null,
   privacyHref,
   keyLinkNote,
 }: WorkbenchCoreProps) {
@@ -62,6 +69,13 @@ export function WorkbenchCore({
   const resultsRef = useRef<HTMLElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploadNote, setUploadNote] = useState<{ ok: boolean; text: string } | null>(null)
+
+  useEffect(() => {
+    if (incomingText) {
+      setText(incomingText.text)
+      setUploadNote(null)
+    }
+  }, [incomingText])
 
   useEffect(() => {
     const ac = new AbortController()

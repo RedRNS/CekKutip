@@ -36,7 +36,7 @@ mkdirSync(outDir, { recursive: true })
 
 await build({
   entryPoints: {
-    popup: path.join(ext, 'src/popup/main.tsx'),
+    panel: path.join(ext, 'src/panel/main.tsx'),
     background: path.join(ext, 'src/background.ts'),
     bridge: path.join(ext, 'src/bridge.ts'),
   },
@@ -57,7 +57,7 @@ await build({
 })
 
 // Chrome reads WOFF2. The older WOFF copies that the font packages also list are dead weight.
-const cssFile = path.join(outDir, 'popup.css')
+const cssFile = path.join(outDir, 'panel.css')
 writeFileSync(
   cssFile,
   readFileSync(cssFile, 'utf8').replace(/,\s*url\("[^"]*\.woff"\)\s*format\("woff"\)/g, ''),
@@ -79,32 +79,38 @@ const manifest = {
   description:
     'Check a reference list against Crossref, OpenAlex, and DataCite. Verdicts come from fixed rules.',
   icons: iconMap,
-  action: { default_title: 'CekKutip', default_popup: 'popup.html', default_icon: iconMap },
+  // No default_popup: a popup closes the moment the person clicks outside it, and a check that is
+  // running goes with it. The icon opens the side panel instead (background.js sets that up).
+  action: { default_title: 'CekKutip', default_icon: iconMap },
+  side_panel: { default_path: 'panel.html' },
   background: { service_worker: 'background.js' },
   // storage: the Gemini key and the text waiting from the right-click menu.
   // contextMenus: the item "Check selection with CekKutip".
-  permissions: ['storage', 'contextMenus'],
-  // The CekKutip server and nothing else: the popup calls its API, and a small script runs on its
+  // sidePanel: show the extension's own panel. It gives no access to any page.
+  permissions: ['storage', 'contextMenus', 'sidePanel'],
+  // The CekKutip server and nothing else: the panel calls its API, and a small script runs on its
   // pages to share the Gemini key with the website.
   host_permissions: [matchPattern],
   content_scripts: [{ matches: [matchPattern], js: ['bridge.js'], run_at: 'document_start' }],
-  minimum_chrome_version: '127', // chrome.action.openPopup
+  // The side panel API itself needs 116 (sidePanel.open). 127 is the floor this extension was
+  // published with, and it is tested on current Chromium only.
+  minimum_chrome_version: '127',
 }
 writeFileSync(path.join(outDir, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n')
 
 writeFileSync(
-  path.join(outDir, 'popup.html'),
+  path.join(outDir, 'panel.html'),
   `<!doctype html>
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CekKutip</title>
-    <link rel="stylesheet" href="popup.css" />
+    <link rel="stylesheet" href="panel.css" />
   </head>
   <body>
     <div id="root"></div>
-    <script src="popup.js"></script>
+    <script src="panel.js"></script>
   </body>
 </html>
 `,

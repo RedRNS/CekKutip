@@ -27,7 +27,7 @@ window.addEventListener('message', (event: MessageEvent) => {
   })
 })
 
-// The popup changed the key: tell the open page at once.
+// The side panel changed the key: tell the open page at once.
 chrome.storage.onChanged.addListener((changes, area) => {
   const change = changes[KEY_STORAGE_NAME]
   if (area !== 'local' || !change) return

@@ -3,7 +3,7 @@ import type { Lang } from '../i18n'
 
 const LANGS: Lang[] = ['en', 'id']
 
-/** The EN | ID switch. Used by the site header and by the extension popup. */
+/** The EN | ID switch. Used by the site header and by the extension's side panel. */
 export function LangSwitch() {
   const { t, lang, setLang } = useI18n()
   return (
