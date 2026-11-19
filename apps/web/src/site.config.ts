@@ -1,7 +1,6 @@
 /**
  * Team and contact details shown on public pages (About, Footer).
- * Every value below is a placeholder. A production build FAILS while any
- * value still starts with 'TODO'. Replace them before deploying.
+ * A production build FAILS while any value still starts with 'TODO'.
  */
 export interface SiteConfig {
   teamName: string
@@ -14,16 +13,22 @@ export interface SiteConfig {
 }
 
 export const siteConfig: SiteConfig = {
-  teamName: 'TODO: team name',
+  teamName: 'Halu Hunters',
   members: [
-    { name: 'TODO: member name 1', program: 'TODO: study program' },
-    { name: 'TODO: member name 2', program: 'TODO: study program' },
+    { name: 'Renisa Assyifa Putri', program: 'Teknik Informatika' },
+    { name: 'Shellyn Euriska Putri', program: 'Teknik Informatika' },
+    { name: 'Nadira Hikmah Fatheena', program: 'Teknik Informatika' },
+    { name: 'Fauza Kaizaku Setiawan', program: 'Teknik Informatika' },
+    { name: 'Arkaan Wisnu Pratama', program: 'Teknik Informatika' },
+    { name: 'Regita Hutri Cahyaningrum', program: 'Teknik Informatika' },
   ],
-  supervisor: 'TODO: supervisor name',
-  university: 'TODO: university (Telkom University Purwokerto)',
-  contactEmail: 'TODO: contact email',
-  githubUrl: 'TODO: GitHub URL',
-  demoUrl: 'TODO: demo URL',
+  supervisor: 'Dany Candra Febrianto, S.Kom., M.Eng',
+  university: 'Telkom University Purwokerto',
+  contactEmail: 'renisaassyifaputri@student.telkomuniversity.ac.id',
+  githubUrl: 'https://github.com/RedRNS/CekKutip',
+  // The address Render is expected to give the service named "cekkutip". If Render gives another
+  // one (the name was taken), change this line and push: the site redeploys by itself.
+  demoUrl: 'https://cekkutip.onrender.com',
 }
 
 export function findTodoFields(config: SiteConfig = siteConfig): string[] {

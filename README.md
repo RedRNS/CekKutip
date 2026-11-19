@@ -13,6 +13,12 @@ Model bahasa **hanya membaca** teks referensi menjadi field (penulis, tahun, jud
 
 Dibuat untuk GYIIF 2027 (kategori Engineering and Technology). Pembeda dari pemeriksa lain: verdict `Mismatch` untuk karya nyata yang dikutip keliru, verdict abstain `Out-of-index`, dan evaluasi pada referensi mahasiswa Indonesia.
 
+## Tim
+
+Kelompok **Halu Hunters**, Teknik Informatika, Telkom University Purwokerto. Anggota: Renisa Assyifa Putri (ketua), Shellyn Euriska Putri, Nadira Hikmah Fatheena, Fauza Kaizaku Setiawan, Arkaan Wisnu Pratama, Regita Hutri Cahyaningrum. Dosen pembimbing: Dany Candra Febrianto, S.Kom., M.Eng.
+
+Video demo, buku manual, dan arsip lain untuk pengguna ada di [folder Google Drive tim](https://drive.google.com/drive/folders/1vPRw8e8778n8S_w2c4RgPBTmzjuVsklV?usp=sharing).
+
 ## Fitur selain pemeriksaan dasar (P1)
 
 - **DOI arXiv dan Zenodo** diperiksa lewat DataCite, bukan langsung `Out-of-index`.

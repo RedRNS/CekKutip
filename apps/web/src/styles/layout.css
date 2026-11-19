@@ -175,3 +175,8 @@
   font-size: var(--fs-14);
   padding-block: var(--s-8);
 }
+
+/* A long address (the contact email) breaks instead of touching the edge on a phone. */
+.plain-list--tight a[href^='mailto:'] {
+  overflow-wrap: anywhere;
+}
