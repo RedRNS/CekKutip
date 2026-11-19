@@ -93,6 +93,18 @@ const states: State[] = [
         .waitFor()
     },
   },
+  {
+    name: 'home-key-panel',
+    path: '/',
+    prepare: async (page) => {
+      await page.getByText(/^(use your own gemini api key|pakai kunci api gemini milikmu)/i).click()
+      await page
+        .getByLabel(/^(gemini api key|kunci api gemini)$/i)
+        .fill('AIzaSyA-1234567890abcdefghijklmnopqrstu')
+      await page.getByRole('button', { name: /^(save key|simpan kunci)$/i }).click()
+      await page.locator('.keypanel__status').waitFor()
+    },
+  },
   { name: 'how-it-works', path: '/how-it-works' },
   { name: 'evaluation-empty', path: '/evaluation' },
   { name: 'about', path: '/about' },

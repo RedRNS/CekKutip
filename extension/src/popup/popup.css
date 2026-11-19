@@ -1,0 +1,54 @@
+/* The popup reuses the website's tokens and components. These rules only fit them to a 400 px window. */
+
+html {
+  width: 400px;
+}
+
+body {
+  width: 400px;
+  min-height: 240px;
+}
+
+/* The print heading belongs to the website's print stylesheet, which the popup does not load. */
+.print-only {
+  display: none;
+}
+
+.popup {
+  padding: var(--s-12) var(--s-16) var(--s-16);
+}
+
+.popup__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+}
+
+.popup__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--fs-22);
+  font-weight: 600;
+  color: var(--brand);
+}
+
+.popup .workbench {
+  margin-top: var(--s-12);
+  gap: var(--s-16);
+}
+
+.popup .panel {
+  padding: var(--s-12);
+}
+
+.popup .textarea {
+  min-height: 140px;
+}
+
+.popup__foot {
+  margin-top: var(--s-16);
+  padding-top: var(--s-12);
+  border-top: 1px solid var(--rule);
+  font-size: var(--fs-14);
+}

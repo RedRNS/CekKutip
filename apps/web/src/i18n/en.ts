@@ -83,7 +83,7 @@ export const en = {
     clear: 'Clear',
     resultsTitle: 'Results',
     emptyHint:
-      'Paste your references on the left and choose Check references. Results appear here, one by one.',
+      'Paste your references and choose Check references. Results appear here, one by one.',
     emptyLegend: 'What the four verdicts mean',
     statement: 'Verdicts are prompts for review, not findings of misconduct.',
     verdictsTitle: 'The four verdicts',
@@ -340,6 +340,7 @@ export const en = {
       'By default, your reference text is sent to Google Gemini. It is used only to read the fields: authors, year, title. Choose "Do not send my text to an AI service" to avoid this. Results are then less accurate.',
       'Google states that content sent through its free tier can be used to improve its products, and that human reviewers may read it.',
       'The title, authors, and DOI that were read from your references are sent to Crossref and OpenAlex, and to DataCite when needed, to look the work up.',
+      'If you add your own Gemini key, it stays in your browser. It is sent to our server with each check, used only to ask Google to read your references, and never stored or logged. If you have the CekKutip browser extension, the key is shared between the site and the extension on your device.',
       'A .txt or .bib file you choose is read in your browser and put in the input box, like pasted text. Nothing is sent until you choose Check references.',
       'Our server does not store your text. Our logs hold only a request id, the number of references, timings, and error codes. They never hold your text.',
       'We follow the principles of Indonesian Law No. 27 of 2022 on Personal Data Protection: collect little, use it for one purpose, and keep nothing we do not need. This describes our approach. It is not a statement of legal compliance.',
@@ -362,6 +363,16 @@ export const en = {
     finished: (total: number) => `Check finished. ${total} references checked.`,
     barLabel: 'Results by verdict',
     printFiltered: 'Showing only {verdict} results: {shown} of {total}.',
+    aiIssue: {
+      rejectedOwn:
+        'Google did not accept your Gemini key, so the no-AI reader read your references instead. Check the key.',
+      quotaOwn:
+        'Your Gemini key reached its usage limit, so the no-AI reader read some references instead.',
+      rejectedShared:
+        'The shared AI reader is not available right now, so the no-AI reader read your references instead. You can add your own free Gemini key.',
+      quotaShared:
+        'The shared AI reader reached its daily limit, so the no-AI reader read some references instead. Add your own free Gemini key to keep using the AI reader.',
+    },
   },
   evidence: {
     caption: (n: number) => `Reference ${n} compared with the record`,
@@ -426,6 +437,8 @@ export const en = {
     reference_too_long:
       'Reference {n} is longer than {max} characters. Shorten it, or check that it is one reference.',
     no_references: 'Paste at least one reference to check.',
+    invalid_api_key:
+      'The Gemini key does not look right. Open "Use your own Gemini API key" to check it or remove it.',
     tryAgain: 'Try again',
   },
   workbench: {
@@ -433,6 +446,30 @@ export const en = {
       'The AI reader is not set up on this server. Your text is read by a pattern reader on our server instead, then looked up in Crossref and OpenAlex. We do not store your text.',
     shortcut: 'Ctrl+Enter',
     checkingButton: 'Checking',
+  },
+  apiKey: {
+    summary: 'Use your own Gemini API key (optional)',
+    intro:
+      "The AI reader uses this site's shared Gemini key, which has a daily limit and can run out when many people use it. Add your own free key to read your references with your own limit.",
+    label: 'Gemini API key',
+    show: 'Show key',
+    save: 'Save key',
+    remove: 'Remove key',
+    getKey: 'Get a free key from Google AI Studio',
+    statusNone: 'No key saved. The shared reader is used.',
+    statusSet: 'Using your key: {masked}',
+    saved: 'Key saved in this browser.',
+    removed: 'Key removed. The shared reader is used.',
+    invalid: 'That does not look like a Gemini API key. Check it and try again.',
+    privacy:
+      'The key stays in your browser. It is sent to our server with each check, used only to ask Google to read your references, and never stored or logged. Remove it at any time.',
+    linked:
+      'The CekKutip browser extension is connected. A key saved here also appears in the extension.',
+  },
+  extension: {
+    openSite: 'Open the CekKutip website',
+    keyNote: 'This key is also used on the CekKutip website once you open it in this browser.',
+    menuTitle: 'Check selection with CekKutip',
   },
   upload: {
     button: 'Upload .txt or .bib',

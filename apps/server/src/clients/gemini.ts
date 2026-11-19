@@ -106,6 +106,11 @@ function toServiceError(err: unknown): ServiceUnavailableError {
     const s = err.status
     if (s === 429) return new ServiceUnavailableError('gemini', 'rate_limited', s)
     if (s === 401 || s === 403) return new ServiceUnavailableError('gemini', 'blocked', s)
+    // A key that Google does not accept comes back as 400 "API key not valid". Only the status and
+    // this check are used: the message itself is dropped, because it can echo what was sent.
+    if (s === 400 && /api[ _]?key/i.test(err.message)) {
+      return new ServiceUnavailableError('gemini', 'blocked', s)
+    }
     if (s >= 500) return new ServiceUnavailableError('gemini', 'server_error', s)
     return new ServiceUnavailableError('gemini', 'bad_response', s)
   }

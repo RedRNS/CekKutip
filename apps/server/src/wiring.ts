@@ -2,6 +2,7 @@ import { createCrossrefClient } from './clients/crossref.js'
 import { createDataciteClient } from './clients/datacite.js'
 import { createDoiClient } from './clients/doi.js'
 import { createGeminiClient } from './clients/gemini.js'
+import type { GeminiClient } from './clients/gemini.js'
 import { createOpenAlexClient } from './clients/openalex.js'
 import type { Env } from './config/env.js'
 import type { Limits } from './config/limits.js'
@@ -9,6 +10,12 @@ import { RetrievalCache } from './lib/cache.js'
 import { HttpClient } from './lib/http.js'
 import type { PipelineDeps } from './pipeline/run.js'
 import { TOOL_VERSION } from './version.js'
+
+/** Builds a model client for one request from the person's own key. The model and temperature are the server's. */
+export function buildGeminiFactory(env: Env): (apiKey: string) => GeminiClient {
+  return (apiKey) =>
+    createGeminiClient({ apiKey, model: env.geminiModel, temperature: env.geminiTemperature })
+}
 
 /** Build the real clients from the environment. */
 export function buildPipelineDeps(env: Env, limits: Limits): PipelineDeps {

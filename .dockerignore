@@ -22,3 +22,6 @@ eval/cache
 eval/results-sample
 apps/web/e2e/cache
 *.log
+
+# The browser extension is built separately and is not part of the server image.
+extension

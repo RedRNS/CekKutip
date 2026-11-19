@@ -12,3 +12,6 @@ eval/cache/
 .cache/
 blob-report/
 eval/results-sample/
+
+# Built extension archives
+extension/*.zip

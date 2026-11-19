@@ -6,21 +6,56 @@ import { Link } from 'react-router-dom'
 import { EXAMPLE_TEXT, PLACEHOLDER_EXAMPLES } from '../data/example-list'
 import { fmt, useI18n } from '../i18n'
 import { DEFAULT_CONFIG, fetchConfig } from '../lib/api'
+import { getKeyStore, useApiKey } from '../lib/apiKey'
+import type { ApiKeyView } from '../lib/apiKey'
 import { MAX_UPLOAD_BYTES, appendText, readReferenceFile } from '../lib/upload'
 import { useCheck } from '../state/useCheck'
+import { ApiKeyPanel } from './ApiKeyPanel'
 import { ResultsLedger } from './ResultsLedger'
 import { SplitPreview } from './SplitPreview'
+
+/** Read when a check starts, so the check always uses the key held at that moment. */
+const getOwnKey = () => getKeyStore().getState().key
+
+export interface WorkbenchCoreProps {
+  /** Where the person's own Gemini key is kept: the website's storage, or the extension's. */
+  keyApi: ApiKeyView
+  /** Read when a check starts. */
+  getKey: () => string | null
+  /** The server to ask. The website uses its own origin (leave empty); the extension names one. */
+  baseUrl?: string
+  /** Text to start with, for example a selection sent from the extension's menu. */
+  initialText?: string
+  /** An absolute address for the Privacy page, for places that have no router (the extension). */
+  privacyHref?: string
+  /** A sentence about how the key is shared. The website derives it from the connection when empty. */
+  keyLinkNote?: string | null
+}
+
+/** The website's tool: its key lives in this browser and is shared with the extension, if present. */
+export function Workbench() {
+  const keyApi = useApiKey()
+  return <WorkbenchCore keyApi={keyApi} getKey={getOwnKey} />
+}
 
 /**
  * The tool itself. Left: paste references. Right: results, one row per reference, as they arrive.
  * The list is split in the browser with the same code the server uses, so "N found" is what gets checked.
+ * The website and the extension popup both render this.
  */
-export function Workbench() {
+export function WorkbenchCore({
+  keyApi: apiKey,
+  getKey,
+  baseUrl,
+  initialText = '',
+  privacyHref,
+  keyLinkNote,
+}: WorkbenchCoreProps) {
   const { t } = useI18n()
-  const [text, setText] = useState('')
+  const [text, setText] = useState(initialText)
   const [noAi, setNoAi] = useState(false)
   const [config, setConfig] = useState<PublicConfig>(DEFAULT_CONFIG)
-  const { state, run, reset } = useCheck()
+  const { state, run, reset } = useCheck({ getKey, baseUrl })
   const inputId = useId()
   const hintId = useId()
   const errorId = useId()
@@ -30,11 +65,11 @@ export function Workbench() {
 
   useEffect(() => {
     const ac = new AbortController()
-    void fetchConfig(ac.signal).then((c) => {
+    void fetchConfig(ac.signal, { baseUrl }).then((c) => {
       if (!ac.signal.aborted) setConfig(c)
     })
     return () => ac.abort()
-  }, [])
+  }, [baseUrl])
 
   const references = useMemo(() => splitReferences(text), [text])
   const problem = useMemo(() => checkLimits(references, config), [references, config])
@@ -48,7 +83,9 @@ export function Workbench() {
   const running = state.phase === 'running'
   const hasText = text.trim() !== ''
   const canCheck = references.length > 0 && problem === null && !running
-  const useRegex = noAi || !config.aiAvailable
+  // A person's own key makes the AI reader available even where the server has none of its own.
+  const aiUsable = config.aiAvailable || apiKey.key !== null
+  const useRegex = noAi || !aiUsable
 
   const check = useCallback(() => {
     if (!canCheck) return
@@ -129,16 +166,29 @@ export function Workbench() {
           <input
             type="checkbox"
             checked={useRegex}
-            disabled={!config.aiAvailable}
+            disabled={!aiUsable}
             onChange={(e) => setNoAi(e.target.checked)}
           />
           <span>{t.home.noAi}</span>
         </label>
 
         <p className="notice">
-          {config.aiAvailable ? t.home.notice : t.workbench.aiUnavailable}{' '}
-          <Link to="/privacy">{t.home.noticeLink}</Link>
+          {aiUsable ? t.home.notice : t.workbench.aiUnavailable}{' '}
+          {privacyHref ? (
+            <a href={privacyHref} target="_blank" rel="noopener noreferrer">
+              {t.home.noticeLink}
+            </a>
+          ) : (
+            <Link to="/privacy">{t.home.noticeLink}</Link>
+          )}
         </p>
+
+        <ApiKeyPanel
+          keyValue={apiKey.key}
+          onSave={apiKey.save}
+          onClear={apiKey.clear}
+          linkNote={keyLinkNote ?? (apiKey.connected ? t.apiKey.linked : null)}
+        />
 
         <div className="button-row">
           <button

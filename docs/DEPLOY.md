@@ -54,6 +54,18 @@ Skrip itu mencetak verdict tiap contoh. Pada 18 November 2026, daftar contoh mem
 
 `render.yaml` memakai `autoDeployTrigger: commit`, jadi setiap komit ke cabang utama memicu build baru. Ubah ke `off` bila tidak diinginkan, terutama mendekati hari demo.
 
+## Menjaga layanan tetap bangun dengan UptimeRobot (gratis)
+
+Layanan gratis Render tidur setelah 15 menit tanpa permintaan. UptimeRobot memanggil alamat kita tiap 5 menit (paket gratis: 50 monitor, interval 5 menit, tanpa kartu kredit; diperiksa 19 Nov 2026), jadi layanan tidak sempat tidur, dan UptimeRobot juga mengirim email bila situs mati.
+
+1. Daftar di uptimerobot.com (gratis, tanpa kartu).
+2. Di dashboard klik **+ New monitor**.
+3. **Monitor Type:** HTTP(s). **Friendly Name:** CekKutip. **URL:** `https://cekkutip.onrender.com/api/health`. **Monitoring Interval:** 5 menit (batas terkecil paket gratis).
+4. Isi kontak notifikasi (email), lalu **Create Monitor**.
+5. Setelah beberapa menit statusnya **Up**. Cek di Render, tab Logs: ada permintaan `/api/health` yang berkala.
+
+Hitungan jam: satu layanan yang selalu bangun memakai sekitar 720 sampai 744 jam sebulan, di bawah jatah gratis 750 jam per workspace, tetapi nyaris tanpa sisa. Jangan menjalankan layanan Render gratis lain di workspace yang sama. Panggilan ke `/api/health` tidak membawa data pengguna. Tampilan UptimeRobot bisa berbeda sedikit dari langkah di atas.
+
 ## Host lain (Docker apa pun)
 
 ```

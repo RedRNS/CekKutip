@@ -1,16 +1,15 @@
 import { NavLink } from 'react-router-dom'
 import { useI18n } from '../i18n'
-import type { Lang } from '../i18n'
+import { LangSwitch } from './LangSwitch'
 
 export function Header() {
-  const { t, lang, setLang } = useI18n()
+  const { t } = useI18n()
   const items = [
     { to: '/', label: t.nav.check, end: true },
     { to: '/how-it-works', label: t.nav.how },
     { to: '/evaluation', label: t.nav.evaluation },
     { to: '/about', label: t.nav.about },
   ]
-  const langs: Lang[] = ['en', 'id']
 
   return (
     <header className="site-header">
@@ -29,28 +28,7 @@ export function Header() {
             ))}
           </ul>
         </nav>
-        <div className="lang-switch" role="group" aria-label={t.nav.language}>
-          {langs.map((l, idx) => (
-            <span key={l} className="lang-switch__part">
-              {idx > 0 && (
-                <span className="lang-switch__sep" aria-hidden="true">
-                  |
-                </span>
-              )}
-              <button
-                type="button"
-                className="lang-switch__btn"
-                lang={l}
-                aria-pressed={lang === l}
-                // The accessible name starts with the visible text ("EN"), as WCAG 2.5.3 (Label in Name) asks.
-                aria-label={`${l.toUpperCase()}: ${t.nav.switchTo[l]}`}
-                onClick={() => setLang(l)}
-              >
-                {l.toUpperCase()}
-              </button>
-            </span>
-          ))}
-        </div>
+        <LangSwitch />
       </div>
     </header>
   )

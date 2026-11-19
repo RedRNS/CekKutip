@@ -1,4 +1,5 @@
 import type {
+  AiIssue,
   CheckSummary,
   ParsedReference,
   ReferenceResult,
@@ -176,6 +177,17 @@ export async function runPipeline(params: RunParams, deps: PipelineDeps): Promis
   const { references, options, signal } = params
   const results: ReferenceResult[] = []
 
+  // Why the model could not read some references, if it could not. Only a code, never text.
+  let aiIssue: AiIssue | null = null
+  const watched: PipelineDeps = {
+    ...deps,
+    onError: (code) => {
+      if (code === 'parse_blocked') aiIssue = 'rejected'
+      else if (code === 'parse_rate_limited' && aiIssue === null) aiIssue = 'quota'
+      deps.onError?.(code)
+    },
+  }
+
   // Events are written one at a time, in the order they happen.
   let chain: Promise<void> = Promise.resolve()
   const emit = (event: StreamEvent) => {
@@ -197,11 +209,11 @@ export async function runPipeline(params: RunParams, deps: PipelineDeps): Promis
         const batch = references.slice(start, start + size)
         const t0 = performance.now()
         const parsedBatch = await parseBatch(batch, options.parseMode, {
-          gemini: deps.gemini,
+          gemini: watched.gemini,
           batchSize: params.parseBatchSize,
-          now: deps.now,
-          onUsage: deps.onUsage,
-          onError: deps.onError,
+          now: watched.now,
+          onUsage: watched.onUsage,
+          onError: watched.onError,
         })
         // Each reference carries an equal share of its batch's reading time.
         const parseShare = (performance.now() - t0) / batch.length
@@ -211,7 +223,7 @@ export async function runPipeline(params: RunParams, deps: PipelineDeps): Promis
           tasks.push(
             lookups.run(async () => {
               if (signal?.aborted) return
-              const result = await checkOne(index, parsed, options, deps, parseShare)
+              const result = await checkOne(index, parsed, options, watched, parseShare)
               results.push(result)
               await emit({ type: 'result', result })
             }),
@@ -224,7 +236,10 @@ export async function runPipeline(params: RunParams, deps: PipelineDeps): Promis
   await Promise.all(tasks)
   await chain
 
-  const summary = summarize(results, options, params.toolVersion)
+  const summary: CheckSummary = {
+    ...summarize(results, options, params.toolVersion),
+    aiIssue,
+  }
   if (!signal?.aborted) await emit({ type: 'done', summary })
   await chain
   return summary

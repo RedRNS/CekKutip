@@ -16,6 +16,10 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import App from './App'
 import { I18nProvider } from './i18n'
+import { startKeySync } from './lib/apiKey'
+
+// Listen for the browser extension (if any) before the first paint, so a saved key is seen at once.
+startKeySync()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

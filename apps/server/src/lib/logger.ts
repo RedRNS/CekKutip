@@ -12,6 +12,8 @@ export interface AppLogger {
     reqId: string
     count: number
     parseMode: 'llm' | 'regex'
+    /** True when the person sent their own AI key. A flag only: the key is never logged. */
+    ownKey: boolean
     latencyMs: number
     checkFailed: number
     aborted: boolean

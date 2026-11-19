@@ -153,6 +153,18 @@ export function ResultsLedger({ state, limits, onRetry }: Props) {
         </div>
       )}
 
+      {state.summary?.aiIssue && (
+        <div className="banner" role="status">
+          <p>
+            {
+              t.results.aiIssue[
+                `${state.summary.aiIssue}${state.ownKey ? 'Own' : 'Shared'}` as keyof typeof t.results.aiIssue
+              ]
+            }
+          </p>
+        </div>
+      )}
+
       <SummaryBar counts={counts} total={total} filter={filter} onFilter={setFilter} />
 
       <ol className="ledger">

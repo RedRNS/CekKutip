@@ -1,4 +1,5 @@
 import type { PublicConfig, StreamEvent } from '@cekkutip/shared'
+import { GEMINI_KEY_HEADER } from '@cekkutip/shared/apikey'
 
 export type ClientErrorCode =
   | 'network'
@@ -6,6 +7,7 @@ export type ClientErrorCode =
   | 'too_many_references'
   | 'reference_too_long'
   | 'no_references'
+  | 'invalid_api_key'
   | 'incomplete'
   | 'generic'
 
@@ -22,6 +24,7 @@ const KNOWN: readonly ClientErrorCode[] = [
   'too_many_references',
   'reference_too_long',
   'no_references',
+  'invalid_api_key',
 ]
 
 export function toClientCode(status: number, serverCode: unknown): ClientErrorCode {
@@ -37,9 +40,17 @@ export const DEFAULT_CONFIG: PublicConfig = {
   aiAvailable: true,
 }
 
-export async function fetchConfig(signal?: AbortSignal): Promise<PublicConfig> {
+/** Where the server is. The website uses its own origin (an empty string); the extension names it. */
+export interface ApiTarget {
+  baseUrl?: string
+}
+
+export async function fetchConfig(
+  signal?: AbortSignal,
+  target: ApiTarget = {},
+): Promise<PublicConfig> {
   try {
-    const res = await fetch('/api/config', { signal })
+    const res = await fetch(`${target.baseUrl ?? ''}/api/config`, { signal })
     if (!res.ok) return DEFAULT_CONFIG
     const body = (await res.json()) as Partial<PublicConfig>
     return {
@@ -99,17 +110,25 @@ export function parseEvent(line: string): StreamEvent | null {
  * Send references and read the NDJSON stream. Resolves after the `done` event.
  * Rejects with CheckError when the check cannot start, or stops before `done`.
  */
+export interface StreamOptions extends ApiTarget {
+  /** The person's own Gemini key. Sent only when the AI reader is used, and only in a header. */
+  key?: string | null
+}
+
 export async function streamCheck(
   references: string[],
   parseMode: 'llm' | 'regex',
   onEvent: (event: StreamEvent) => void,
   signal: AbortSignal,
+  options: StreamOptions = {},
 ): Promise<void> {
   let res: Response
+  const headers: Record<string, string> = { 'content-type': 'application/json' }
+  if (options.key && parseMode === 'llm') headers[GEMINI_KEY_HEADER] = options.key
   try {
-    res = await fetch('/api/check', {
+    res = await fetch(`${options.baseUrl ?? ''}/api/check`, {
       method: 'POST',
-      headers: { 'content-type': 'application/json' },
+      headers,
       body: JSON.stringify({ references, options: { parseMode } }),
       signal,
     })

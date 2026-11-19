@@ -81,7 +81,7 @@ export const id: Dict = {
     clear: 'Hapus',
     resultsTitle: 'Hasil',
     emptyHint:
-      'Tempel referensimu di sebelah kiri lalu pilih Periksa referensi. Hasilnya muncul di sini satu per satu.',
+      'Tempel referensimu lalu pilih Periksa referensi. Hasilnya muncul di sini satu per satu.',
     emptyLegend: 'Arti keempat verdict',
     statement: 'Verdict adalah ajakan untuk memeriksa ulang, bukan temuan pelanggaran.',
     verdictsTitle: 'Empat verdict',
@@ -345,6 +345,7 @@ export const id: Dict = {
       'Secara bawaan, teks referensimu dikirim ke Google Gemini. Teks itu hanya dipakai untuk membaca field: penulis, tahun, judul. Pilih "Jangan kirim teksku ke layanan AI" untuk menghindarinya. Hasilnya jadi kurang akurat.',
       'Google menyatakan bahwa konten yang dikirim lewat tier gratisnya dapat dipakai untuk meningkatkan produknya, dan bahwa peninjau manusia dapat membacanya.',
       'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya.',
+      'Kalau kamu menambahkan kunci Gemini sendiri, kunci itu tetap di browsermu. Kunci dikirim ke server kami pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Kalau kamu memakai ekstensi browser CekKutip, kunci dibagi antara situs dan ekstensi di perangkatmu.',
       'Berkas .txt atau .bib yang kamu pilih dibaca di browsermu dan dimasukkan ke kotak, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
       'Server kami tidak menyimpan teksmu. Log kami hanya berisi id permintaan, jumlah referensi, waktu proses, dan kode galat. Log tidak pernah berisi teksmu.',
       'Kami mengikuti prinsip Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi: mengumpulkan seperlunya, memakainya untuk satu tujuan, dan tidak menyimpan yang tidak dibutuhkan. Ini gambaran cara kami bekerja, bukan pernyataan kepatuhan hukum.',
@@ -367,6 +368,16 @@ export const id: Dict = {
     finished: (total: number) => `Pemeriksaan selesai. ${total} referensi diperiksa.`,
     barLabel: 'Hasil menurut verdict',
     printFiltered: 'Hanya menampilkan hasil {verdict}: {shown} dari {total}.',
+    aiIssue: {
+      rejectedOwn:
+        'Google tidak menerima kunci Gemini-mu, jadi pembaca tanpa AI yang membaca referensimu. Periksa kuncinya.',
+      quotaOwn:
+        'Kunci Gemini-mu mencapai batas pemakaian, jadi pembaca tanpa AI membaca sebagian referensi.',
+      rejectedShared:
+        'Pembaca AI bersama sedang tidak tersedia, jadi pembaca tanpa AI yang membaca referensimu. Kamu bisa menambahkan kunci Gemini gratismu sendiri.',
+      quotaShared:
+        'Pembaca AI bersama mencapai batas hariannya, jadi pembaca tanpa AI membaca sebagian referensi. Tambahkan kunci Gemini gratismu sendiri untuk tetap memakai pembaca AI.',
+    },
   },
   evidence: {
     caption: (n: number) => `Referensi ${n} dibandingkan dengan record`,
@@ -433,6 +444,8 @@ export const id: Dict = {
     reference_too_long:
       'Referensi {n} lebih panjang dari {max} karakter. Pendekkan, atau pastikan itu memang satu referensi.',
     no_references: 'Tempel paling sedikit satu referensi untuk diperiksa.',
+    invalid_api_key:
+      'Kunci Gemini tampak tidak benar. Buka "Pakai kunci API Gemini milikmu" untuk memeriksa atau menghapusnya.',
     tryAgain: 'Coba lagi',
   },
   workbench: {
@@ -440,6 +453,30 @@ export const id: Dict = {
       'Pembaca AI belum dipasang di server ini. Teksmu dibaca oleh pembaca pola di server kami, lalu dicari di Crossref dan OpenAlex. Kami tidak menyimpan teksmu.',
     shortcut: 'Ctrl+Enter',
     checkingButton: 'Memeriksa',
+  },
+  apiKey: {
+    summary: 'Pakai kunci API Gemini milikmu (opsional)',
+    intro:
+      'Pembaca AI memakai kunci Gemini bersama milik situs ini, yang punya batas harian dan bisa habis kalau banyak orang memakainya. Tambahkan kunci gratismu sendiri supaya referensimu dibaca dengan batasmu sendiri.',
+    label: 'Kunci API Gemini',
+    show: 'Tampilkan kunci',
+    save: 'Simpan kunci',
+    remove: 'Hapus kunci',
+    getKey: 'Dapatkan kunci gratis dari Google AI Studio',
+    statusNone: 'Belum ada kunci tersimpan. Pembaca bersama dipakai.',
+    statusSet: 'Memakai kuncimu: {masked}',
+    saved: 'Kunci disimpan di browser ini.',
+    removed: 'Kunci dihapus. Pembaca bersama dipakai.',
+    invalid: 'Itu tidak tampak seperti kunci API Gemini. Periksa lalu coba lagi.',
+    privacy:
+      'Kunci tetap di browsermu. Kunci dikirim ke server kami pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Hapus kapan saja.',
+    linked:
+      'Ekstensi browser CekKutip terhubung. Kunci yang disimpan di sini juga muncul di ekstensi.',
+  },
+  extension: {
+    openSite: 'Buka situs CekKutip',
+    keyNote: 'Kunci ini juga dipakai di situs CekKutip begitu kamu membukanya di browser ini.',
+    menuTitle: 'Periksa teks terpilih dengan CekKutip',
   },
   upload: {
     button: 'Unggah .txt atau .bib',

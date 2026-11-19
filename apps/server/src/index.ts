@@ -5,7 +5,7 @@ import { loadEnv } from './config/env.js'
 import { loadLimits } from './config/limits.js'
 import { createLogger } from './lib/logger.js'
 import { TOOL_VERSION } from './version.js'
-import { buildPipelineDeps } from './wiring.js'
+import { buildGeminiFactory, buildPipelineDeps } from './wiring.js'
 
 const env = loadEnv()
 const limits = loadLimits()
@@ -20,7 +20,15 @@ const evaluationFile =
   process.env.EVALUATION_SUMMARY?.trim() ||
   fileURLToPath(new URL('../../../eval/results/summary.json', import.meta.url))
 
-const app = createApp({ pipeline, limits, env, logger, staticDir, evaluationFile })
+const app = createApp({
+  pipeline,
+  createGemini: buildGeminiFactory(env),
+  limits,
+  env,
+  logger,
+  staticDir,
+  evaluationFile,
+})
 
 const server = app.listen(env.port, () => {
   logger.started({

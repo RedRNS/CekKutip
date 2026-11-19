@@ -57,6 +57,18 @@ Teks penjelasan untuk pengguna dibuat di klien dari templat per kode alasan (`i1
 - **Privasi.** `AppLogger` hanya punya metode bertipe tetap (id, jumlah, waktu, kode), jadi teks pengguna tidak bisa masuk log. Cache hanya memuat metadata publik dengan kunci berupa hash. Server tidak menyimpan teks. Dibuktikan tes.
 - **Host keluar** hanya `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`, juga pada setiap redirect.
 
+## Kunci Gemini milik pengguna dan ekstensi
+
+```
+Situs (localStorage)  <--postMessage-->  bridge.js (skrip konten, hanya di halaman CekKutip)  <--->  chrome.storage.local  <--->  Popup
+         |                                                                                                              |
+         +----------------- POST /api/check, header x-gemini-key (hanya bila pembaca AI dipakai) ---------------------------+
+                                                         |
+                                                  server: klien Gemini untuk permintaan itu saja; tidak disimpan, tidak masuk log
+```
+
+Aturan dan protokol di `packages/shared/src/apikey.ts`. Perubahan terakhir menang; penghapusan tercatat dengan waktu. Ringkasan `done` membawa `aiIssue` (`rejected` atau `quota`) bila model tidak bisa dipakai. Folder `extension/` (di luar workspace npm) membangun popup dengan komponen yang sama dengan situs. Lihat `extension/README.md` dan DECISIONS butir 112 sampai 119.
+
 ## Server
 
 | Rute                  | Fungsi                                                                                                                             |

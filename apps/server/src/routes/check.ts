@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import express, { Router } from 'express'
 import { CheckRequestSchema } from '@cekkutip/shared'
+import { GEMINI_KEY_HEADER, isPlausibleGeminiKey, normalizeKeyInput } from '@cekkutip/shared/apikey'
 import type { StreamEvent } from '@cekkutip/shared'
 import { LimitExceededError, prepareReferences } from '../pipeline/split.js'
 import { runPipeline } from '../pipeline/run.js'
@@ -61,8 +62,27 @@ export function createCheckRouter(ctx: AppContext): Router {
         options = applyAblation(options, requested.ablation as AblationName)
       }
     }
-    // Without an AI key, every check uses the no-AI reader instead of failing.
-    if (ctx.pipeline.gemini === undefined) options = { ...options, parseMode: 'regex' }
+    // A person's own AI key travels in one header and lives only as long as this request.
+    // It is checked for shape, handed to the model client, and never stored, logged, or echoed.
+    let ownKey: string | null = null
+    const header = req.header(GEMINI_KEY_HEADER)
+    if (header !== undefined && header.trim() !== '') {
+      const candidate = normalizeKeyInput(header)
+      if (!isPlausibleGeminiKey(candidate) || ctx.createGemini === undefined) {
+        ctx.logger.rejected({ reqId, code: 'invalid_api_key' })
+        return sendError(
+          res,
+          400,
+          'invalid_api_key',
+          'The AI key you sent does not look like a Gemini API key. Check it, or remove it to use the shared reader.',
+        )
+      }
+      ownKey = candidate
+    }
+    const pipeline = ownKey ? { ...ctx.pipeline, gemini: ctx.createGemini?.(ownKey) } : ctx.pipeline
+
+    // Without any AI key, every check uses the no-AI reader instead of failing.
+    if (pipeline.gemini === undefined) options = { ...options, parseMode: 'regex' }
 
     let list: string[]
     try {
@@ -115,7 +135,7 @@ export function createCheckRouter(ctx: AppContext): Router {
           signal: abort.signal,
           onEvent: write,
         },
-        { ...ctx.pipeline, onError: (code) => ctx.logger.lookupError({ reqId, code }) },
+        { ...pipeline, onError: (code) => ctx.logger.lookupError({ reqId, code }) },
       )
       checkFailed = summary.checkFailed
     } catch {
@@ -127,6 +147,7 @@ export function createCheckRouter(ctx: AppContext): Router {
         reqId,
         count: list.length,
         parseMode: options.parseMode,
+        ownKey: ownKey !== null,
         latencyMs: Math.round(performance.now() - t0),
         checkFailed,
         aborted: abort.signal.aborted,

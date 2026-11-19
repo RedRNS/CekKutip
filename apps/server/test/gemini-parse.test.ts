@@ -113,6 +113,25 @@ describe('createGeminiClient', () => {
     expect(generate).toHaveBeenCalledTimes(attempts)
   })
 
+  it('reads "API key not valid" (HTTP 400) as a refused key, and drops the message', async () => {
+    const generate = vi.fn<GenerateFn>(async () => {
+      throw new ApiError({
+        message: 'API key not valid. Please pass a valid API key. AIzaSECRET',
+        status: 400,
+      })
+    })
+    const err = await createGeminiClient({ model: 'm', generate })
+      .extract([])
+      .catch((e: unknown) => e)
+    expect(err).toMatchObject({
+      name: 'ServiceUnavailableError',
+      service: 'gemini',
+      code: 'blocked',
+    })
+    expect((err as Error).message).not.toContain('AIzaSECRET')
+    expect(generate).toHaveBeenCalledTimes(1) // not retried
+  })
+
   it('retries a timeout once, then reports it', async () => {
     const generate = vi.fn<GenerateFn>(async () => {
       throw new DOMException('slow', 'TimeoutError')

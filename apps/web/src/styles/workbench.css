@@ -543,3 +543,28 @@
   font-size: var(--fs-14);
   overflow-wrap: anywhere;
 }
+
+/* ---------- Own Gemini key ---------- */
+.keypanel {
+  margin-top: var(--s-8);
+}
+
+.keypanel__input {
+  display: block;
+  width: 100%;
+  min-height: var(--target);
+  margin-top: var(--s-8);
+  padding: 0 var(--s-12);
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-control);
+  font-family: var(--font-mono);
+  font-size: var(--fs-14);
+}
+
+.keypanel__status {
+  margin-top: var(--s-12);
+  font-size: var(--fs-14);
+  font-weight: 500;
+  overflow-wrap: anywhere;
+}

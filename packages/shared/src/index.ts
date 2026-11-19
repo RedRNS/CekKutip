@@ -119,6 +119,14 @@ export const ThresholdsSchema = z.object({
 })
 export type Thresholds = z.infer<typeof ThresholdsSchema>
 
+/**
+ * Why the language model could not be used for part of a check, when it could not.
+ * rejected: the AI service refused the key. quota: the key's usage limit was reached.
+ * The check still finishes, with the no-AI reader for the references the model could not read.
+ */
+export const AiIssueSchema = z.enum(['rejected', 'quota'])
+export type AiIssue = z.infer<typeof AiIssueSchema>
+
 export const CheckSummarySchema = z.object({
   total: z.number().int(),
   verified: z.number().int(),
@@ -129,6 +137,7 @@ export const CheckSummarySchema = z.object({
   medianLatencyMs: z.number(),
   thresholds: ThresholdsSchema,
   toolVersion: z.string(),
+  aiIssue: AiIssueSchema.nullable().optional(),
 })
 export type CheckSummary = z.infer<typeof CheckSummarySchema>
 

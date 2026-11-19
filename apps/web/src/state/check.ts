@@ -6,6 +6,8 @@ export interface CheckState {
   /** The references that were sent, in order. Lets pending rows show their text. */
   references: string[]
   parseMode: 'llm' | 'regex'
+  /** True when this check was read with the person's own Gemini key. */
+  ownKey: boolean
   /** Results by reference index. Results arrive in any order. */
   results: Record<number, ReferenceResult>
   received: number
@@ -17,6 +19,7 @@ export const initialCheckState: CheckState = {
   phase: 'idle',
   references: [],
   parseMode: 'llm',
+  ownKey: false,
   results: {},
   received: 0,
   summary: null,
@@ -24,7 +27,7 @@ export const initialCheckState: CheckState = {
 }
 
 export type CheckAction =
-  | { type: 'start'; references: string[]; parseMode: 'llm' | 'regex' }
+  | { type: 'start'; references: string[]; parseMode: 'llm' | 'regex'; ownKey?: boolean }
   | { type: 'event'; event: StreamEvent }
   | { type: 'fail'; code: ClientErrorCode }
   | { type: 'reset' }
@@ -37,6 +40,7 @@ export function checkReducer(state: CheckState, action: CheckAction): CheckState
         phase: 'running',
         references: action.references,
         parseMode: action.parseMode,
+        ownKey: action.ownKey ?? false,
       }
     case 'event': {
       const e = action.event

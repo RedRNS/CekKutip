@@ -392,6 +392,7 @@ describe('privacy: user text never reaches the logs', () => {
       'reqId',
       'count',
       'parseMode',
+      'ownKey',
       'latencyMs',
       'checkFailed',
       'aborted',

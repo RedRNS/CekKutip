@@ -1,4 +1,5 @@
 import type { Response } from 'express'
+import type { GeminiClient } from '../clients/gemini.js'
 import type { Env } from '../config/env.js'
 import type { Limits } from '../config/limits.js'
 import type { AppLogger } from '../lib/logger.js'
@@ -6,6 +7,11 @@ import type { PipelineDeps } from '../pipeline/run.js'
 
 export interface AppContext {
   pipeline: PipelineDeps
+  /**
+   * Builds a model client from a person's own key, for the one request that carries it.
+   * Absent in tests that do not need it: a key sent then is refused, not ignored.
+   */
+  createGemini?: (apiKey: string) => GeminiClient
   limits: Limits
   env: Pick<Env, 'enableExperimentModes' | 'trustProxy' | 'nodeEnv' | 'geminiModel'>
   logger: AppLogger
