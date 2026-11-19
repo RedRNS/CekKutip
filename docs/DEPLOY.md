@@ -106,7 +106,17 @@ Dibangun dan dijalankan di Docker Desktop lokal, bukan di Render:
 - Seluruh suite E2E (43 tes) lulus dua kali terhadap kontainer, dengan CSP produksi.
 - Daftar contoh, dengan layanan nyata dan Gemini, tiga kali berturut-turut: 12,7 detik, 3,1 detik, 2,2 detik, dengan verdict yang sama setiap kali.
 
-**Belum diuji:** deploy ke Render itu sendiri, waktu bangun nyata di sana, PageSpeed Insights pada alamat publik, dan uji di perangkat nyata. Itu butuh akun host, alamat publik, dan perangkat, yang tidak saya punya.
+**Belum diuji pada hari itu:** deploy ke Render itu sendiri, waktu bangun nyata di sana, PageSpeed Insights pada alamat publik, dan uji di perangkat nyata.
+
+## Hasil uji situs publik (19 November 2026)
+
+Situs di `https://cekkutip.onrender.com` (Render, gratis, Singapore), diuji dari komputer pengembang:
+
+- `/api/health` `ok` dan `/api/config` `aiAvailable: true`.
+- Daftar contoh dengan pembaca AI, tiga putaran: 3, 2, 2, 3 (Verified, Mismatch, Suspect, Out-of-index) pada dua putaran, dan satu `Could not check` pada putaran pertama saat layanan masih dingin. Median latensi 0,5 sampai 0,7 detik setelah hangat.
+- Lighthouse (ponsel, throttling bawaan): Performance 96 sampai 100, Accessibility, Best Practices, dan SEO 100, CLS 0.
+
+**Masih perlu:** PageSpeed Insights, uji di HP sungguhan, dan rencana bangun-dari-tidur sebelum demo (bagian "Cold start"). Untuk hari demo, naikkan `RATE_LIMIT_MAX` di Render (bawaan 10 pemeriksaan per 10 menit per IP) karena juri dan peserta di satu jaringan kampus berbagi satu IP.
 
 ## Masalah yang mungkin muncul
 
