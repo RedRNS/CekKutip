@@ -23,15 +23,6 @@ function InlineCode({ text }: { text: string }) {
   )
 }
 
-/** The server the extension talks to: the address it was built for. */
-function serverHost(): string {
-  try {
-    return new URL(siteConfig.demoUrl).host
-  } catch {
-    return window.location.host
-  }
-}
-
 export default function Extension() {
   const { t } = useI18n()
   usePageTitle('extension')
@@ -54,20 +45,6 @@ export default function Extension() {
           </a>
           <p className="download-panel__note">{x.getNote}</p>
         </div>
-        <dl className="facts">
-          <div>
-            <dt>{x.factsWorks}</dt>
-            <dd>{x.factsWorksValue}</dd>
-          </div>
-          <div>
-            <dt>{x.factsCost}</dt>
-            <dd>{x.factsCostValue}</dd>
-          </div>
-          <div>
-            <dt>{x.factsServer}</dt>
-            <dd>{fmt(x.factsServerValue, { host: serverHost() })}</dd>
-          </div>
-        </dl>
       </section>
 
       <section className="section" aria-labelledby="install-title">
@@ -97,14 +74,6 @@ export default function Extension() {
         </ul>
       </section>
 
-      <section className="section" aria-labelledby="key-title">
-        <h2 id="key-title">{x.keyTitle}</h2>
-        <p>{x.key}</p>
-        <p className="section__more">
-          <Link to="/">{x.keyLink}</Link>
-        </p>
-      </section>
-
       <section className="section" aria-labelledby="access-title">
         <h2 id="access-title">{x.accessTitle}</h2>
         <ul className="plain-list plain-list--spaced">
@@ -129,17 +98,6 @@ export default function Extension() {
         <ul className="plain-list plain-list--spaced">
           {x.updateItems.map((item) => (
             <li key={item}>{item}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="section" aria-labelledby="help-title">
-        <h2 id="help-title">{x.helpTitle}</h2>
-        <ul className="plain-list plain-list--spaced">
-          {x.helpItems.map((item) => (
-            <li key={item}>
-              <InlineCode text={fmt(item, copyNames)} />
-            </li>
           ))}
         </ul>
       </section>

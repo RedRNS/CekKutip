@@ -9,7 +9,7 @@ export const en = {
   meta: {
     siteName: 'CekKutip',
     description:
-      'Paste your reference list. CekKutip looks each reference up in Crossref and OpenAlex and tells you whether it exists, whether the details are right, or whether it cannot tell.',
+      'Paste your references. CekKutip looks each one up in Crossref and OpenAlex and tells you if it exists and if the details match.',
     titles: {
       home: 'Check a reference list',
       how: 'How it works',
@@ -44,77 +44,66 @@ export const en = {
     check_failed: 'Could not check',
   },
   verdictDefinitions: {
-    verified: 'We found the work, and its title, authors, and year agree with your reference.',
-    mismatch: 'We found the work, but some details you cited do not match the record.',
-    suspect:
-      'We could not find this work, although it is cited in a way that should make it findable. Check the source by hand.',
-    out_of_index:
-      'This kind of source is often missing from Crossref and OpenAlex, so we cannot tell. Check it by hand.',
+    verified: 'We found the work. Title, authors, and year agree.',
+    mismatch: 'We found the work, but some details you cited do not match.',
+    suspect: 'We could not find it, though it is cited like something findable. Check by hand.',
+    out_of_index: 'Sources like this are often not indexed, so we cannot tell. Check by hand.',
   },
   reasons: {
     verified_all_match: 'Found in {source}. Title, authors, and year agree.',
-    mismatch_authors: 'This work exists, but the authors you cited do not match the record.',
+    mismatch_authors: 'This work exists, but the authors do not match the record.',
     mismatch_year: 'This work exists, but the year differs by {n} years.',
     mismatch_venue: 'This work exists, but it was published in a different journal.',
-    mismatch_doi_other_work: 'This DOI leads to a different work than the one you cited.',
-    suspect_doi_not_found:
-      'This DOI is not registered. Check the source by hand before you keep it.',
+    mismatch_doi_other_work: 'This DOI leads to a different work.',
+    suspect_doi_not_found: 'This DOI is not registered. Check the source by hand.',
     suspect_no_record_journal:
-      'We could not find this work, although it is cited like a journal article. Check the source by hand.',
+      'Not found, although it is cited like a journal article. Check the source by hand.',
     out_of_index_type:
-      'This looks like a {type}. Crossref and OpenAlex often do not hold these, so we cannot check it. Check it by hand.',
-    out_of_index_insufficient_data:
-      'There is not enough detail to search. Add the title and authors.',
-    out_of_index_other_registry:
-      'This DOI belongs to a registry we do not search yet. Open it to check.',
+      'This looks like a {type}. Crossref and OpenAlex often do not hold these. Check it by hand.',
+    out_of_index_insufficient_data: 'Too little detail to search. Add the title and authors.',
+    out_of_index_other_registry: 'This DOI belongs to a registry we do not search yet.',
     check_failed_network: 'The lookup service did not respond. This is not a verdict. Try again.',
   } satisfies Record<ReasonCode, string>,
   home: {
     h1: 'Check a reference list before you submit it.',
     intro:
-      'Paste your references. CekKutip looks each one up and tells you whether it exists, whether the details are right, or whether it cannot tell.',
+      'Paste your references. CekKutip looks each one up and tells you if it exists and if the details match.',
     inputLabel: 'References',
     found: (n: number) => `${n} found`,
-    placeholderHint: 'Paste one reference per paragraph, or number them.',
+    placeholderHint: 'One reference per paragraph, or numbered.',
     noAi: 'Do not send my text to an AI service (less accurate)',
     notice:
-      'By default, your text is sent to Google Gemini to read the fields (author, year, title). Titles and authors are then looked up in Crossref and OpenAlex. We do not store your text.',
-    noticeLink: 'Read the privacy details',
+      'Your text goes to Google Gemini to read the fields, then to Crossref and OpenAlex for lookup. We do not store it.',
+    noticeLink: 'Privacy details',
     check: 'Check references',
     example: 'Try an example',
     clear: 'Clear',
     resultsTitle: 'Results',
-    emptyHint:
-      'Paste your references and choose Check references. Results appear here, one by one.',
+    emptyHint: 'Paste your references and press Check references. Results appear here.',
     emptyLegend: 'What the four verdicts mean',
     statement: 'Verdicts are prompts for review, not findings of misconduct.',
-    verdictsTitle: 'The four verdicts',
     howTitle: 'How a check works',
     howMore: 'See a full example',
     steps: [
-      {
-        name: 'Parse',
-        text: 'A language model reads each reference and extracts its fields. It never decides if the reference is real.',
-      },
-      { name: 'Retrieve', text: 'We look the work up in Crossref, and in OpenAlex if needed.' },
+      { name: 'Parse', text: 'A language model reads the fields. It never decides the result.' },
+      { name: 'Retrieve', text: 'We look the work up in Crossref, then OpenAlex.' },
       { name: 'Match', text: 'We compare title, authors, year, and venue.' },
-      { name: 'Decide', text: 'Fixed rules turn the comparison into one of four verdicts.' },
+      { name: 'Decide', text: 'Fixed rules give one of four verdicts.' },
     ],
     extTitle: 'Check from any web page',
-    extText:
-      'Install the free browser extension to check references without opening this site. You can also select text on any page and right-click it.',
+    extText: 'A free browser extension opens CekKutip in a side panel next to the page.',
     extLink: 'Get the browser extension',
     notTitle: 'What CekKutip does not do',
     notItems: [
       'It does not check whether a source supports your claim.',
       'It does not detect plagiarism.',
-      'It cannot see books, theses, and reports that Crossref and OpenAlex do not hold, so it says so instead of guessing.',
-      'It is not proof of misconduct, and it is not a replacement for reading your sources.',
+      'It cannot see many books, theses, and reports. It says so instead of guessing.',
+      'A verdict is not proof of misconduct.',
     ],
   },
   how: {
     h1: 'How a check works',
-    lede: 'A check has four steps. Only the first one uses a language model, and it never decides whether a reference is real.',
+    lede: 'Four steps. Only the first uses a language model, and it never decides the result.',
     diagramTitle: 'The four steps',
     diagramDesc:
       'Four steps in a row: Parse, Retrieve, Match, Decide. Only Parse uses a language model. The other three are fixed code.',
@@ -125,27 +114,27 @@ export const en = {
       { name: 'Decide', note: 'Fixed rules, one verdict', tag: 'No model' },
     ],
     diagramNote:
-      'The model only turns text into fields. It does not look anything up and it does not choose the verdict.',
+      'The model only turns text into fields. It never looks anything up or picks the verdict.',
     exampleTitle: 'One reference, step by step',
     exampleIntro:
-      'We took a real reference and changed two details, the year and the journal, to show what a Mismatch looks like.',
+      'A real reference with two details changed, the year and the journal, to show a Mismatch.',
     exampleCitedLabel: 'The reference as pasted',
     exampleSteps: [
       {
         name: 'Parse',
-        text: 'The model reads the text and returns fields: two authors, the year 2021, a title, and a journal name. It adds nothing that is not written there.',
+        text: 'The model returns the fields: two authors, the year 2021, a title, a journal.',
       },
       {
         name: 'Retrieve',
-        text: 'There is no DOI, so we search Crossref by title, first author, and year. It returns a record with the same title.',
+        text: 'There is no DOI, so we search Crossref by title, first author, and year. A record with the same title comes back.',
       },
       {
         name: 'Match',
-        text: 'We compare each field with the record. The title and authors agree. The year differs by two years, and the journal is not the same.',
+        text: 'Title and authors agree. The year is two years off and the journal differs.',
       },
       {
         name: 'Decide',
-        text: 'The title matches, but the year and journal do not. The rule for this case gives Mismatch, with the reasons shown next to it.',
+        text: 'The title matches but the year and journal do not. The rule gives Mismatch.',
       },
     ],
     tableCaption: 'The reference compared with the record',
@@ -165,27 +154,27 @@ export const en = {
     exampleResultText: 'This work exists, but the year and the journal differ from the record.',
     rulesTitle: 'The rules, in order',
     rulesIntro:
-      'The first rule that applies decides the result. What counts as a matching title or matching authors is set by cut-off values. We tune them on practice data only, then freeze them before the final test.',
+      'The first rule that applies decides. The cut-offs for a matching title or author are tuned on practice data only, then frozen before the final test.',
     rulesColIf: 'If',
     rulesColResult: 'Result',
     rules: [
       { if: 'A lookup service did not respond after retries.', result: 'check_failed' },
-      { if: 'The reference has a DOI that is not registered anywhere.', result: 'suspect' },
+      { if: 'The DOI is not registered anywhere.', result: 'suspect' },
       { if: 'The DOI leads to a record with a very different title.', result: 'mismatch' },
       { if: 'A record matches on title, authors, year, and journal.', result: 'verified' },
       {
-        if: 'A record matches on title, but the authors, year, or journal differ.',
+        if: 'A record matches on title, but authors, year, or journal differ.',
         result: 'mismatch',
       },
       {
-        if: 'It is cited like a journal article, and no record is close enough.',
+        if: 'Cited like a journal article, and no record is close enough.',
         result: 'suspect',
       },
       {
-        if: 'It is a book, chapter, thesis, report, web page, or other source, and no record is close enough.',
+        if: 'A book, chapter, thesis, report, web page, or other source, and no record is close enough.',
         result: 'out_of_index',
       },
-      { if: 'There is too little detail to search.', result: 'out_of_index' },
+      { if: 'Too little detail to search.', result: 'out_of_index' },
       { if: 'The DOI belongs to a registry we do not search yet.', result: 'out_of_index' },
     ],
     checkFailedNote:
@@ -193,24 +182,22 @@ export const en = {
     limitsTitle: 'Limits',
     limits: [
       'Crossref and OpenAlex are incomplete. A real source can be missing from both. That is why Out-of-index exists.',
-      'Records can contain errors too. A Verified result means the work exists and the details agree, not that your source supports your claim.',
-      'The model can misread an unusual reference format. If it fails, the regex reader takes over for that reference.',
-      'Verdicts are prompts for review, not findings of misconduct.',
+      'Verified means the work exists and the details agree, not that your source supports your claim.',
+      'The model can misread an unusual format. If it fails, the no-AI reader takes over for that reference.',
     ],
   },
   evaluation: {
     h1: 'Evaluation',
-    lede: 'We test CekKutip in two ways: on a labelled set of references, and with students.',
+    lede: 'We test CekKutip on a labelled set of references and with students.',
     loading: 'Loading results',
     emptyTitle: 'No results yet',
     empty: 'Results will be published after data lock on 9 December 2026.',
-    emptyNote:
-      'Until then this page shows no numbers, because we have no measured results to show.',
+    emptyNote: 'Until then this page shows no numbers, because there is nothing measured to show.',
     technicalTitle: 'Technical evaluation',
     technical:
-      'We label a set of references by hand, with two people labelling each one. CekKutip and three simpler baselines are then run on references that were held out until the end. We also switch parts of CekKutip off, one at a time, to see what each part adds.',
+      'Two people label a set of references by hand. CekKutip and three simpler baselines run on references held out until the end. We also switch parts of CekKutip off, one at a time, to see what each adds.',
     userTitle: 'User study',
-    user: 'A short study with students looks at whether the tool helps people find problems in a reference list, and how they judge its explanations.',
+    user: 'A short study with students: does the tool help them find problems in a reference list, and how do they judge its explanations?',
     results: {
       loading: 'Loading results',
       factsTitle: 'How these results were made',
@@ -294,11 +281,11 @@ export const en = {
     metrics: [
       'Macro-F1 across the four verdicts, with 95% confidence intervals.',
       'Precision, recall, and F1 for each verdict.',
-      'False accusation rate: how often a source that is real, or only missing from the indexes, is marked Suspect or Mismatch.',
-      'Abstain rate: how often the tool answers Out-of-index.',
+      'False accusation rate: how often a real or unindexed source is marked Suspect or Mismatch.',
+      'Abstain rate: how often the answer is Out-of-index.',
       'Median time per reference, and cost per 1,000 references.',
       'Agreement between the two people who labelled the references (Cohen kappa).',
-      'Results with and without references that were altered on purpose for testing.',
+      'Results with and without references altered on purpose for testing.',
     ],
   },
   about: {
@@ -306,15 +293,15 @@ export const en = {
     lede: 'A reference checker built by students, for students.',
     storyTitle: 'Why we built it',
     story:
-      'AI assistants can write references that look complete but point to nothing, or that carry the wrong author, year, or journal. Students often cannot tell which ones to trust, and most checkers only return a match or a score. CekKutip adds two things: Mismatch, for real works that were cited wrongly, and Out-of-index, for sources it cannot see. That way a student is not accused of a mistake the tool cannot actually find.',
+      'AI assistants can write references that look complete but point to nothing, or carry the wrong author, year, or journal. Most checkers return only a match or a score. CekKutip adds Mismatch, for real works cited wrongly, and Out-of-index, for sources it cannot see.',
     teamTitle: 'Team',
     supervisorTitle: 'Supervisor',
     universityTitle: 'University',
     competitionTitle: 'Competition',
     competition:
-      'Built for the Global Youth Invention and Innovation Fair (GYIIF) 2027, hosted by IPB University. Category: Engineering and Technology. Online track.',
+      'Built for the Global Youth Invention and Innovation Fair (GYIIF) 2027, hosted by IPB University. Engineering and Technology, online track.',
     limitsTitle: 'Limits',
-    limits: 'CekKutip cannot see everything. Read what it does not do on the How it works page.',
+    limits: 'CekKutip cannot see everything.',
     limitsLink: 'See the limits',
     contactTitle: 'Contact and code',
     contactEmail: 'Email',
@@ -325,7 +312,7 @@ export const en = {
       {
         name: 'Crossref',
         url: 'https://www.crossref.org/',
-        text: 'Metadata for scholarly works, looked up by DOI or by title.',
+        text: 'Metadata for scholarly works, by DOI or title.',
       },
       {
         name: 'OpenAlex',
@@ -335,21 +322,21 @@ export const en = {
       {
         name: 'Google Gemini',
         url: 'https://ai.google.dev/',
-        text: 'Reads each reference and extracts its fields. It does not decide any verdict.',
+        text: 'Reads each reference into fields. It never decides a verdict.',
       },
     ],
   },
   privacy: {
     h1: 'Privacy',
-    lede: 'What happens to the text you paste, in plain words.',
+    lede: 'What happens to the text you paste.',
     items: [
-      'By default, your reference text is sent to Google Gemini. It is used only to read the fields: authors, year, title. Choose "Do not send my text to an AI service" to avoid this. Results are then less accurate.',
-      'Google states that content sent through its free tier can be used to improve its products, and that human reviewers may read it.',
-      'The title, authors, and DOI that were read from your references are sent to Crossref and OpenAlex, and to DataCite when needed, to look the work up.',
-      'If you add your own Gemini key, it stays in your browser. It is sent to our server with each check, used only to ask Google to read your references, and never stored or logged. If you have the CekKutip browser extension, the key is shared between the site and the extension on your device.',
-      'A .txt or .bib file you choose is read in your browser and put in the input box, like pasted text. Nothing is sent until you choose Check references.',
-      'Our server does not store your text. Our logs hold only a request id, the number of references, timings, and error codes. They never hold your text.',
-      'We follow the principles of Indonesian Law No. 27 of 2022 on Personal Data Protection: collect little, use it for one purpose, and keep nothing we do not need. This describes our approach. It is not a statement of legal compliance.',
+      'By default, your reference text is sent to Google Gemini, only to read the fields: authors, year, title. Choose "Do not send my text to an AI service" to avoid this. Results are then less accurate.',
+      'Google states that content sent through its free tier can be used to improve its products and read by human reviewers.',
+      'The title, authors, and DOI read from your references go to Crossref and OpenAlex, and to DataCite when needed, to look the work up.',
+      'If you add your own Gemini key, it stays in your browser. It is sent with each check, used only to ask Google to read your references, and never stored or logged. The browser extension shares it with the site on your device.',
+      'A .txt or .bib file you choose is read in your browser, like pasted text. Nothing is sent until you choose Check references.',
+      'Our server does not store your text. Our logs hold only a request id, the number of references, timings, and error codes.',
+      'We follow the principles of Indonesian Law No. 27 of 2022 on Personal Data Protection: collect little, use it for one purpose, keep nothing we do not need. This describes our approach, not legal compliance.',
       'Do not paste sensitive or personal information. A reference list does not need any.',
     ],
     googleTerms: "Read Google's terms for the Gemini API",
@@ -371,13 +358,13 @@ export const en = {
     printFiltered: 'Showing only {verdict} results: {shown} of {total}.',
     aiIssue: {
       rejectedOwn:
-        'Google did not accept your Gemini key, so the no-AI reader read your references instead. Check the key.',
+        'Google did not accept your Gemini key, so the no-AI reader was used instead. Check the key.',
       quotaOwn:
-        'Your Gemini key reached its usage limit, so the no-AI reader read some references instead.',
+        'Your Gemini key reached its usage limit, so the no-AI reader read some references.',
       rejectedShared:
-        'The shared AI reader is not available right now, so the no-AI reader read your references instead. You can add your own free Gemini key.',
+        'The shared AI reader is not available right now, so the no-AI reader was used. You can add your own free Gemini key.',
       quotaShared:
-        'The shared AI reader reached its daily limit, so the no-AI reader read some references instead. Add your own free Gemini key to keep using the AI reader.',
+        'The shared AI reader reached its daily limit, so the no-AI reader read some references. Add your own free Gemini key to keep using AI.',
     },
   },
   evidence: {
@@ -387,18 +374,16 @@ export const en = {
     recordNone: 'Record found',
     status: 'Status',
     field: 'Field',
-    noRecord: 'No record is shown, because none was close enough to be this work.',
+    noRecord: 'No record is shown, because none was close enough.',
     openRecord: 'Open record',
     scholar: 'Search on Google Scholar',
     opensNewTab: 'opens in a new tab',
     nextStep: 'Next step',
     next: {
-      verified: 'Nothing to fix here. Still read the source before you rely on it.',
+      verified: 'Nothing to fix. Still read the source before you rely on it.',
       mismatch: 'Open the record and correct the details you cited.',
-      suspect:
-        'Search for this source by hand. If you cannot find it, do not keep it in your list.',
-      out_of_index:
-        'Check this one by hand: search for the title, or look in your library or campus repository.',
+      suspect: 'Search for it by hand. If you cannot find it, do not keep it in your list.',
+      out_of_index: 'Check by hand: search the title, or ask your library or campus repository.',
       check_failed: 'Check this reference again in a moment.',
     },
     details: 'Details',
@@ -414,7 +399,7 @@ export const en = {
   },
   corrected: {
     title: 'Corrected reference (APA 7)',
-    note: 'Written from the record by fixed rules, not by a language model. Check it against the source. You still need to italicize the journal name and volume, and to write the article title in sentence case.',
+    note: 'Written from the record by fixed rules, not by a language model. Check it against the source, then italicize the journal name and volume and use sentence case for the article title.',
     copy: 'Copy reference',
     copied: 'Copied',
     copyFailed: 'Could not copy. Select the text and copy it by hand.',
@@ -449,14 +434,14 @@ export const en = {
   },
   workbench: {
     aiUnavailable:
-      'The AI reader is not set up on this server. Your text is read by a pattern reader on our server instead, then looked up in Crossref and OpenAlex. We do not store your text.',
+      'The AI reader is not set up on this server. A no-AI reader on our server is used instead. We do not store your text.',
     shortcut: 'Ctrl+Enter',
     checkingButton: 'Checking',
   },
   apiKey: {
     summary: 'Use your own Gemini API key (optional)',
     intro:
-      "The AI reader uses this site's shared Gemini key, which has a daily limit and can run out when many people use it. Add your own free key to read your references with your own limit.",
+      "The AI reader uses this site's shared Gemini key, which has a daily limit. Add your own free key to use your own limit.",
     label: 'Gemini API key',
     show: 'Show key',
     save: 'Save key',
@@ -468,98 +453,75 @@ export const en = {
     removed: 'Key removed. The shared reader is used.',
     invalid: 'That does not look like a Gemini API key. Check it and try again.',
     privacy:
-      'The key stays in your browser. It is sent to our server with each check, used only to ask Google to read your references, and never stored or logged. Remove it at any time.',
+      'The key stays in your browser. It is sent with each check, used only to ask Google to read your references, and never stored or logged.',
     linked:
       'The CekKutip browser extension is connected. A key saved here also appears in the extension.',
   },
   extension: {
     openSite: 'Open the CekKutip website',
-    keyNote: 'This key is also used on the CekKutip website once you open it in this browser.',
+    keyNote: 'The CekKutip site uses this key too, once opened in this browser.',
     menuTitle: 'Check selection with CekKutip',
     autoFillLabel: 'Fill the box when I select text on a page',
     autoFillHint:
-      'Off by default. Turning it on asks your browser for permission to read the text you select on websites. The text goes only into this box, and nothing is sent anywhere until you press Check references. Turn it off at any time and the permission is removed.',
-    autoFillOn: 'On. Select a sentence or a reference on a page and it appears in the box.',
+      'Your browser will ask permission to read text you select on websites. Nothing is sent until you press Check references.',
+    autoFillOn: 'On. Select a sentence on a page and it appears in the box.',
     autoFillDenied: 'Permission was not granted, so this stays off.',
-    liveOffer: 'Text selected on the page. Your own text is in the box, so it was not replaced:',
+    liveOffer: 'Selected on the page. Your own text is in the box, so it was kept:',
     liveAdd: 'Add to the box',
     liveReplace: 'Replace the box',
     liveIgnore: 'Ignore',
   },
   extensionPage: {
     h1: 'Browser extension',
-    lede: 'Check references on any web page, without opening this site. It is the same check as here: the same lookups, the same rules, the same verdicts.',
+    lede: 'Check references from any web page, in a side panel next to it. It is the same check as this site.',
     getTitle: 'Get the extension',
     download: 'Download the extension (.zip)',
     getNote:
-      'It is free. It is not in a browser extension store yet, so you install it from this file. The steps are below.',
-    factsWorks: 'Works in',
-    factsWorksValue:
-      'Chrome and Edge, version 127 or later. Not tested in Brave, Firefox, or Safari.',
-    factsCost: 'Cost',
-    factsCostValue: 'Free. No account.',
-    factsServer: 'Talks to',
-    factsServerValue: '{host}, to look up the references you choose to check.',
-    installTitle: 'Install it, step by step',
+      'Free, no account. Works in Chrome and Edge 127 or later. It is not in a store yet, so you install it from this file.',
+    installTitle: 'Install it',
     installSteps: [
       {
         name: 'Download and unzip',
-        text: 'Press "Download the extension" above. Then extract the downloaded file into a folder you will keep, for example a folder named CekKutip-extension in Documents. On Windows, right-click the file and choose Extract All. Do not delete the folder afterwards: the browser reads the extension from it.',
+        text: 'Unzip the file into a folder you will keep. The browser reads the extension from that folder, so do not delete it.',
       },
       {
         name: 'Open the extensions page',
-        text: 'Type `chrome://extensions` in the address bar and press Enter. In Edge, type `edge://extensions`.',
-      },
-      {
-        name: 'Turn on Developer mode',
-        text: 'On that page, switch on Developer mode. In Chrome it is a switch at the top right. In Edge it is in the menu on the left.',
+        text: 'Go to `chrome://extensions` (in Edge, `edge://extensions`) and turn on Developer mode.',
       },
       {
         name: 'Load the folder',
-        text: 'Press Load unpacked, then choose the folder from step 1. Choose the folder that has the file `manifest.json` directly inside it. CekKutip now appears in your list of extensions.',
+        text: 'Press Load unpacked and choose the folder that has `manifest.json` directly inside it.',
       },
       {
-        name: 'Pin it to the toolbar',
-        text: 'Press the puzzle-piece icon next to the address bar, then the pin next to CekKutip. Its icon now stays in the toolbar.',
+        name: 'Pin it',
+        text: 'Click the puzzle-piece icon next to the address bar, then the pin beside CekKutip.',
       },
     ],
-    installNote:
-      'When it starts, Chrome may remind you that an extension in developer mode is on. That is expected for an extension installed from a file. You can dismiss the message.',
+    installNote: 'Chrome may warn about an extension in developer mode. You can dismiss it.',
     useTitle: 'Use it',
     useItems: [
-      'Press the CekKutip icon in the toolbar. A side panel opens next to the page. Paste your references and press Check references. The results look the same as on this site. The panel stays open when you click on the page or switch tabs, so a check keeps running. Close it with its close button.',
-      'Or select text on any web page, right-click, and choose "{menu}". The text goes into the side panel, replacing what is in its box. Nothing is sent until you press Check references.',
-      'To skip copy and paste, turn on "{autofill}" at the top of the side panel. After that, text you select on a web page appears in the box by itself. If your own text is already in the box, the selection is offered in a notice and never put over your text.',
+      'Click the CekKutip icon. A side panel opens and stays open while you browse. Paste your references and press Check references.',
+      'Or select text on a page, right-click, and choose "{menu}".',
+      'To fill the box by itself, turn on "{autofill}" at the top of the panel. Your own text is never replaced.',
+      'A Gemini key you add here or on the site is shared between them, in the same browser.',
     ],
-    keyTitle: 'Your own Gemini key',
-    key: 'The AI reader uses a shared Gemini key with a daily limit. You can add your own free key, on this site or in the extension. Add it in one place and the other picks it up. This works inside one browser on one device, after you have opened this site once in a browser that has the extension.',
-    keyLink: 'Go to the key box on the Check page',
-    accessTitle: 'What the extension can access',
+    accessTitle: 'What it can access',
     accessItems: [
-      'This site, and only this site, to begin with. A small script runs on its pages to share your Gemini key with the website. Unless you turn on the setting "{autofill}", the extension cannot read other web pages, your tabs, your history, or your cookies.',
-      'If you turn on "{autofill}", your browser asks you to let the extension read the text you select on websites. The script reads only the text you select, and ignores text selected in a form field. The text goes into the box in the side panel and nowhere else until you press Check references. If the panel is closed, the text is dropped. Turn the setting off and the permission is taken back.',
-      'Text you select, only when you right-click it and choose the CekKutip item. It stays on your device until you press Check references.',
-      'Your Gemini key, if you add one. It stays on your device.',
-      'The references you check go to our server, with the same privacy rules as the site: we do not store them or write them to logs.',
+      'This site only, until you turn on "{autofill}". It cannot read other pages, tabs, history, or cookies.',
+      'With that setting on, it reads only the text you select, never form fields, and puts it in the box. Turning it off removes the permission.',
+      'Your Gemini key stays on your device. The references you check go to our server, which does not store or log them.',
     ],
     privacyLink: 'Read the privacy details',
     sourceLink: 'Read the extension source code on GitHub',
     updateTitle: 'Update or remove',
     updateItems: [
-      'To update, download the new file and extract it over the same folder, replacing the files. Then open the extensions page and press the reload icon on the CekKutip card.',
-      'To remove it, open the extensions page and press Remove on the CekKutip card. Then delete the folder.',
-    ],
-    helpTitle: 'If something goes wrong',
-    helpItems: [
-      '"Manifest file is missing or unreadable": you chose the wrong folder. Choose the folder that has `manifest.json` directly inside it, not the folder around it.',
-      'Chrome says the extension needs a newer version: it needs Chrome 127 or later. Update your browser.',
-      'A check does not start: open this site once to make sure it is online, then try again.',
-      'The box does not fill when you select text: check that "{autofill}" is on and that the side panel is open. A word or two is ignored on purpose, so select a sentence or a reference. It does not work in forms, in the PDF viewer of the browser, or on pages the browser keeps closed to extensions, such as its extension store.',
+      'To update, download the new file, extract it over the same folder, and press the reload icon on the CekKutip card.',
+      'To remove, press Remove on the CekKutip card, then delete the folder.',
     ],
   },
   upload: {
     button: 'Upload .txt or .bib',
-    hint: 'The file is read in your browser and put in the box, like pasted text. Up to {max} KB.',
+    hint: 'Read in your browser, not uploaded. Up to {max} KB.',
     added: (n: number, name: string) =>
       `Added ${n} ${n === 1 ? 'reference' : 'references'} from ${name}.`,
     skipped: (n: number) =>
@@ -573,14 +535,13 @@ export const en = {
   },
   split: {
     summary: (n: number) => `Review how your list was split (${n})`,
-    hint: 'Each item below is checked as one reference. If a reference was cut in the wrong place, merge it with the one before it, or edit it. A change rewrites the box above with one reference per paragraph.',
+    hint: 'Each item is checked as one reference. Merge or edit any that were cut in the wrong place.',
     item: (n: number) => `Reference ${n}`,
     merge: 'Merge with previous',
     mergeLabel: (n: number) => `Merge reference ${n} with reference ${n - 1}`,
     edit: 'Edit',
     editLabel: (n: number) => `Edit reference ${n}`,
-    editHint:
-      'Leave a blank line where one reference ends and the next begins. Clear the text to remove the reference.',
+    editHint: 'Leave a blank line between references. Clear the text to remove one.',
     apply: 'Apply',
     cancel: 'Cancel',
     merged: (n: number, total: number) =>

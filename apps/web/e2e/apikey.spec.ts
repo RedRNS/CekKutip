@@ -244,7 +244,7 @@ test.describe('checking with your own key', () => {
     await expect(
       page.getByRole('status').filter({ hasText: 'did not accept your Gemini key' }),
     ).toHaveText(
-      'Google did not accept your Gemini key, so the no-AI reader read your references instead. Check the key.',
+      'Google did not accept your Gemini key, so the no-AI reader was used instead. Check the key.',
     )
     await expect(rows(page)).toHaveCount(1)
   })

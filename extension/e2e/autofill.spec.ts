@@ -169,12 +169,14 @@ testAllSites.describe('filling the box from a selection on a page', () => {
     'says what it needs, in both languages, before it is turned on',
     async ({ page, extensionId }) => {
       await openPanel(page, extensionId)
-      await expect(page.getByText(/Off by default\. Turning it on asks your browser/)).toBeVisible()
+      await expect(
+        page.getByText(/Your browser will ask permission to read text you select/),
+      ).toBeVisible()
       await page.getByRole('button', { name: /Switch to Bahasa Indonesia/ }).click()
       await expect(
         page.getByRole('checkbox', { name: 'Isi kotak saat aku memilih teks di halaman' }),
       ).toBeVisible()
-      await expect(page.getByText(/Mati secara bawaan/)).toBeVisible()
+      await expect(page.getByText(/Browser akan meminta izin untuk membaca teks/)).toBeVisible()
     },
   )
 })

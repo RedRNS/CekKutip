@@ -5,7 +5,7 @@ export const id: Dict = {
   meta: {
     siteName: 'CekKutip',
     description:
-      'Tempel daftar pustakamu. CekKutip mencari tiap referensi di Crossref dan OpenAlex, lalu memberi tahu apakah referensi itu ada, apakah detailnya benar, atau apakah belum bisa dipastikan.',
+      'Tempel referensimu. CekKutip mencari tiap referensi di Crossref dan OpenAlex, lalu memberi tahu apakah referensi itu ada dan apakah detailnya cocok.',
     titles: {
       home: 'Periksa daftar pustaka',
       how: 'Cara kerja',
@@ -40,85 +40,71 @@ export const id: Dict = {
     check_failed: 'Tidak bisa diperiksa',
   },
   verdictDefinitions: {
-    verified: 'Karyanya ditemukan, dan judul, penulis, serta tahunnya sesuai dengan referensimu.',
-    mismatch:
-      'Karyanya ditemukan, tetapi beberapa detail yang kamu tulis tidak sesuai dengan recordnya.',
-    suspect:
-      'Karya ini tidak ditemukan, padahal cara penulisannya seharusnya membuatnya mudah dicari. Periksa sumbernya secara manual.',
+    verified: 'Karyanya ditemukan. Judul, penulis, dan tahun sesuai.',
+    mismatch: 'Karyanya ditemukan, tetapi beberapa detail yang kamu tulis tidak cocok.',
+    suspect: 'Tidak ditemukan, padahal cara penulisannya seharusnya mudah dicari. Periksa manual.',
     out_of_index:
-      'Jenis sumber seperti ini sering tidak ada di Crossref dan OpenAlex, jadi kami tidak bisa memastikannya. Periksa secara manual.',
+      'Sumber seperti ini sering tidak ada di indeks, jadi kami tidak bisa memastikan. Periksa manual.',
   },
   reasons: {
     verified_all_match: 'Ditemukan di {source}. Judul, penulis, dan tahun sesuai.',
-    mismatch_authors:
-      'Karya ini ada, tetapi penulis yang kamu tulis tidak sesuai dengan recordnya.',
+    mismatch_authors: 'Karya ini ada, tetapi penulisnya tidak cocok dengan recordnya.',
     mismatch_year: 'Karya ini ada, tetapi tahunnya berbeda {n} tahun.',
     mismatch_venue: 'Karya ini ada, tetapi terbit di jurnal yang berbeda.',
-    mismatch_doi_other_work: 'DOI ini mengarah ke karya yang berbeda dari yang kamu kutip.',
-    suspect_doi_not_found:
-      'DOI ini tidak terdaftar. Periksa sumbernya secara manual sebelum kamu mempertahankannya.',
+    mismatch_doi_other_work: 'DOI ini mengarah ke karya yang berbeda.',
+    suspect_doi_not_found: 'DOI ini tidak terdaftar. Periksa sumbernya secara manual.',
     suspect_no_record_journal:
-      'Karya ini tidak ditemukan, padahal ditulis seperti artikel jurnal. Periksa sumbernya secara manual.',
+      'Tidak ditemukan, padahal ditulis seperti artikel jurnal. Periksa sumbernya secara manual.',
     out_of_index_type:
-      'Ini tampaknya berupa {type}. Crossref dan OpenAlex sering tidak memuat jenis ini, jadi kami tidak bisa memeriksanya. Periksa secara manual.',
+      'Ini tampaknya berupa {type}. Crossref dan OpenAlex sering tidak memuat jenis ini. Periksa secara manual.',
     out_of_index_insufficient_data:
       'Detailnya terlalu sedikit untuk dicari. Tambahkan judul dan penulis.',
-    out_of_index_other_registry:
-      'DOI ini milik registri yang belum kami cari. Buka DOI-nya untuk memeriksa.',
+    out_of_index_other_registry: 'DOI ini milik registri yang belum kami cari.',
     check_failed_network: 'Layanan pencarian tidak merespons. Ini bukan verdict. Coba lagi.',
   },
   home: {
     h1: 'Periksa daftar pustaka sebelum kamu mengumpulkannya.',
     intro:
-      'Tempel referensimu. CekKutip mencari tiap referensi, lalu memberi tahu apakah referensi itu ada, apakah detailnya benar, atau apakah belum bisa dipastikan.',
+      'Tempel referensimu. CekKutip mencari tiap referensi dan memberi tahu apakah referensi itu ada dan apakah detailnya cocok.',
     inputLabel: 'Referensi',
     found: (n: number) => `${n} terdeteksi`,
-    placeholderHint: 'Tempel satu referensi per paragraf, atau beri nomor.',
+    placeholderHint: 'Satu referensi per paragraf, atau diberi nomor.',
     noAi: 'Jangan kirim teksku ke layanan AI (kurang akurat)',
     notice:
-      'Secara bawaan, teksmu dikirim ke Google Gemini untuk membaca field (penulis, tahun, judul). Judul dan penulis kemudian dicari di Crossref dan OpenAlex. Kami tidak menyimpan teksmu.',
-    noticeLink: 'Baca rincian privasi',
+      'Teksmu dikirim ke Google Gemini untuk membaca field-nya, lalu ke Crossref dan OpenAlex untuk dicari. Kami tidak menyimpannya.',
+    noticeLink: 'Rincian privasi',
     check: 'Periksa referensi',
     example: 'Coba contoh',
     clear: 'Hapus',
     resultsTitle: 'Hasil',
-    emptyHint:
-      'Tempel referensimu lalu pilih Periksa referensi. Hasilnya muncul di sini satu per satu.',
+    emptyHint: 'Tempel referensimu lalu tekan Periksa referensi. Hasilnya muncul di sini.',
     emptyLegend: 'Arti keempat verdict',
     statement: 'Verdict adalah ajakan untuk memeriksa ulang, bukan temuan pelanggaran.',
-    verdictsTitle: 'Empat verdict',
     howTitle: 'Cara kerja pemeriksaan',
     howMore: 'Lihat contoh lengkap',
     steps: [
       {
         name: 'Parse',
-        text: 'Model bahasa membaca tiap referensi dan mengambil field-nya. Model tidak pernah memutuskan apakah referensi itu nyata.',
+        text: 'Model bahasa membaca field-nya. Model tidak pernah memutuskan hasilnya.',
       },
-      {
-        name: 'Retrieve',
-        text: 'Kami mencari karyanya di Crossref, dan di OpenAlex bila perlu.',
-      },
+      { name: 'Retrieve', text: 'Kami mencari karyanya di Crossref, lalu OpenAlex.' },
       { name: 'Match', text: 'Kami membandingkan judul, penulis, tahun, dan venue.' },
-      {
-        name: 'Decide',
-        text: 'Aturan tetap mengubah hasil perbandingan menjadi satu dari empat verdict.',
-      },
+      { name: 'Decide', text: 'Aturan tetap memberi satu dari empat verdict.' },
     ],
     extTitle: 'Periksa dari halaman web mana pun',
-    extText:
-      'Pasang ekstensi browser gratis untuk memeriksa referensi tanpa membuka situs ini. Kamu juga bisa memilih teks di halaman mana pun lalu klik kanan.',
+    extText: 'Ekstensi browser gratis membuka CekKutip di panel samping di sebelah halaman.',
     extLink: 'Ambil ekstensi browser',
     notTitle: 'Yang tidak dilakukan CekKutip',
     notItems: [
       'CekKutip tidak memeriksa apakah sebuah sumber mendukung klaimmu.',
       'CekKutip tidak mendeteksi plagiarisme.',
-      'CekKutip tidak bisa melihat buku, skripsi, dan laporan yang tidak dimuat Crossref dan OpenAlex. Untuk itu kami bilang terus terang, bukan menebak.',
-      'Hasilnya bukan bukti pelanggaran, dan bukan pengganti membaca sumbermu.',
+      'CekKutip tidak bisa melihat banyak buku, skripsi, dan laporan. Untuk itu kami bilang terus terang, bukan menebak.',
+      'Verdict bukan bukti pelanggaran.',
     ],
   },
   how: {
     h1: 'Cara kerja pemeriksaan',
-    lede: 'Pemeriksaan punya empat langkah. Hanya langkah pertama yang memakai model bahasa, dan model itu tidak pernah memutuskan apakah sebuah referensi nyata.',
+    lede: 'Empat langkah. Hanya yang pertama memakai model bahasa, dan model itu tidak pernah memutuskan hasilnya.',
     diagramTitle: 'Empat langkah',
     diagramDesc:
       'Empat langkah berurutan: Parse, Retrieve, Match, Decide. Hanya Parse yang memakai model bahasa. Tiga langkah lainnya adalah kode dengan aturan tetap.',
@@ -132,24 +118,24 @@ export const id: Dict = {
       'Model hanya mengubah teks menjadi field. Model tidak mencari apa pun dan tidak memilih verdict.',
     exampleTitle: 'Satu referensi, langkah demi langkah',
     exampleIntro:
-      'Kami mengambil referensi nyata lalu mengubah dua detailnya, yaitu tahun dan jurnal, untuk menunjukkan seperti apa Mismatch.',
+      'Referensi nyata dengan dua detail yang diubah, yaitu tahun dan jurnal, untuk menunjukkan seperti apa Mismatch.',
     exampleCitedLabel: 'Referensi seperti yang ditempel',
     exampleSteps: [
       {
         name: 'Parse',
-        text: 'Model membaca teks lalu mengembalikan field: dua penulis, tahun 2021, judul, dan nama jurnal. Model tidak menambahkan apa pun yang tidak tertulis.',
+        text: 'Model mengembalikan field: dua penulis, tahun 2021, judul, dan nama jurnal.',
       },
       {
         name: 'Retrieve',
-        text: 'Tidak ada DOI, jadi kami mencari di Crossref dengan judul, penulis pertama, dan tahun. Crossref mengembalikan record dengan judul yang sama.',
+        text: 'Tidak ada DOI, jadi kami mencari di Crossref dengan judul, penulis pertama, dan tahun. Yang kembali adalah record dengan judul yang sama.',
       },
       {
         name: 'Match',
-        text: 'Kami membandingkan tiap field dengan record. Judul dan penulis sesuai. Tahunnya berbeda dua tahun, dan jurnalnya tidak sama.',
+        text: 'Judul dan penulis sesuai. Tahunnya berbeda dua tahun dan jurnalnya tidak sama.',
       },
       {
         name: 'Decide',
-        text: 'Judulnya cocok, tetapi tahun dan jurnalnya tidak. Aturan untuk kasus ini memberi Mismatch, dengan alasan yang ditampilkan di sebelahnya.',
+        text: 'Judulnya cocok, tetapi tahun dan jurnalnya tidak. Aturannya memberi Mismatch.',
       },
     ],
     tableCaption: 'Referensi dibandingkan dengan record',
@@ -169,12 +155,12 @@ export const id: Dict = {
     exampleResultText: 'Karya ini ada, tetapi tahun dan jurnalnya berbeda dari record.',
     rulesTitle: 'Aturannya, berurutan',
     rulesIntro:
-      'Aturan pertama yang cocok menentukan hasilnya. Seberapa mirip judul dan penulis dianggap cocok ditentukan oleh nilai ambang. Kami menyetelnya hanya pada data latihan, lalu membekukannya sebelum pengujian akhir.',
+      'Aturan pertama yang cocok menentukan hasilnya. Ambang untuk judul atau penulis yang dianggap cocok disetel hanya pada data latihan, lalu dibekukan sebelum pengujian akhir.',
     rulesColIf: 'Jika',
     rulesColResult: 'Hasil',
     rules: [
       { if: 'Layanan pencarian tidak merespons setelah dicoba ulang.', result: 'check_failed' },
-      { if: 'Referensi punya DOI yang tidak terdaftar di mana pun.', result: 'suspect' },
+      { if: 'DOI tidak terdaftar di mana pun.', result: 'suspect' },
       { if: 'DOI mengarah ke record dengan judul yang sangat berbeda.', result: 'mismatch' },
       { if: 'Sebuah record cocok pada judul, penulis, tahun, dan jurnal.', result: 'verified' },
       {
@@ -186,7 +172,7 @@ export const id: Dict = {
         result: 'suspect',
       },
       {
-        if: 'Berupa buku, bab buku, skripsi, laporan, halaman web, atau sumber lain, dan tidak ada record yang cukup dekat.',
+        if: 'Buku, bab buku, skripsi, laporan, halaman web, atau sumber lain, dan tidak ada record yang cukup dekat.',
         result: 'out_of_index',
       },
       { if: 'Detailnya terlalu sedikit untuk dicari.', result: 'out_of_index' },
@@ -197,24 +183,23 @@ export const id: Dict = {
     limitsTitle: 'Keterbatasan',
     limits: [
       'Crossref dan OpenAlex tidak lengkap. Sumber yang nyata bisa saja tidak ada di keduanya. Karena itu ada Out-of-index.',
-      'Record juga bisa memuat kesalahan. Verified berarti karyanya ada dan detailnya sesuai, bukan bahwa sumbermu mendukung klaimmu.',
-      'Model bisa salah membaca format referensi yang tidak lazim. Bila gagal, pembaca regex mengambil alih untuk referensi itu.',
-      'Verdict adalah ajakan untuk memeriksa ulang, bukan temuan pelanggaran.',
+      'Verified berarti karyanya ada dan detailnya sesuai, bukan bahwa sumbermu mendukung klaimmu.',
+      'Model bisa salah membaca format yang tidak lazim. Bila gagal, pembaca tanpa AI mengambil alih untuk referensi itu.',
     ],
   },
   evaluation: {
     h1: 'Evaluasi',
-    lede: 'Kami menguji CekKutip dengan dua cara: pada sekumpulan referensi berlabel, dan bersama mahasiswa.',
+    lede: 'Kami menguji CekKutip pada sekumpulan referensi berlabel dan bersama mahasiswa.',
     loading: 'Memuat hasil',
     emptyTitle: 'Belum ada hasil',
     empty: 'Hasil akan dipublikasikan setelah data dikunci pada 9 Desember 2026.',
     emptyNote:
-      'Sampai saat itu halaman ini tidak menampilkan angka, karena kami belum punya hasil terukur untuk ditampilkan.',
+      'Sampai saat itu halaman ini tidak menampilkan angka, karena belum ada yang terukur.',
     technicalTitle: 'Evaluasi teknis',
     technical:
-      'Kami melabeli sekumpulan referensi secara manual, dengan dua orang melabeli tiap referensi. CekKutip dan tiga pembanding sederhana lalu dijalankan pada referensi yang disimpan sampai akhir. Kami juga mematikan bagian CekKutip satu per satu untuk melihat apa yang ditambahkan tiap bagian.',
+      'Dua orang melabeli sekumpulan referensi secara manual. CekKutip dan tiga pembanding sederhana dijalankan pada referensi yang disimpan sampai akhir. Kami juga mematikan bagian CekKutip satu per satu untuk melihat apa yang ditambahkan tiap bagian.',
     userTitle: 'Studi pengguna',
-    user: 'Studi singkat bersama mahasiswa melihat apakah alat ini membantu orang menemukan masalah dalam daftar pustaka, dan bagaimana mereka menilai penjelasannya.',
+    user: 'Studi singkat bersama mahasiswa: apakah alat ini membantu mereka menemukan masalah dalam daftar pustaka, dan bagaimana mereka menilai penjelasannya?',
     results: {
       loading: 'Memuat hasil',
       factsTitle: 'Bagaimana hasil ini dibuat',
@@ -298,8 +283,8 @@ export const id: Dict = {
     metrics: [
       'Macro-F1 untuk empat verdict, dengan interval kepercayaan 95%.',
       'Precision, recall, dan F1 untuk tiap verdict.',
-      'False accusation rate: seberapa sering sumber yang nyata, atau hanya tidak ada di indeks, diberi Suspect atau Mismatch.',
-      'Tingkat abstain: seberapa sering alat ini menjawab Out-of-index.',
+      'False accusation rate: seberapa sering sumber yang nyata atau tidak terindeks diberi Suspect atau Mismatch.',
+      'Tingkat abstain: seberapa sering jawabannya Out-of-index.',
       'Waktu median per referensi, dan biaya per 1.000 referensi.',
       'Kesepakatan antara dua orang yang melabeli referensi (kappa Cohen).',
       'Hasil dengan dan tanpa referensi yang sengaja diubah untuk pengujian.',
@@ -310,16 +295,15 @@ export const id: Dict = {
     lede: 'Pemeriksa referensi yang dibuat mahasiswa, untuk mahasiswa.',
     storyTitle: 'Mengapa kami membuatnya',
     story:
-      'Asisten AI bisa menulis referensi yang tampak lengkap tetapi tidak mengarah ke mana pun, atau memuat penulis, tahun, atau jurnal yang salah. Mahasiswa sering sulit membedakan mana yang bisa dipercaya, dan kebanyakan pemeriksa hanya mengembalikan kecocokan atau skor. CekKutip menambahkan dua hal: Mismatch, untuk karya nyata yang dikutip keliru, dan Out-of-index, untuk sumber yang tidak bisa dilihatnya. Dengan begitu mahasiswa tidak dituduh keliru atas hal yang tidak benar-benar bisa ditemukan alat ini.',
+      'Asisten AI bisa menulis referensi yang tampak lengkap tetapi tidak mengarah ke mana pun, atau memuat penulis, tahun, atau jurnal yang salah. Kebanyakan pemeriksa hanya mengembalikan kecocokan atau skor. CekKutip menambahkan Mismatch, untuk karya nyata yang dikutip keliru, dan Out-of-index, untuk sumber yang tidak bisa dilihatnya.',
     teamTitle: 'Tim',
     supervisorTitle: 'Pembimbing',
     universityTitle: 'Kampus',
     competitionTitle: 'Lomba',
     competition:
-      'Dibuat untuk Global Youth Invention and Innovation Fair (GYIIF) 2027 yang diselenggarakan IPB University. Kategori: Engineering and Technology. Jalur daring.',
+      'Dibuat untuk Global Youth Invention and Innovation Fair (GYIIF) 2027 yang diselenggarakan IPB University. Engineering and Technology, jalur daring.',
     limitsTitle: 'Keterbatasan',
-    limits:
-      'CekKutip tidak bisa melihat semuanya. Baca apa yang tidak dilakukannya di halaman Cara kerja.',
+    limits: 'CekKutip tidak bisa melihat semuanya.',
     limitsLink: 'Lihat keterbatasan',
     contactTitle: 'Kontak dan kode',
     contactEmail: 'Email',
@@ -330,7 +314,7 @@ export const id: Dict = {
       {
         name: 'Crossref',
         url: 'https://www.crossref.org/',
-        text: 'Metadata karya ilmiah, dicari lewat DOI atau judul.',
+        text: 'Metadata karya ilmiah, lewat DOI atau judul.',
       },
       {
         name: 'OpenAlex',
@@ -340,20 +324,20 @@ export const id: Dict = {
       {
         name: 'Google Gemini',
         url: 'https://ai.google.dev/',
-        text: 'Membaca tiap referensi dan mengambil field-nya. Tidak memutuskan verdict apa pun.',
+        text: 'Membaca tiap referensi menjadi field. Tidak pernah memutuskan verdict.',
       },
     ],
   },
   privacy: {
     h1: 'Privasi',
-    lede: 'Apa yang terjadi pada teks yang kamu tempel, dengan bahasa sederhana.',
+    lede: 'Apa yang terjadi pada teks yang kamu tempel.',
     items: [
-      'Secara bawaan, teks referensimu dikirim ke Google Gemini. Teks itu hanya dipakai untuk membaca field: penulis, tahun, judul. Pilih "Jangan kirim teksku ke layanan AI" untuk menghindarinya. Hasilnya jadi kurang akurat.',
-      'Google menyatakan bahwa konten yang dikirim lewat tier gratisnya dapat dipakai untuk meningkatkan produknya, dan bahwa peninjau manusia dapat membacanya.',
+      'Secara bawaan, teks referensimu dikirim ke Google Gemini, hanya untuk membaca field: penulis, tahun, judul. Pilih "Jangan kirim teksku ke layanan AI" untuk menghindarinya. Hasilnya jadi kurang akurat.',
+      'Google menyatakan bahwa konten yang dikirim lewat tier gratisnya dapat dipakai untuk meningkatkan produknya dan dibaca peninjau manusia.',
       'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya.',
-      'Kalau kamu menambahkan kunci Gemini sendiri, kunci itu tetap di browsermu. Kunci dikirim ke server kami pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Kalau kamu memakai ekstensi browser CekKutip, kunci dibagi antara situs dan ekstensi di perangkatmu.',
-      'Berkas .txt atau .bib yang kamu pilih dibaca di browsermu dan dimasukkan ke kotak, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
-      'Server kami tidak menyimpan teksmu. Log kami hanya berisi id permintaan, jumlah referensi, waktu proses, dan kode galat. Log tidak pernah berisi teksmu.',
+      'Kalau kamu menambahkan kunci Gemini sendiri, kunci itu tetap di browsermu. Kunci dikirim pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Ekstensi browser membaginya dengan situs di perangkatmu.',
+      'Berkas .txt atau .bib yang kamu pilih dibaca di browsermu, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
+      'Server kami tidak menyimpan teksmu. Log kami hanya berisi id permintaan, jumlah referensi, waktu proses, dan kode galat.',
       'Kami mengikuti prinsip Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi: mengumpulkan seperlunya, memakainya untuk satu tujuan, dan tidak menyimpan yang tidak dibutuhkan. Ini gambaran cara kami bekerja, bukan pernyataan kepatuhan hukum.',
       'Jangan menempelkan informasi sensitif atau data pribadi. Daftar pustaka tidak membutuhkannya.',
     ],
@@ -376,13 +360,13 @@ export const id: Dict = {
     printFiltered: 'Hanya menampilkan hasil {verdict}: {shown} dari {total}.',
     aiIssue: {
       rejectedOwn:
-        'Google tidak menerima kunci Gemini-mu, jadi pembaca tanpa AI yang membaca referensimu. Periksa kuncinya.',
+        'Google tidak menerima kunci Gemini-mu, jadi pembaca tanpa AI yang dipakai. Periksa kuncinya.',
       quotaOwn:
         'Kunci Gemini-mu mencapai batas pemakaian, jadi pembaca tanpa AI membaca sebagian referensi.',
       rejectedShared:
-        'Pembaca AI bersama sedang tidak tersedia, jadi pembaca tanpa AI yang membaca referensimu. Kamu bisa menambahkan kunci Gemini gratismu sendiri.',
+        'Pembaca AI bersama sedang tidak tersedia, jadi pembaca tanpa AI yang dipakai. Kamu bisa menambahkan kunci Gemini gratismu sendiri.',
       quotaShared:
-        'Pembaca AI bersama mencapai batas hariannya, jadi pembaca tanpa AI membaca sebagian referensi. Tambahkan kunci Gemini gratismu sendiri untuk tetap memakai pembaca AI.',
+        'Pembaca AI bersama mencapai batas hariannya, jadi pembaca tanpa AI membaca sebagian referensi. Tambahkan kunci Gemini gratismu sendiri untuk tetap memakai AI.',
     },
   },
   evidence: {
@@ -392,8 +376,7 @@ export const id: Dict = {
     recordNone: 'Record ditemukan',
     status: 'Status',
     field: 'Field',
-    noRecord:
-      'Tidak ada record yang ditampilkan, karena tidak ada yang cukup dekat untuk dianggap karya ini.',
+    noRecord: 'Tidak ada record yang ditampilkan, karena tidak ada yang cukup dekat.',
     openRecord: 'Buka record',
     scholar: 'Cari di Google Scholar',
     opensNewTab: 'terbuka di tab baru',
@@ -402,10 +385,9 @@ export const id: Dict = {
       verified:
         'Tidak ada yang perlu diperbaiki. Tetap baca sumbernya sebelum kamu mengandalkannya.',
       mismatch: 'Buka record-nya lalu perbaiki detail yang kamu tulis.',
-      suspect:
-        'Cari sumber ini secara manual. Kalau tidak ketemu, jangan pertahankan di daftar pustakamu.',
+      suspect: 'Cari secara manual. Kalau tidak ketemu, jangan pertahankan di daftar pustakamu.',
       out_of_index:
-        'Periksa yang ini secara manual: cari judulnya, atau lihat di perpustakaan atau repositori kampusmu.',
+        'Periksa manual: cari judulnya, atau tanya perpustakaan atau repositori kampusmu.',
       check_failed: 'Periksa lagi referensi ini sebentar lagi.',
     },
     details: 'Rincian',
@@ -421,7 +403,7 @@ export const id: Dict = {
   },
   corrected: {
     title: 'Referensi yang dikoreksi (APA 7)',
-    note: 'Ditulis dari record dengan aturan tetap, bukan oleh model bahasa. Cocokkan dengan sumbernya. Kamu masih perlu memiringkan nama jurnal dan volume, serta menulis judul artikel dengan huruf kapital hanya di awal kalimat (sentence case).',
+    note: 'Ditulis dari record dengan aturan tetap, bukan oleh model bahasa. Cocokkan dengan sumbernya, lalu miringkan nama jurnal dan volume, dan tulis judul artikel dengan huruf kapital hanya di awal kalimat (sentence case).',
     copy: 'Salin referensi',
     copied: 'Tersalin',
     copyFailed: 'Tidak bisa menyalin. Pilih teksnya lalu salin secara manual.',
@@ -456,14 +438,14 @@ export const id: Dict = {
   },
   workbench: {
     aiUnavailable:
-      'Pembaca AI belum dipasang di server ini. Teksmu dibaca oleh pembaca pola di server kami, lalu dicari di Crossref dan OpenAlex. Kami tidak menyimpan teksmu.',
+      'Pembaca AI belum dipasang di server ini. Pembaca tanpa AI di server kami dipakai sebagai gantinya. Kami tidak menyimpan teksmu.',
     shortcut: 'Ctrl+Enter',
     checkingButton: 'Memeriksa',
   },
   apiKey: {
     summary: 'Pakai kunci API Gemini milikmu (opsional)',
     intro:
-      'Pembaca AI memakai kunci Gemini bersama milik situs ini, yang punya batas harian dan bisa habis kalau banyak orang memakainya. Tambahkan kunci gratismu sendiri supaya referensimu dibaca dengan batasmu sendiri.',
+      'Pembaca AI memakai kunci Gemini bersama milik situs ini, yang punya batas harian. Tambahkan kunci gratismu sendiri untuk memakai batasmu sendiri.',
     label: 'Kunci API Gemini',
     show: 'Tampilkan kunci',
     save: 'Simpan kunci',
@@ -475,99 +457,75 @@ export const id: Dict = {
     removed: 'Kunci dihapus. Pembaca bersama dipakai.',
     invalid: 'Itu tidak tampak seperti kunci API Gemini. Periksa lalu coba lagi.',
     privacy:
-      'Kunci tetap di browsermu. Kunci dikirim ke server kami pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Hapus kapan saja.',
+      'Kunci tetap di browsermu. Kunci dikirim pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log.',
     linked:
       'Ekstensi browser CekKutip terhubung. Kunci yang disimpan di sini juga muncul di ekstensi.',
   },
   extension: {
     openSite: 'Buka situs CekKutip',
-    keyNote: 'Kunci ini juga dipakai di situs CekKutip begitu kamu membukanya di browser ini.',
+    keyNote: 'Situs CekKutip memakai kunci ini juga, setelah dibuka di browser ini.',
     menuTitle: 'Periksa teks terpilih dengan CekKutip',
     autoFillLabel: 'Isi kotak saat aku memilih teks di halaman',
     autoFillHint:
-      'Mati secara bawaan. Menyalakannya meminta izin browser untuk membaca teks yang kamu pilih di situs web. Teksnya hanya masuk ke kotak ini, dan tidak ada yang dikirim ke mana pun sampai kamu menekan Periksa referensi. Matikan kapan saja dan izinnya dicabut.',
-    autoFillOn:
-      'Nyala. Pilih kalimat atau referensi di sebuah halaman dan teksnya muncul di kotak.',
+      'Browser akan meminta izin untuk membaca teks yang kamu pilih di situs web. Tidak ada yang dikirim sampai kamu menekan Periksa referensi.',
+    autoFillOn: 'Nyala. Pilih kalimat di sebuah halaman dan teksnya muncul di kotak.',
     autoFillDenied: 'Izin tidak diberikan, jadi pengaturan ini tetap mati.',
-    liveOffer: 'Teks yang dipilih di halaman. Ada teksmu sendiri di kotak, jadi tidak diganti:',
+    liveOffer: 'Dipilih di halaman. Ada teksmu sendiri di kotak, jadi tetap dipertahankan:',
     liveAdd: 'Tambahkan ke kotak',
     liveReplace: 'Ganti isi kotak',
     liveIgnore: 'Abaikan',
   },
   extensionPage: {
     h1: 'Ekstensi browser',
-    lede: 'Periksa referensi di halaman web mana pun, tanpa membuka situs ini. Pemeriksaannya sama dengan di sini: pencarian yang sama, aturan yang sama, verdict yang sama.',
+    lede: 'Periksa referensi dari halaman web mana pun, di panel samping di sebelahnya. Pemeriksaannya sama dengan situs ini.',
     getTitle: 'Ambil ekstensinya',
     download: 'Unduh ekstensi (.zip)',
     getNote:
-      'Gratis. Ekstensi ini belum ada di toko ekstensi browser, jadi dipasang dari berkas ini. Langkahnya ada di bawah.',
-    factsWorks: 'Berjalan di',
-    factsWorksValue:
-      'Chrome dan Edge versi 127 atau lebih baru. Belum diuji di Brave, Firefox, dan Safari.',
-    factsCost: 'Biaya',
-    factsCostValue: 'Gratis, tanpa akun.',
-    factsServer: 'Terhubung ke',
-    factsServerValue: '{host}, untuk mencari referensi yang kamu pilih untuk diperiksa.',
-    installTitle: 'Cara memasang, langkah demi langkah',
+      'Gratis, tanpa akun. Berjalan di Chrome dan Edge versi 127 atau lebih baru. Belum ada di toko ekstensi, jadi dipasang dari berkas ini.',
+    installTitle: 'Cara memasang',
     installSteps: [
       {
         name: 'Unduh dan ekstrak',
-        text: 'Tekan "Unduh ekstensi" di atas. Lalu ekstrak berkas yang terunduh ke folder yang akan kamu simpan, misalnya folder bernama CekKutip-extension di Documents. Di Windows, klik kanan berkasnya lalu pilih Extract All atau Ekstrak Semua. Jangan hapus foldernya setelah itu: browser membaca ekstensi dari folder tersebut.',
+        text: 'Ekstrak berkasnya ke folder yang akan kamu simpan. Browser membaca ekstensi dari folder itu, jadi jangan dihapus.',
       },
       {
         name: 'Buka halaman ekstensi',
-        text: 'Ketik `chrome://extensions` di bilah alamat lalu tekan Enter. Di Edge, ketik `edge://extensions`.',
-      },
-      {
-        name: 'Nyalakan Developer mode',
-        text: 'Di halaman itu, nyalakan Developer mode. Di Chrome letaknya berupa saklar di kanan atas. Di Edge letaknya di menu sebelah kiri. Kalau browsermu berbahasa Indonesia, namanya mungkin tertulis "Mode pengembang".',
+        text: 'Buka `chrome://extensions` (di Edge, `edge://extensions`) lalu nyalakan Developer mode.',
       },
       {
         name: 'Muat foldernya',
-        text: 'Tekan Load unpacked, lalu pilih folder dari langkah 1. Pilih folder yang langsung berisi berkas `manifest.json`. CekKutip kini muncul di daftar ekstensimu. Kalau browsermu berbahasa Indonesia, tombolnya mungkin tertulis "Muat yang belum dikemas".',
+        text: 'Tekan Load unpacked lalu pilih folder yang langsung berisi `manifest.json`.',
       },
       {
-        name: 'Sematkan di toolbar',
-        text: 'Tekan ikon kepingan puzzle di samping bilah alamat, lalu tekan pin di samping CekKutip. Ikonnya kini tetap ada di toolbar.',
+        name: 'Sematkan',
+        text: 'Klik ikon kepingan puzzle di samping bilah alamat, lalu pin di samping CekKutip.',
       },
     ],
-    installNote:
-      'Saat dijalankan, Chrome mungkin mengingatkan bahwa ada ekstensi dalam mode pengembang yang aktif. Itu wajar untuk ekstensi yang dipasang dari berkas. Pesan itu boleh ditutup.',
+    installNote: 'Chrome mungkin memperingatkan soal ekstensi mode pengembang. Boleh ditutup.',
     useTitle: 'Cara memakai',
     useItems: [
-      'Tekan ikon CekKutip di toolbar. Sebuah panel samping terbuka di sebelah halaman. Tempel referensimu lalu tekan Periksa referensi. Hasilnya tampil sama seperti di situs ini. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab, jadi pemeriksaan terus berjalan. Tutup dengan tombol tutupnya.',
-      'Atau pilih teks di halaman web mana pun, klik kanan, lalu pilih "{menu}". Teksnya masuk ke panel samping dan menggantikan isi kotaknya. Belum ada yang dikirim sampai kamu menekan Periksa referensi.',
-      'Supaya tidak perlu salin dan tempel, nyalakan "{autofill}" di bagian atas panel samping. Setelah itu teks yang kamu pilih di halaman web muncul sendiri di kotak. Kalau teksmu sendiri sudah ada di kotak, teks terpilih ditawarkan lewat pemberitahuan dan tidak pernah ditimpakan ke teksmu.',
+      'Klik ikon CekKutip. Panel samping terbuka dan tetap terbuka saat kamu menjelajah. Tempel referensimu lalu tekan Periksa referensi.',
+      'Atau pilih teks di halaman, klik kanan, lalu pilih "{menu}".',
+      'Supaya kotak terisi sendiri, nyalakan "{autofill}" di bagian atas panel. Teksmu sendiri tidak pernah diganti.',
+      'Kunci Gemini yang kamu tambahkan di sini atau di situs dibagi antara keduanya, di browser yang sama.',
     ],
-    keyTitle: 'Kunci Gemini milikmu sendiri',
-    key: 'Pembaca AI memakai kunci Gemini bersama yang punya batas harian. Kamu bisa menambahkan kunci gratismu sendiri, di situs ini atau di ekstensi. Tambahkan di salah satunya, yang lain ikut mengenalinya. Ini berlaku di satu browser pada satu perangkat, setelah kamu membuka situs ini sekali di browser yang punya ekstensinya.',
-    keyLink: 'Ke kotak kunci di halaman Periksa',
-    accessTitle: 'Apa yang bisa diakses ekstensi',
+    accessTitle: 'Apa yang bisa diakses',
     accessItems: [
-      'Awalnya situs ini saja. Satu skrip kecil berjalan di halamannya untuk membagi kunci Gemini-mu dengan situs. Selama pengaturan "{autofill}" tidak kamu nyalakan, ekstensi tidak bisa membaca halaman web lain, tab, riwayat, atau cookie-mu.',
-      'Kalau kamu menyalakan "{autofill}", browser meminta izinmu agar ekstensi boleh membaca teks yang kamu pilih di situs web. Skripnya hanya membaca teks yang kamu pilih, dan mengabaikan teks yang dipilih di kolom formulir. Teksnya masuk ke kotak di panel samping dan tidak ke mana pun lagi sampai kamu menekan Periksa referensi. Kalau panel tertutup, teksnya dibuang. Matikan pengaturannya dan izinnya dicabut.',
-      'Teks yang kamu pilih, hanya saat kamu klik kanan lalu memilih item CekKutip. Teks itu tetap di perangkatmu sampai kamu menekan Periksa referensi.',
-      'Kunci Gemini-mu, bila kamu menambahkannya. Kunci itu tetap di perangkatmu.',
-      'Referensi yang kamu periksa dikirim ke server kami dengan aturan privasi yang sama seperti situs: tidak kami simpan dan tidak kami tulis ke log.',
+      'Hanya situs ini, sampai kamu menyalakan "{autofill}". Ekstensi tidak bisa membaca halaman lain, tab, riwayat, atau cookie.',
+      'Saat pengaturan itu nyala, ekstensi hanya membaca teks yang kamu pilih, tidak pernah kolom formulir, lalu memasukkannya ke kotak. Kalau dimatikan, izinnya dicabut.',
+      'Kunci Gemini-mu tetap di perangkatmu. Referensi yang kamu periksa dikirim ke server kami, yang tidak menyimpan atau mencatatnya di log.',
     ],
     privacyLink: 'Baca rincian privasi',
     sourceLink: 'Baca kode sumber ekstensi di GitHub',
     updateTitle: 'Memperbarui atau menghapus',
     updateItems: [
-      'Untuk memperbarui, unduh berkas barunya lalu ekstrak ke folder yang sama dan timpa berkasnya. Setelah itu buka halaman ekstensi dan tekan ikon muat ulang di kartu CekKutip.',
-      'Untuk menghapus, buka halaman ekstensi dan tekan Remove (Hapus) di kartu CekKutip. Lalu hapus foldernya.',
-    ],
-    helpTitle: 'Kalau ada yang tidak berjalan',
-    helpItems: [
-      '"Manifest file is missing or unreadable": folder yang kamu pilih salah. Pilih folder yang langsung berisi `manifest.json`, bukan folder di luarnya.',
-      'Chrome bilang ekstensi butuh versi yang lebih baru: ekstensi ini butuh Chrome 127 atau lebih baru. Perbarui browsermu.',
-      'Pemeriksaan tidak mulai: buka situs ini sekali untuk memastikan situs sedang hidup, lalu coba lagi.',
-      'Kotak tidak terisi saat kamu memilih teks: pastikan "{autofill}" menyala dan panel samping terbuka. Satu atau dua kata sengaja diabaikan, jadi pilih kalimat atau satu referensi. Ini tidak berjalan di formulir, di penampil PDF bawaan browser, atau di halaman yang ditutup browser untuk ekstensi, seperti toko ekstensinya.',
+      'Untuk memperbarui, unduh berkas barunya, ekstrak ke folder yang sama, lalu tekan ikon muat ulang di kartu CekKutip.',
+      'Untuk menghapus, tekan Remove (Hapus) di kartu CekKutip, lalu hapus foldernya.',
     ],
   },
   upload: {
     button: 'Unggah .txt atau .bib',
-    hint: 'Berkas dibaca di browsermu lalu dimasukkan ke kotak, seperti teks yang ditempel. Sampai {max} KB.',
+    hint: 'Dibaca di browsermu, tidak diunggah. Sampai {max} KB.',
     added: (n: number, name: string) => `${n} referensi ditambahkan dari ${name}.`,
     skipped: (n: number) => `${n} entri tanpa judul tidak diikutkan.`,
     errors: {
@@ -579,14 +537,13 @@ export const id: Dict = {
   },
   split: {
     summary: (n: number) => `Periksa cara daftarmu dipecah (${n})`,
-    hint: 'Tiap butir di bawah diperiksa sebagai satu referensi. Kalau ada referensi yang terpotong di tempat yang salah, gabungkan dengan referensi sebelumnya, atau ubah. Setiap perubahan menulis ulang kotak di atas menjadi satu referensi per paragraf.',
+    hint: 'Tiap butir diperiksa sebagai satu referensi. Gabungkan atau ubah yang terpotong di tempat yang salah.',
     item: (n: number) => `Referensi ${n}`,
     merge: 'Gabung dengan sebelumnya',
     mergeLabel: (n: number) => `Gabungkan referensi ${n} dengan referensi ${n - 1}`,
     edit: 'Ubah',
     editLabel: (n: number) => `Ubah referensi ${n}`,
-    editHint:
-      'Beri satu baris kosong di tempat sebuah referensi berakhir dan yang berikutnya mulai. Kosongkan teks untuk menghapus referensi.',
+    editHint: 'Beri satu baris kosong di antara referensi. Kosongkan teks untuk menghapusnya.',
     apply: 'Terapkan',
     cancel: 'Batal',
     merged: (n: number, total: number) =>

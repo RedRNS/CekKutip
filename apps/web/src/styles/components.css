@@ -323,19 +323,6 @@
   }
 }
 
-@media (min-width: 768px) {
-  .legend--columns {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    column-gap: var(--s-48);
-  }
-  .legend--columns .legend__item {
-    grid-template-columns: 1fr;
-    gap: var(--s-8);
-    padding-block: var(--s-16);
-  }
-}
-
 /* ---------- Four steps on a thin line ---------- */
 .steps {
   list-style: none;

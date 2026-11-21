@@ -4,11 +4,11 @@ import { VerdictLabel } from './VerdictLabel'
 
 export const VERDICT_ORDER: Verdict[] = ['verified', 'mismatch', 'suspect', 'out_of_index']
 
-/** Definition list of the four verdicts. Used in the empty results panel and below the workbench. */
-export function Legend({ className = '' }: { className?: string }) {
+/** Definition list of the four verdicts, shown in the empty results panel. */
+export function Legend() {
   const { t } = useI18n()
   return (
-    <dl className={`legend ${className}`.trim()}>
+    <dl className="legend">
       {VERDICT_ORDER.map((v) => (
         <div className="legend__item" key={v}>
           <dt>

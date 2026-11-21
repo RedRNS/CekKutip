@@ -1,5 +1,4 @@
 import { Link } from 'react-router-dom'
-import { Legend } from '../components/Legend'
 import { Workbench } from '../components/Workbench'
 import { usePageTitle } from '../hooks'
 import { useI18n } from '../i18n'
@@ -16,11 +15,6 @@ export default function Home() {
       </div>
 
       <Workbench />
-
-      <section className="section print-hide" aria-labelledby="verdicts-title">
-        <h2 id="verdicts-title">{t.home.verdictsTitle}</h2>
-        <Legend className="legend--columns" />
-      </section>
 
       <section className="section print-hide" aria-labelledby="how-title">
         <h2 id="how-title">{t.home.howTitle}</h2>

@@ -57,19 +57,33 @@ test.describe('the Extension page', () => {
     await expect(steps).toHaveText([
       /01\s+Download and unzip/,
       /02\s+Open the extensions page/,
-      /03\s+Turn on Developer mode/,
-      /04\s+Load the folder/,
-      /05\s+Pin it to the toolbar/,
+      /03\s+Load the folder/,
+      /04\s+Pin it/,
     ])
     await expect(page.locator('.mono', { hasText: 'chrome://extensions' })).toBeVisible()
     await expect(page.locator('.mono', { hasText: 'manifest.json' }).first()).toBeVisible()
     expect(await page.getByRole('main').innerText()).not.toContain('`')
   })
 
-  test('names the menu item the extension really adds, and where requests go', async ({ page }) => {
+  test('names the menu item and the setting the extension really has', async ({ page }) => {
     await page.goto('/extension')
     await expect(page.getByRole('main')).toContainText('choose "Check selection with CekKutip"')
-    await expect(page.getByRole('main')).toContainText(new URL(siteConfig.demoUrl).host)
+    await expect(page.getByRole('main')).toContainText(
+      'turn on "Fill the box when I select text on a page"',
+    )
+  })
+
+  test('stays short: five sections, and no section of its own for help or for the key', async ({
+    page,
+  }) => {
+    await page.goto('/extension')
+    await expect(page.getByRole('heading', { level: 2 })).toHaveText([
+      'Get the extension',
+      'Install it',
+      'Use it',
+      'What it can access',
+      'Update or remove',
+    ])
   })
 
   test('is reachable from the menu and from the Check page', async ({ page }) => {

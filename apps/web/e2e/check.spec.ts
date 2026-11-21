@@ -298,7 +298,7 @@ test.describe('the no-AI choice', () => {
     const box = page.getByRole('checkbox', { name: /Do not send my text to an AI service/ })
     await expect(box).toBeEnabled()
     await expect(box).not.toBeChecked()
-    await expect(page.getByText('By default, your text is sent to Google Gemini')).toBeVisible()
+    await expect(page.getByText('Your text goes to Google Gemini')).toBeVisible()
     await page.getByRole('button', { name: 'Try an example' }).click()
 
     const modeOf = async () => {
