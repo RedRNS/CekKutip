@@ -168,7 +168,10 @@ export function collect(dir: string, base = dir): ZipEntry[] {
 function build(outDir: string, forSite: boolean) {
   const env: Record<string, string | undefined> = { ...process.env, EXTENSION_OUT: outDir }
   // The file the site offers always points at the site itself.
-  if (forSite) delete env.CEKKUTIP_URL
+  if (forSite) {
+    delete env.CEKKUTIP_URL
+    delete env.EXTENSION_TEST_ALL_SITES
+  }
   // Node with the tsx loader, not npx: no shell, so the same call works on Windows and in the image.
   execFileSync(process.execPath, ['--import', 'tsx', 'scripts/build-extension.ts'], {
     cwd: root,

@@ -67,7 +67,7 @@ Situs (localStorage)  <--postMessage-->  bridge.js (skrip konten, hanya di halam
                                                   server: klien Gemini untuk permintaan itu saja; tidak disimpan, tidak masuk log
 ```
 
-Aturan dan protokol di `packages/shared/src/apikey.ts`. Perubahan terakhir menang; penghapusan tercatat dengan waktu. Ringkasan `done` membawa `aiIssue` (`rejected` atau `quota`) bila model tidak bisa dipakai. Folder `extension/` (di luar workspace npm) membangun panel samping (bukan popup, yang tertutup saat pengguna mengklik di luarnya) dengan komponen yang sama dengan situs. Lihat `extension/README.md` dan DECISIONS butir 112 sampai 119.
+Aturan dan protokol di `packages/shared/src/apikey.ts`. Perubahan terakhir menang; penghapusan tercatat dengan waktu. Ringkasan `done` membawa `aiIssue` (`rejected` atau `quota`) bila model tidak bisa dipakai. Folder `extension/` (di luar workspace npm) membangun panel samping dan skrip pembaca pilihan (`selection.js`, hanya aktif bila pengguna menyalakannya dan mengizinkannya) (bukan popup, yang tertutup saat pengguna mengklik di luarnya) dengan komponen yang sama dengan situs. Lihat `extension/README.md` dan DECISIONS butir 112 sampai 119.
 
 ## Server
 

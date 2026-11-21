@@ -8,6 +8,17 @@ import type { BrowserContext, Page, Worker } from '@playwright/test'
 export const SITE = 'http://localhost:8799'
 export { expect }
 
+/** Builds the extension for the replay server. `extra` adds build settings (a test-only variant). */
+function buildExtension(extra: Record<string, string>): string {
+  const dir = mkdtempSync(path.join(tmpdir(), 'cekkutip-ext-'))
+  execSync('npx tsx scripts/build-extension.ts', {
+    cwd: process.cwd(),
+    stdio: 'pipe',
+    env: { ...process.env, CEKKUTIP_URL: SITE, EXTENSION_OUT: dir, ...extra },
+  })
+  return dir
+}
+
 interface TestFixtures {
   context: BrowserContext
   extensionId: string
@@ -27,12 +38,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   extensionDir: [
     // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {
-      const dir = mkdtempSync(path.join(tmpdir(), 'cekkutip-ext-'))
-      execSync('npx tsx scripts/build-extension.ts', {
-        cwd: process.cwd(),
-        stdio: 'pipe',
-        env: { ...process.env, CEKKUTIP_URL: SITE, EXTENSION_OUT: dir },
-      })
+      const dir = buildExtension({})
       await use(dir)
       rmSync(dir, { recursive: true, force: true })
     },
@@ -79,3 +85,21 @@ export async function saveKey(page: Page, key: string) {
   await keyInput(page).fill(key)
   await page.getByRole('button', { name: 'Save key' }).click()
 }
+
+/**
+ * The same extension, built so that it may already read ordinary web pages (a localhost-only test
+ * build). The real extension asks the browser for that permission when the person turns on "Fill the
+ * box when I select text on a page", and a test cannot answer the browser's question. Everything
+ * else is the same: the page script, the messages, the panel.
+ */
+export const testAllSites = test.extend<object, WorkerFixtures>({
+  extensionDir: [
+    // eslint-disable-next-line no-empty-pattern
+    async ({}, use) => {
+      const dir = buildExtension({ EXTENSION_TEST_ALL_SITES: '1' })
+      await use(dir)
+      rmSync(dir, { recursive: true, force: true })
+    },
+    { scope: 'worker' },
+  ],
+})

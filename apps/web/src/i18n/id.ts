@@ -483,6 +483,16 @@ export const id: Dict = {
     openSite: 'Buka situs CekKutip',
     keyNote: 'Kunci ini juga dipakai di situs CekKutip begitu kamu membukanya di browser ini.',
     menuTitle: 'Periksa teks terpilih dengan CekKutip',
+    autoFillLabel: 'Isi kotak saat aku memilih teks di halaman',
+    autoFillHint:
+      'Mati secara bawaan. Menyalakannya meminta izin browser untuk membaca teks yang kamu pilih di situs web. Teksnya hanya masuk ke kotak ini, dan tidak ada yang dikirim ke mana pun sampai kamu menekan Periksa referensi. Matikan kapan saja dan izinnya dicabut.',
+    autoFillOn:
+      'Nyala. Pilih kalimat atau referensi di sebuah halaman dan teksnya muncul di kotak.',
+    autoFillDenied: 'Izin tidak diberikan, jadi pengaturan ini tetap mati.',
+    liveOffer: 'Teks yang dipilih di halaman. Ada teksmu sendiri di kotak, jadi tidak diganti:',
+    liveAdd: 'Tambahkan ke kotak',
+    liveReplace: 'Ganti isi kotak',
+    liveIgnore: 'Abaikan',
   },
   extensionPage: {
     h1: 'Ekstensi browser',
@@ -527,13 +537,15 @@ export const id: Dict = {
     useItems: [
       'Tekan ikon CekKutip di toolbar. Sebuah panel samping terbuka di sebelah halaman. Tempel referensimu lalu tekan Periksa referensi. Hasilnya tampil sama seperti di situs ini. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab, jadi pemeriksaan terus berjalan. Tutup dengan tombol tutupnya.',
       'Atau pilih teks di halaman web mana pun, klik kanan, lalu pilih "{menu}". Teksnya masuk ke panel samping dan menggantikan isi kotaknya. Belum ada yang dikirim sampai kamu menekan Periksa referensi.',
+      'Supaya tidak perlu salin dan tempel, nyalakan "{autofill}" di bagian atas panel samping. Setelah itu teks yang kamu pilih di halaman web muncul sendiri di kotak. Kalau teksmu sendiri sudah ada di kotak, teks terpilih ditawarkan lewat pemberitahuan dan tidak pernah ditimpakan ke teksmu.',
     ],
     keyTitle: 'Kunci Gemini milikmu sendiri',
     key: 'Pembaca AI memakai kunci Gemini bersama yang punya batas harian. Kamu bisa menambahkan kunci gratismu sendiri, di situs ini atau di ekstensi. Tambahkan di salah satunya, yang lain ikut mengenalinya. Ini berlaku di satu browser pada satu perangkat, setelah kamu membuka situs ini sekali di browser yang punya ekstensinya.',
     keyLink: 'Ke kotak kunci di halaman Periksa',
     accessTitle: 'Apa yang bisa diakses ekstensi',
     accessItems: [
-      'Situs ini saja. Satu skrip kecil berjalan di halamannya untuk membagi kunci Gemini-mu dengan situs. Ekstensi tidak bisa membaca halaman web lain, tab, riwayat, atau cookie-mu.',
+      'Awalnya situs ini saja. Satu skrip kecil berjalan di halamannya untuk membagi kunci Gemini-mu dengan situs. Selama pengaturan "{autofill}" tidak kamu nyalakan, ekstensi tidak bisa membaca halaman web lain, tab, riwayat, atau cookie-mu.',
+      'Kalau kamu menyalakan "{autofill}", browser meminta izinmu agar ekstensi boleh membaca teks yang kamu pilih di situs web. Skripnya hanya membaca teks yang kamu pilih, dan mengabaikan teks yang dipilih di kolom formulir. Teksnya masuk ke kotak di panel samping dan tidak ke mana pun lagi sampai kamu menekan Periksa referensi. Kalau panel tertutup, teksnya dibuang. Matikan pengaturannya dan izinnya dicabut.',
       'Teks yang kamu pilih, hanya saat kamu klik kanan lalu memilih item CekKutip. Teks itu tetap di perangkatmu sampai kamu menekan Periksa referensi.',
       'Kunci Gemini-mu, bila kamu menambahkannya. Kunci itu tetap di perangkatmu.',
       'Referensi yang kamu periksa dikirim ke server kami dengan aturan privasi yang sama seperti situs: tidak kami simpan dan tidak kami tulis ke log.',
@@ -550,6 +562,7 @@ export const id: Dict = {
       '"Manifest file is missing or unreadable": folder yang kamu pilih salah. Pilih folder yang langsung berisi `manifest.json`, bukan folder di luarnya.',
       'Chrome bilang ekstensi butuh versi yang lebih baru: ekstensi ini butuh Chrome 127 atau lebih baru. Perbarui browsermu.',
       'Pemeriksaan tidak mulai: buka situs ini sekali untuk memastikan situs sedang hidup, lalu coba lagi.',
+      'Kotak tidak terisi saat kamu memilih teks: pastikan "{autofill}" menyala dan panel samping terbuka. Satu atau dua kata sengaja diabaikan, jadi pilih kalimat atau satu referensi. Ini tidak berjalan di formulir, di penampil PDF bawaan browser, atau di halaman yang ditutup browser untuk ekstensi, seperti toko ekstensinya.',
     ],
   },
   upload: {

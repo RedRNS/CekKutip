@@ -476,6 +476,15 @@ export const en = {
     openSite: 'Open the CekKutip website',
     keyNote: 'This key is also used on the CekKutip website once you open it in this browser.',
     menuTitle: 'Check selection with CekKutip',
+    autoFillLabel: 'Fill the box when I select text on a page',
+    autoFillHint:
+      'Off by default. Turning it on asks your browser for permission to read the text you select on websites. The text goes only into this box, and nothing is sent anywhere until you press Check references. Turn it off at any time and the permission is removed.',
+    autoFillOn: 'On. Select a sentence or a reference on a page and it appears in the box.',
+    autoFillDenied: 'Permission was not granted, so this stays off.',
+    liveOffer: 'Text selected on the page. Your own text is in the box, so it was not replaced:',
+    liveAdd: 'Add to the box',
+    liveReplace: 'Replace the box',
+    liveIgnore: 'Ignore',
   },
   extensionPage: {
     h1: 'Browser extension',
@@ -520,13 +529,15 @@ export const en = {
     useItems: [
       'Press the CekKutip icon in the toolbar. A side panel opens next to the page. Paste your references and press Check references. The results look the same as on this site. The panel stays open when you click on the page or switch tabs, so a check keeps running. Close it with its close button.',
       'Or select text on any web page, right-click, and choose "{menu}". The text goes into the side panel, replacing what is in its box. Nothing is sent until you press Check references.',
+      'To skip copy and paste, turn on "{autofill}" at the top of the side panel. After that, text you select on a web page appears in the box by itself. If your own text is already in the box, the selection is offered in a notice and never put over your text.',
     ],
     keyTitle: 'Your own Gemini key',
     key: 'The AI reader uses a shared Gemini key with a daily limit. You can add your own free key, on this site or in the extension. Add it in one place and the other picks it up. This works inside one browser on one device, after you have opened this site once in a browser that has the extension.',
     keyLink: 'Go to the key box on the Check page',
     accessTitle: 'What the extension can access',
     accessItems: [
-      'This site, and only this site. A small script runs on its pages to share your Gemini key with the website. The extension cannot read other web pages, your tabs, your history, or your cookies.',
+      'This site, and only this site, to begin with. A small script runs on its pages to share your Gemini key with the website. Unless you turn on the setting "{autofill}", the extension cannot read other web pages, your tabs, your history, or your cookies.',
+      'If you turn on "{autofill}", your browser asks you to let the extension read the text you select on websites. The script reads only the text you select, and ignores text selected in a form field. The text goes into the box in the side panel and nowhere else until you press Check references. If the panel is closed, the text is dropped. Turn the setting off and the permission is taken back.',
       'Text you select, only when you right-click it and choose the CekKutip item. It stays on your device until you press Check references.',
       'Your Gemini key, if you add one. It stays on your device.',
       'The references you check go to our server, with the same privacy rules as the site: we do not store them or write them to logs.',
@@ -543,6 +554,7 @@ export const en = {
       '"Manifest file is missing or unreadable": you chose the wrong folder. Choose the folder that has `manifest.json` directly inside it, not the folder around it.',
       'Chrome says the extension needs a newer version: it needs Chrome 127 or later. Update your browser.',
       'A check does not start: open this site once to make sure it is online, then try again.',
+      'The box does not fill when you select text: check that "{autofill}" is on and that the side panel is open. A word or two is ignored on purpose, so select a sentence or a reference. It does not work in forms, in the PDF viewer of the browser, or on pages the browser keeps closed to extensions, such as its extension store.',
     ],
   },
   upload: {

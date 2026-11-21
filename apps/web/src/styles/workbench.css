@@ -568,3 +568,31 @@
   font-weight: 500;
   overflow-wrap: anywhere;
 }
+
+/* Text selected on a page while the person's own text is in the box: offered, never put over it. */
+.selection-offer {
+  margin-top: var(--s-12);
+  padding: var(--s-12);
+  background: var(--accent-tint);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+}
+
+.selection-offer__label {
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+
+.selection-offer__text {
+  margin-top: var(--s-4);
+  font-size: var(--fs-14);
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+.selection-offer__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-8);
+  margin-top: var(--s-12);
+}

@@ -245,7 +245,7 @@ Host keluar **hanya** `api.crossref.org`, `api.openalex.org`, `api.datacite.org`
 
 ## Ekstensi browser
 
-Ekstensi untuk Chrome dan Edge versi 127 ke atas (Manifest V3) memeriksa referensi dari panel samping browser, tanpa membuka situs. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab. Kamu juga bisa memilih teks di halaman web mana pun, klik kanan, lalu pilih "Check selection with CekKutip". **Belum ada yang dikirim** sampai kamu memilih Check references.
+Ekstensi untuk Chrome dan Edge versi 127 ke atas (Manifest V3) memeriksa referensi dari panel samping browser, tanpa membuka situs. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab. Pengaturan opsional (mati secara bawaan) membuat teks yang kamu blok di halaman web masuk sendiri ke kotak, setelah kamu mengizinkan browser membacanya; izin itu dicabut saat dimatikan. Kamu juga bisa memilih teks di halaman web mana pun, klik kanan, lalu pilih "Check selection with CekKutip". **Belum ada yang dikirim** sampai kamu memilih Check references.
 
 - Memakai komponen yang sama dengan situs, jadi fiturnya setara, termasuk kunci Gemini sendiri (dibagi otomatis dengan situs di satu browser; perubahan terakhir yang menang).
 - Izinnya sedikit: `storage`, `contextMenus`, dan akses ke situs CekKutip saja. Tidak ada akses ke tab lain, riwayat, atau cookie (ada tes yang memeriksa manifes).

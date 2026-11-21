@@ -27,6 +27,7 @@ test.describe('the Extension page', () => {
       name: string
       permissions: string[]
       host_permissions: string[]
+      optional_host_permissions?: string[]
       side_panel?: { default_path: string }
       action?: { default_popup?: string }
     }
@@ -34,7 +35,14 @@ test.describe('the Extension page', () => {
     expect(manifest.name).toBe('CekKutip')
     // It asks for this one site and nothing broader.
     expect(manifest.host_permissions).toEqual([`${new URL(siteConfig.demoUrl).origin}/*`])
-    expect(manifest.permissions.sort()).toEqual(['contextMenus', 'sidePanel', 'storage'])
+    expect(manifest.permissions.sort()).toEqual([
+      'contextMenus',
+      'scripting',
+      'sidePanel',
+      'storage',
+    ])
+    // Reading the text selected on other websites is an option the person turns on, not granted at install.
+    expect(manifest.optional_host_permissions).toEqual(['http://*/*', 'https://*/*'])
     // A side panel, not a popup: a popup closes when the person clicks outside it.
     expect(manifest.side_panel?.default_path).toBe('panel.html')
     expect(manifest.action?.default_popup).toBeUndefined()

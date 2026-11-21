@@ -36,6 +36,8 @@ export default function Extension() {
   const { t } = useI18n()
   usePageTitle('extension')
   const x = t.extensionPage
+  // Names of things in the extension, taken from the extension's own texts so they cannot differ.
+  const copyNames = { menu: t.extension.menuTitle, autofill: t.extension.autoFillLabel }
 
   return (
     <>
@@ -90,7 +92,7 @@ export default function Extension() {
         <h2 id="use-title">{x.useTitle}</h2>
         <ul className="plain-list plain-list--spaced">
           {x.useItems.map((item) => (
-            <li key={item}>{fmt(item, { menu: t.extension.menuTitle })}</li>
+            <li key={item}>{fmt(item, copyNames)}</li>
           ))}
         </ul>
       </section>
@@ -107,7 +109,7 @@ export default function Extension() {
         <h2 id="access-title">{x.accessTitle}</h2>
         <ul className="plain-list plain-list--spaced">
           {x.accessItems.map((item) => (
-            <li key={item}>{item}</li>
+            <li key={item}>{fmt(item, copyNames)}</li>
           ))}
         </ul>
         <ul className="plain-list plain-list--tight section__more">
@@ -136,7 +138,7 @@ export default function Extension() {
         <ul className="plain-list plain-list--spaced">
           {x.helpItems.map((item) => (
             <li key={item}>
-              <InlineCode text={item} />
+              <InlineCode text={fmt(item, copyNames)} />
             </li>
           ))}
         </ul>

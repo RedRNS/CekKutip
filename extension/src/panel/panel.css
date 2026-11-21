@@ -51,3 +51,25 @@ body {
   border-top: 1px solid var(--rule);
   font-size: var(--fs-14);
 }
+
+/* The opt-in setting that fills the box from a selection on a page. */
+.autofill {
+  margin-top: var(--s-12);
+  padding: var(--s-12);
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-panel);
+}
+
+.autofill .check-row {
+  margin-top: 0;
+}
+
+.autofill .hint {
+  margin-top: var(--s-8);
+}
+
+.autofill__status {
+  color: var(--ink);
+  font-weight: 500;
+}

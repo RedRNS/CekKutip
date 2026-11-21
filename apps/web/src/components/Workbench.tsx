@@ -8,6 +8,7 @@ import { fmt, useI18n } from '../i18n'
 import { DEFAULT_CONFIG, fetchConfig } from '../lib/api'
 import { getKeyStore, useApiKey } from '../lib/apiKey'
 import type { ApiKeyView } from '../lib/apiKey'
+import { decideSelection, snippet } from '../lib/selection'
 import { MAX_UPLOAD_BYTES, appendText, readReferenceFile } from '../lib/upload'
 import { useCheck } from '../state/useCheck'
 import { ApiKeyPanel } from './ApiKeyPanel'
@@ -32,6 +33,12 @@ export interface WorkbenchCoreProps {
    * `n` changes with every arrival, so the same text sent twice still counts.
    */
   incomingText?: { text: string; n: number } | null
+  /**
+   * Text the person selected on a web page while the side panel is open (an opt-in setting of the
+   * extension). It fills the box when the box is empty or still holds the previous selection. If the
+   * person's own text is there, it is offered in a notice instead, never put over it.
+   */
+  liveSelection?: { text: string; n: number } | null
   /** An absolute address for the Privacy page, for places that have no router (the extension). */
   privacyHref?: string
   /** A sentence about how the key is shared. The website derives it from the connection when empty. */
@@ -55,6 +62,7 @@ export function WorkbenchCore({
   baseUrl,
   initialText = '',
   incomingText = null,
+  liveSelection = null,
   privacyHref,
   keyLinkNote,
 }: WorkbenchCoreProps) {
@@ -70,12 +78,40 @@ export function WorkbenchCore({
   const fileRef = useRef<HTMLInputElement>(null)
   const [uploadNote, setUploadNote] = useState<{ ok: boolean; text: string } | null>(null)
 
+  // What a selection from the page put in the box, so a newer selection can replace it but never the
+  // person's own text. textRef lets the effect below read the box without re-running on every key.
+  const textRef = useRef(text)
+  const lastFilled = useRef<string | null>(null)
+  const [offered, setOffered] = useState<string | null>(null)
+  useEffect(() => {
+    textRef.current = text
+  })
+
   useEffect(() => {
     if (incomingText) {
       setText(incomingText.text)
       setUploadNote(null)
+      setOffered(null)
+      lastFilled.current = incomingText.text
     }
   }, [incomingText])
+
+  useEffect(() => {
+    if (!liveSelection) return
+    const action = decideSelection({
+      box: textRef.current,
+      lastFilled: lastFilled.current,
+      incoming: liveSelection.text,
+    })
+    if (action === 'fill') {
+      setText(liveSelection.text)
+      setUploadNote(null)
+      setOffered(null)
+      lastFilled.current = liveSelection.text
+    } else if (action === 'ask') {
+      setOffered(liveSelection.text)
+    }
+  }, [liveSelection])
 
   useEffect(() => {
     const ac = new AbortController()
@@ -124,6 +160,8 @@ export function WorkbenchCore({
   const clear = () => {
     setText('')
     setUploadNote(null)
+    setOffered(null)
+    lastFilled.current = null
     reset()
   }
 
@@ -168,6 +206,43 @@ export function WorkbenchCore({
         <p id={hintId} className="hint">
           {t.home.placeholderHint}
         </p>
+        {offered !== null && (
+          <div className="selection-offer" role="status">
+            <p className="selection-offer__label">{t.extension.liveOffer}</p>
+            <p className="selection-offer__text">{snippet(offered)}</p>
+            <div className="selection-offer__actions">
+              <button
+                type="button"
+                className="btn btn--secondary btn--compact"
+                onClick={() => {
+                  setText((prev) => appendText(prev, offered))
+                  lastFilled.current = null
+                  setOffered(null)
+                }}
+              >
+                {t.extension.liveAdd}
+              </button>
+              <button
+                type="button"
+                className="btn btn--secondary btn--compact"
+                onClick={() => {
+                  setText(offered)
+                  lastFilled.current = offered
+                  setOffered(null)
+                }}
+              >
+                {t.extension.liveReplace}
+              </button>
+              <button
+                type="button"
+                className="btn btn--secondary btn--compact"
+                onClick={() => setOffered(null)}
+              >
+                {t.extension.liveIgnore}
+              </button>
+            </div>
+          </div>
+        )}
         {problemText && (
           <p id={errorId} className="field-error" role="alert">
             {problemText}

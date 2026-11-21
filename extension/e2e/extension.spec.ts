@@ -42,10 +42,15 @@ async function watchCheck(page: Page, change: (done: Record<string, unknown>) =>
 }
 
 test.describe('what the extension is allowed to do', () => {
-  test('asks for one site and three small permissions, nothing else', async ({ extensionDir }) => {
+  test('asks for one site, four small permissions, and reading web pages only as an option', async ({
+    extensionDir,
+  }) => {
     const manifest = JSON.parse(readFileSync(path.join(extensionDir, 'manifest.json'), 'utf8'))
     expect(manifest.manifest_version).toBe(3)
-    expect(manifest.permissions).toEqual(['storage', 'contextMenus', 'sidePanel'])
+    expect(manifest.permissions).toEqual(['storage', 'contextMenus', 'sidePanel', 'scripting'])
+    // Reading the text selected on websites is not granted at install. The browser asks for it only
+    // when the person turns on "Fill the box when I select text on a page".
+    expect(manifest.optional_host_permissions).toEqual(['http://*/*', 'https://*/*'])
     // A side panel, not a popup: a popup closes when the person clicks outside it.
     expect(manifest.side_panel).toEqual({ default_path: 'panel.html' })
     expect(manifest.action.default_popup).toBeUndefined()
@@ -54,16 +59,17 @@ test.describe('what the extension is allowed to do', () => {
     expect(manifest.content_scripts[0].matches).toEqual(['http://localhost/*'])
     expect(manifest.content_scripts[0].js).toEqual(['bridge.js'])
     const text = JSON.stringify(manifest)
-    for (const broad of [
-      '<all_urls>',
-      '*://*',
-      'tabs',
-      'cookies',
-      'webRequest',
-      'history',
-      'scripting',
-    ])
+    for (const broad of ['<all_urls>', '*://*', 'tabs', 'cookies', 'webRequest', 'history'])
       expect(text, `manifest must not mention ${broad}`).not.toContain(broad)
+  })
+
+  test('can read no web page but this site until the person turns the setting on', async ({
+    worker,
+  }) => {
+    const granted = await worker.evaluate(() => chrome.permissions.getAll())
+    expect(granted.origins).toEqual(['http://localhost/*'])
+    const scripts = await worker.evaluate(() => chrome.scripting.getRegisteredContentScripts())
+    expect(scripts).toEqual([])
   })
 
   test('has no remote code and no inline script in the side panel', async ({ extensionDir }) => {

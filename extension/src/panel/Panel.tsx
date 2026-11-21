@@ -5,6 +5,7 @@ import { useI18n } from '../../../apps/web/src/i18n'
 import { useKeyStore } from '../../../apps/web/src/lib/apiKey'
 import type { KeyStore } from '../../../apps/web/src/lib/apiKey'
 import { SITE_URL } from '../site'
+import { AutoFill } from './AutoFill'
 import { takePendingText, watchPendingText } from './chromeKey'
 
 /**
@@ -30,18 +31,28 @@ export function Panel({ store, initialText }: { store: KeyStore; initialText: st
     return stop
   }, [])
 
+  // Text selected on a web page, when the person has turned that on. It goes to the tool, which
+  // decides whether it may fill the box (never over the person's own text).
+  const [live, setLive] = useState<{ text: string; n: number } | null>(null)
+  const onSelection = useCallback(
+    (text: string) => setLive((prev) => ({ text, n: (prev?.n ?? 0) + 1 })),
+    [],
+  )
+
   return (
     <div className="ext">
       <header className="ext__head">
         <p className="ext__title">CekKutip</p>
         <LangSwitch />
       </header>
+      <AutoFill onSelection={onSelection} />
       <WorkbenchCore
         keyApi={keyApi}
         getKey={getKey}
         baseUrl={SITE_URL}
         initialText={initialText}
         incomingText={incoming}
+        liveSelection={live}
         privacyHref={`${SITE_URL}/privacy`}
         keyLinkNote={t.extension.keyNote}
       />

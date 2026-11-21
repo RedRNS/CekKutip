@@ -23,6 +23,7 @@ Untuk membuat zip yang bisa dibagikan: `npm run package:extension` (hasilnya `ex
 
 - **Klik ikon CekKutip.** Sebuah **panel samping** terbuka di sebelah halaman. Tempel referensi, lalu pilih **Check references**. Hasilnya sama seperti di situs: verdict, bukti, dan referensi yang dikoreksi (APA 7) untuk `Mismatch`. Panel tetap terbuka saat kamu mengklik halaman atau pindah tab, jadi pemeriksaan yang sedang berjalan tidak terputus. Lebarnya bisa kamu geser. Tutup dengan tombol tutup panel.
 - **Pilih teks di halaman web mana pun, klik kanan, lalu pilih "Check selection with CekKutip".** Teksnya dimasukkan ke panel samping (menggantikan isi kotaknya; hasil di layar dan pemeriksaan yang berjalan tidak disentuh). **Belum ada yang dikirim** sampai kamu memilih Check references. Kalau browser tidak mau membuka panel sendiri, ikon menampilkan tanda "1": klik ikonnya.
+- **Isi kotak otomatis dari teks yang kamu blok (opsional).** Di bagian atas panel ada pengaturan **Fill the box when I select text on a page**. Mati secara bawaan. Saat kamu menyalakannya, browser meminta izin membaca teks yang kamu pilih di situs web. Setelah itu, teks yang kamu blok di halaman mana pun muncul sendiri di kotak References, tanpa salin dan tempel: satu kalimat atau satu referensi (satu atau dua kata, dan teks di kolom formulir, diabaikan). Teksmu sendiri di kotak tidak pernah ditimpa: pilihan baru ditawarkan lewat pemberitahuan dengan tombol Add, Replace, atau Ignore. Matikan pengaturannya dan izinnya dicabut. Tidak berjalan di penampil PDF bawaan, halaman toko ekstensi, dan halaman internal browser.
 - Bahasa: tombol **EN | ID** di panel.
 
 ## Kunci Gemini milikmu sendiri
@@ -38,20 +39,23 @@ Kalau Google menolak kuncinya, atau jatahnya habis, hasil tetap keluar (dibaca o
 
 ## Izin yang diminta, dan alasannya
 
-| Izin                         | Untuk apa                                                                                          |
-| ---------------------------- | -------------------------------------------------------------------------------------------------- |
-| `storage`                    | Menyimpan kunci Gemini milikmu di perangkatmu, dan teks pilihan yang menunggu panel.               |
-| `contextMenus`               | Item klik kanan "Check selection with CekKutip".                                                   |
-| `sidePanel`                  | Menampilkan panel milik ekstensi ini. Tidak memberi akses ke halaman web mana pun.                 |
-| Akses ke situs CekKutip saja | Panel memanggil API CekKutip, dan satu skrip kecil di halaman CekKutip membagi kunci dengan situs. |
+| Izin                           | Untuk apa                                                                                                                                                                                     |
+| ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `storage`                      | Menyimpan kunci Gemini milikmu di perangkatmu, dan teks pilihan yang menunggu panel.                                                                                                          |
+| `contextMenus`                 | Item klik kanan "Check selection with CekKutip".                                                                                                                                              |
+| `sidePanel`                    | Menampilkan panel milik ekstensi ini. Tidak memberi akses ke halaman web mana pun.                                                                                                            |
+| `scripting`                    | Memasang skrip pembaca pilihan ke halaman web, hanya setelah kamu menyalakan pengaturan isi otomatis dan mengizinkannya. Tidak menampilkan peringatan sendiri.                                |
+| Semua situs web (**opsional**) | Tidak diminta saat memasang. Diminta browser hanya saat kamu menyalakan "Fill the box when I select text on a page", untuk membaca teks yang kamu pilih. Dikembalikan saat kamu mematikannya. |
+| Akses ke situs CekKutip saja   | Panel memanggil API CekKutip, dan satu skrip kecil di halaman CekKutip membagi kunci dengan situs.                                                                                            |
 
-Tidak ada akses ke tab lain, riwayat, cookie, atau situs lain. Ekstensi tidak membaca isi halaman yang kamu kunjungi: yang diterimanya hanya teks yang kamu pilih lalu klik kanan.
+Secara bawaan tidak ada akses ke tab lain, riwayat, cookie, atau situs lain. Kecuali kamu menyalakan pengaturan isi otomatis, ekstensi tidak membaca isi halaman yang kamu kunjungi: yang diterimanya hanya teks yang kamu pilih lalu klik kanan.
 
 ## Privasi
 
 - Teks referensi dikirim ke server CekKutip **hanya saat kamu memilih Check references**, dengan aturan privasi yang sama seperti situs: tidak disimpan, tidak masuk log.
 - Kunci Gemini disimpan di browsermu (`chrome.storage.local`, tidak disinkronkan lewat akun Google). Kunci dikirim ke server CekKutip dalam satu header pada setiap pemeriksaan yang memakai pembaca AI, dipakai hanya untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log (dibuktikan tes).
 - Memilih "Do not send my text to an AI service" berarti kunci tidak dikirim sama sekali.
+- Teks yang masuk lewat pengaturan isi otomatis hanya dikirim ke panel samping di browsermu, dan dibuang bila panel tertutup. Tidak ke server sampai kamu memilih Check references. Kode ekstensi hanya membaca teks yang dipilih, tidak riwayat, cookie, isi formulir, atau sisa halaman.
 
 ## Membangun untuk server lain
 

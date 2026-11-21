@@ -6,13 +6,19 @@
  *
  * The extension talks to one CekKutip server. By default that is the live site named in
  * apps/web/src/site.config.ts. CEKKUTIP_URL points a build somewhere else (a test server).
- * The manifest asks for access to that one site and nothing else.
+ * The manifest asks for access to that one site. Reading the text selected on other websites is an
+ * optional permission (optional_host_permissions): the browser asks for it only when the person turns
+ * on "Fill the box when I select text on a page", and gives it back when they turn it off.
+ *
+ * EXTENSION_TEST_ALL_SITES=1 puts those pages in host_permissions, so a test can use the feature
+ * without a click on the browser's permission question. It is honoured only for a localhost build.
  */
 import { copyFileSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
 import { siteConfig } from '../apps/web/src/site.config.ts'
+import { PAGE_ORIGINS } from '../extension/src/autofill.ts'
 
 const root = fileURLToPath(new URL('..', import.meta.url))
 const ext = path.join(root, 'extension')
@@ -24,6 +30,11 @@ if (site.protocol !== 'https:' && site.hostname !== 'localhost' && site.hostname
 }
 if (siteConfig.demoUrl.startsWith('TODO') && !process.env.CEKKUTIP_URL) {
   throw new Error('site.config.ts has no demo URL yet. Fill it in, or set CEKKUTIP_URL.')
+}
+const isLocal = site.hostname === 'localhost' || site.hostname === '127.0.0.1'
+const allSitesForTest = process.env.EXTENSION_TEST_ALL_SITES === '1'
+if (allSitesForTest && !isLocal) {
+  throw new Error('EXTENSION_TEST_ALL_SITES is for a localhost test build only.')
 }
 /** A match pattern names a host, not a port: "http://localhost/*" covers any local port. */
 const matchPattern = `${site.protocol}//${site.hostname}/*`
@@ -39,6 +50,7 @@ await build({
     panel: path.join(ext, 'src/panel/main.tsx'),
     background: path.join(ext, 'src/background.ts'),
     bridge: path.join(ext, 'src/bridge.ts'),
+    selection: path.join(ext, 'src/selection.ts'),
   },
   outdir: outDir,
   bundle: true,
@@ -87,10 +99,14 @@ const manifest = {
   // storage: the Gemini key and the text waiting from the right-click menu.
   // contextMenus: the item "Check selection with CekKutip".
   // sidePanel: show the extension's own panel. It gives no access to any page.
-  permissions: ['storage', 'contextMenus', 'sidePanel'],
+  // scripting: put the selection script into web pages, but only once the person has turned on
+  // "Fill the box when I select text on a page" and allowed it. It shows no warning by itself.
+  permissions: ['storage', 'contextMenus', 'sidePanel', 'scripting'],
   // The CekKutip server and nothing else: the panel calls its API, and a small script runs on its
   // pages to share the Gemini key with the website.
-  host_permissions: [matchPattern],
+  host_permissions: allSitesForTest ? [matchPattern, ...PAGE_ORIGINS] : [matchPattern],
+  // Asked for at run time, only when the person turns on "Fill the box when I select text on a page".
+  optional_host_permissions: PAGE_ORIGINS,
   content_scripts: [{ matches: [matchPattern], js: ['bridge.js'], run_at: 'document_start' }],
   // The side panel API itself needs 116 (sidePanel.open). 127 is the floor this extension was
   // published with, and it is tested on current Chromium only.

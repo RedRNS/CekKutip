@@ -1,5 +1,7 @@
 import { en } from '../../apps/web/src/i18n/en'
 import { id } from '../../apps/web/src/i18n/id'
+import { ensureAutoFill } from './autofill'
+import { chromeAutoFillApi } from './autofill-chrome'
 import { MENU_ID, PENDING_KEY, handleMenuClick } from './menu'
 import { openPanel } from './open-panel'
 import type { PanelApi } from './open-panel'
@@ -40,13 +42,23 @@ const panelApi = (): PanelApi => ({
   },
 })
 
+/**
+ * Keeps "Fill the box when I select text" and its permission in agreement: if the person took the
+ * permission away in the browser's settings, the choice is switched off. Does nothing when it is off.
+ */
+function ensureSelectionScript(): void {
+  void ensureAutoFill(chromeAutoFillApi()).catch(() => undefined)
+}
+
 chrome.runtime.onInstalled.addListener(() => {
   ensureMenu()
   ensurePanelBehavior()
+  ensureSelectionScript()
 })
 // Menu items outlive the service worker, but creating them is cheap and keeps them from ever being missing.
 ensureMenu()
 ensurePanelBehavior()
+ensureSelectionScript()
 
 // Only fires when the icon is not set to open the panel by itself (a browser without the side panel).
 chrome.action.onClicked.addListener((tab) => {
