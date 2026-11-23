@@ -12,6 +12,46 @@
   font-weight: 500;
 }
 
+/* ---------- Dropping files: where they will go ---------- */
+.panel--input {
+  position: relative;
+}
+
+/* Covers the input panel while files are dragged over the page. It takes no pointer events, so the
+   drop still lands on the page. The dashed edge and the words say it, not only the colour. */
+.dropzone {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  background: var(--accent-tint);
+  border: 2px dashed var(--accent);
+  border-radius: var(--r-panel);
+  pointer-events: none;
+}
+
+.dropzone__message {
+  position: sticky; /* stays in view when the panel is taller than the screen */
+  top: 30vh;
+  align-self: start;
+  padding: var(--s-48) var(--s-16);
+  text-align: center;
+}
+
+/* Paragraphs have a maximum width and no side margins, so centre the boxes themselves. */
+.dropzone__title {
+  margin-inline: auto;
+  font-family: var(--font-display);
+  font-size: var(--fs-22);
+  color: var(--ink);
+}
+
+.dropzone__hint {
+  margin: var(--s-4) auto 0;
+  font-size: var(--fs-14);
+  color: var(--ink-muted);
+}
+
 .btn {
   gap: var(--s-8);
 }

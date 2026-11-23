@@ -334,7 +334,7 @@ export const en = {
       'Google states that content sent through its free tier can be used to improve its products and read by human reviewers.',
       'The title, authors, and DOI read from your references go to Crossref and OpenAlex, and to DataCite when needed, to look the work up.',
       'If you add your own Gemini key, it stays in your browser. It is sent with each check, used only to ask Google to read your references, and never stored or logged. The browser extension shares it with the site on your device.',
-      'A .txt or .bib file you choose is read in your browser, like pasted text. Nothing is sent until you choose Check references.',
+      'A .txt or .bib file you choose or drop on the page is read in your browser, like pasted text. Nothing is sent until you choose Check references.',
       'Our server does not store your text. Our logs hold only a request id, the number of references, timings, and error codes.',
       'We follow the principles of Indonesian Law No. 27 of 2022 on Personal Data Protection: collect little, use it for one purpose, keep nothing we do not need. This describes our approach, not legal compliance.',
       'Do not paste sensitive or personal information. A reference list does not need any.',
@@ -521,7 +521,12 @@ export const en = {
   },
   upload: {
     button: 'Upload .txt or .bib',
-    hint: 'Read in your browser, not uploaded. Up to {max} KB.',
+    hint: 'Read in your browser, not uploaded. Up to {max} KB. You can also drop files onto this page.',
+    dropTitle: 'Drop to add to your list',
+    dropHint: '.txt or .bib files, read in your browser',
+    failed: (name: string, reason: string) => `${name}: ${reason}`,
+    ignored: (n: number, max: number) =>
+      `Only the first ${max} files were read. ${n} more ${n === 1 ? 'file was' : 'files were'} left out.`,
     added: (n: number, name: string) =>
       `Added ${n} ${n === 1 ? 'reference' : 'references'} from ${name}.`,
     skipped: (n: number) =>

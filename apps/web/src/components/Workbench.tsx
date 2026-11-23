@@ -9,7 +9,8 @@ import { DEFAULT_CONFIG, fetchConfig } from '../lib/api'
 import { getKeyStore, useApiKey } from '../lib/apiKey'
 import type { ApiKeyView } from '../lib/apiKey'
 import { decideSelection, snippet } from '../lib/selection'
-import { MAX_UPLOAD_BYTES, appendText, readReferenceFile } from '../lib/upload'
+import { MAX_FILES_PER_DROP, MAX_UPLOAD_BYTES, appendText, readReferenceFiles } from '../lib/upload'
+import { useFileDrop } from '../lib/useFileDrop'
 import { useCheck } from '../state/useCheck'
 import { ApiKeyPanel } from './ApiKeyPanel'
 import { ResultsLedger } from './ResultsLedger'
@@ -76,7 +77,9 @@ export function WorkbenchCore({
   const errorId = useId()
   const resultsRef = useRef<HTMLElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [uploadNote, setUploadNote] = useState<{ ok: boolean; text: string } | null>(null)
+  const [uploadNote, setUploadNote] = useState<{ added: string | null; problems: string[] } | null>(
+    null,
+  )
 
   // What a selection from the page put in the box, so a newer selection can replace it but never the
   // person's own text. textRef lets the effect below read the box without re-running on every key.
@@ -169,26 +172,49 @@ export function WorkbenchCore({
   }
 
   const maxKb = MAX_UPLOAD_BYTES / 1024
-  const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    e.target.value = '' // so the same file can be chosen again
-    if (!file) return
-    const r = await readReferenceFile(file)
-    if (!r.ok) {
-      setUploadNote({ ok: false, text: fmt(t.upload.errors[r.error], { max: maxKb }) })
-      return
+
+  // One path for the file chooser and for files dropped on the page. The files are read here, in the
+  // browser, into the box. Nothing is sent until the person chooses Check references.
+  const addFiles = async (files: File[]) => {
+    if (files.length === 0) return
+    const read = await readReferenceFiles(files)
+    // With one file the message is about that file. With several, each line names its file.
+    const several = files.length > 1
+    const added: string[] = []
+    const problems: string[] = []
+    for (const { name, result } of read.files) {
+      if (result.ok) {
+        const line = t.upload.added(splitReferences(result.text).length, name)
+        added.push(result.skipped > 0 ? `${line} ${t.upload.skipped(result.skipped)}` : line)
+      } else {
+        const reason = fmt(t.upload.errors[result.error], { max: maxKb })
+        problems.push(several ? t.upload.failed(name, reason) : reason)
+      }
     }
-    setText((prev) => appendText(prev, r.text))
-    const added = t.upload.added(splitReferences(r.text).length, file.name)
-    setUploadNote({
-      ok: true,
-      text: r.skipped > 0 ? `${added} ${t.upload.skipped(r.skipped)}` : added,
-    })
+    if (read.ignored > 0) problems.push(t.upload.ignored(read.ignored, MAX_FILES_PER_DROP))
+    if (read.text !== '') setText((prev) => appendText(prev, read.text))
+    setUploadNote({ added: added.length > 0 ? added.join(' ') : null, problems })
   }
+
+  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? [])
+    e.target.value = '' // so the same file can be chosen again
+    void addFiles(files)
+  }
+
+  const dropping = useFileDrop((files) => void addFiles(files))
 
   return (
     <div className="workbench">
       <section className="panel panel--input print-hide" aria-labelledby={`${inputId}-label`}>
+        {dropping && (
+          <div className="dropzone" aria-hidden="true">
+            <div className="dropzone__message">
+              <p className="dropzone__title">{t.upload.dropTitle}</p>
+              <p className="dropzone__hint">{t.upload.dropHint}</p>
+            </div>
+          </div>
+        )}
         <div className="panel__row">
           <label className="field-label" id={`${inputId}-label`} htmlFor={inputId}>
             {t.home.inputLabel}
@@ -315,16 +341,18 @@ export function WorkbenchCore({
           </button>
         </div>
         <p className="hint">{fmt(t.upload.hint, { max: maxKb })}</p>
-        {uploadNote &&
-          (uploadNote.ok ? (
-            <p className="hint" role="status">
-              {uploadNote.text}
-            </p>
-          ) : (
-            <p className="field-error" role="alert">
-              {uploadNote.text}
-            </p>
-          ))}
+        {uploadNote?.added && (
+          <p className="hint" role="status">
+            {uploadNote.added}
+          </p>
+        )}
+        {uploadNote && uploadNote.problems.length > 0 && (
+          <div className="field-error" role="alert">
+            {uploadNote.problems.map((p) => (
+              <p key={p}>{p}</p>
+            ))}
+          </div>
+        )}
 
         <div className={hasText ? 'check-bar check-bar--sticky' : 'check-bar'}>
           <button type="button" className="btn btn--primary" onClick={check} disabled={!canCheck}>

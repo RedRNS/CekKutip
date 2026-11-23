@@ -336,7 +336,7 @@ export const id: Dict = {
       'Google menyatakan bahwa konten yang dikirim lewat tier gratisnya dapat dipakai untuk meningkatkan produknya dan dibaca peninjau manusia.',
       'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya.',
       'Kalau kamu menambahkan kunci Gemini sendiri, kunci itu tetap di browsermu. Kunci dikirim pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Ekstensi browser membaginya dengan situs di perangkatmu.',
-      'Berkas .txt atau .bib yang kamu pilih dibaca di browsermu, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
+      'Berkas .txt atau .bib yang kamu pilih atau lepas di halaman dibaca di browsermu, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
       'Server kami tidak menyimpan teksmu. Log kami hanya berisi id permintaan, jumlah referensi, waktu proses, dan kode galat.',
       'Kami mengikuti prinsip Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi: mengumpulkan seperlunya, memakainya untuk satu tujuan, dan tidak menyimpan yang tidak dibutuhkan. Ini gambaran cara kami bekerja, bukan pernyataan kepatuhan hukum.',
       'Jangan menempelkan informasi sensitif atau data pribadi. Daftar pustaka tidak membutuhkannya.',
@@ -525,7 +525,12 @@ export const id: Dict = {
   },
   upload: {
     button: 'Unggah .txt atau .bib',
-    hint: 'Dibaca di browsermu, tidak diunggah. Sampai {max} KB.',
+    hint: 'Dibaca di browsermu, tidak diunggah. Sampai {max} KB. Kamu juga bisa menjatuhkan berkas ke halaman ini.',
+    dropTitle: 'Lepas untuk menambahkan ke daftarmu',
+    dropHint: 'Berkas .txt atau .bib, dibaca di browsermu',
+    failed: (name: string, reason: string) => `${name}: ${reason}`,
+    ignored: (n: number, max: number) =>
+      `Hanya ${max} berkas pertama yang dibaca. ${n} berkas lain tidak diikutkan.`,
     added: (n: number, name: string) => `${n} referensi ditambahkan dari ${name}.`,
     skipped: (n: number) => `${n} entri tanpa judul tidak diikutkan.`,
     errors: {

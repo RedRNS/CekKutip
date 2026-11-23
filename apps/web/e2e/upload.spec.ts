@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { JSHandle, Page } from '@playwright/test'
 import {
   checkButton,
   expect,
@@ -32,6 +32,32 @@ const upload = (page: Page, name: string, content: string | Buffer, mimeType = '
     mimeType,
     buffer: typeof content === 'string' ? Buffer.from(content, 'utf8') : content,
   })
+
+interface Dropped {
+  name: string
+  content: string
+  mimeType?: string
+}
+
+/** A DataTransfer holding real File objects, built in the page, as a drag from the desktop carries. */
+const filesTransfer = (page: Page, files: Dropped[]): Promise<JSHandle<DataTransfer>> =>
+  page.evaluateHandle((list) => {
+    const dt = new DataTransfer()
+    for (const f of list) {
+      dt.items.add(new File([f.content], f.name, { type: f.mimeType ?? 'text/plain' }))
+    }
+    return dt
+  }, files)
+
+/** Drag files in over the page, then let go. Dispatches the same events the browser does. */
+async function dropFiles(page: Page, files: Dropped[], target = 'body') {
+  const dataTransfer = await filesTransfer(page, files)
+  await page.dispatchEvent(target, 'dragenter', { dataTransfer })
+  await page.dispatchEvent(target, 'dragover', { dataTransfer })
+  await page.dispatchEvent(target, 'drop', { dataTransfer })
+}
+
+const dropzone = (page: Page) => page.locator('.dropzone')
 
 test.describe('upload a .txt or .bib file', () => {
   test('a .txt file goes into the box and is counted', async ({ page }) => {
@@ -148,7 +174,157 @@ test.describe('upload a .txt or .bib file', () => {
   test('the privacy page says what happens to a chosen file', async ({ page }) => {
     await page.goto('/privacy')
     await expect(
-      page.getByText('A .txt or .bib file you choose is read in your browser'),
+      page.getByText('A .txt or .bib file you choose or drop on the page is read in your browser'),
     ).toBeVisible()
+  })
+})
+
+test.describe('drop files onto the page', () => {
+  test('a .txt file dropped on the page goes into the box and is counted', async ({ page }) => {
+    await page.goto('/')
+    await dropFiles(page, [{ name: 'refs.txt', content: `${A}\n\n${B}\n\n${C}\n` }])
+    await expect(input(page)).toHaveValue(`${A}\n\n${B}\n\n${C}`)
+    await expect(page.getByText('3 found', { exact: true })).toBeVisible()
+    await expect(page.getByRole('status').filter({ hasText: 'Added' })).toHaveText(
+      'Added 3 references from refs.txt.',
+    )
+  })
+
+  test('a .bib file dropped on the page is turned into references, and can be checked', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await dropFiles(page, [{ name: 'refs.bib', content: WALTERS_BIB }])
+    await expect(input(page)).toHaveValue(WALTERS_LINE)
+    await checkButton(page).click()
+    await expect(page.getByText('1 of 1 checked')).toBeVisible()
+    await expect(rows(page).nth(0).locator('.verdict')).toHaveText('Verified')
+  })
+
+  test('it lands wherever on the page it is dropped, and after what is already in the box', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await input(page).fill(A)
+    await dropFiles(page, [{ name: 'more.txt', content: `${B}\n\n${C}` }], 'h1')
+    await expect(input(page)).toHaveValue(`${A}\n\n${B}\n\n${C}`)
+  })
+
+  test('shows where files will go while they are dragged over, and stops when they leave', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    await expect(dropzone(page)).toHaveCount(0)
+    const dataTransfer = await filesTransfer(page, [{ name: 'refs.txt', content: A }])
+    await page.dispatchEvent('body', 'dragenter', { dataTransfer })
+    await expect(dropzone(page)).toBeVisible()
+    await expect(dropzone(page)).toContainText('Drop to add to your list')
+    await expectNoAxeViolations(page)
+    await page.dispatchEvent('body', 'dragleave', { dataTransfer })
+    await expect(dropzone(page)).toHaveCount(0)
+    await expect(input(page)).toHaveValue('')
+  })
+
+  test('moving between parts of the page does not make the message flicker off', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const dataTransfer = await filesTransfer(page, [{ name: 'refs.txt', content: A }])
+    await page.dispatchEvent('body', 'dragenter', { dataTransfer })
+    await page.dispatchEvent('h1', 'dragenter', { dataTransfer }) // into a child
+    await page.dispatchEvent('body', 'dragleave', { dataTransfer }) // out of the parent
+    await expect(dropzone(page)).toBeVisible()
+    await page.dispatchEvent('h1', 'dragleave', { dataTransfer })
+    await expect(dropzone(page)).toHaveCount(0)
+  })
+
+  test('the message goes away after the drop', async ({ page }) => {
+    await page.goto('/')
+    await dropFiles(page, [{ name: 'refs.txt', content: A }])
+    await expect(dropzone(page)).toHaveCount(0)
+  })
+
+  test('a file drop is taken over, so the browser does not open the file and leave the page', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const prevented = await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.items.add(new File(['x'], 'x.pdf', { type: 'application/pdf' }))
+      const e = new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })
+      document.body.dispatchEvent(e)
+      return e.defaultPrevented
+    })
+    expect(prevented).toBe(true)
+    await expect(page.getByRole('alert')).toHaveText('Only .txt and .bib files are supported.')
+  })
+
+  test('dragged text is left alone: no message, and the drop is not taken over', async ({
+    page,
+  }) => {
+    await page.goto('/')
+    const prevented = await page.evaluate(() => {
+      const dt = new DataTransfer()
+      dt.setData('text/plain', 'Alpha, A. (2020). One.')
+      document.body.dispatchEvent(new DragEvent('dragenter', { dataTransfer: dt, bubbles: true }))
+      const e = new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true })
+      document.body.dispatchEvent(e)
+      return e.defaultPrevented
+    })
+    expect(prevented).toBe(false)
+    await expect(dropzone(page)).toHaveCount(0)
+    await expect(input(page)).toHaveValue('')
+  })
+
+  test('several files at once: all are added, and a failed one is named', async ({ page }) => {
+    await page.goto('/')
+    await dropFiles(page, [
+      { name: 'a.txt', content: A },
+      { name: 'b.bib', content: WALTERS_BIB },
+      { name: 'c.pdf', content: '%PDF-1.4', mimeType: 'application/pdf' },
+    ])
+    await expect(input(page)).toHaveValue(`${A}\n\n${WALTERS_LINE}`)
+    await expect(page.getByRole('status').filter({ hasText: 'Added' })).toHaveText(
+      'Added 1 reference from a.txt. Added 1 reference from b.bib.',
+    )
+    await expect(page.getByRole('alert')).toHaveText(
+      'c.pdf: Only .txt and .bib files are supported.',
+    )
+  })
+
+  test('a drop of more than 10 files reads the first 10 and says so', async ({ page }) => {
+    await page.goto('/')
+    await dropFiles(
+      page,
+      Array.from({ length: 12 }, (_, i) => ({
+        name: `f${i}.txt`,
+        content: `Doe, J. (2020). T${i}.`,
+      })),
+    )
+    await expect(page.getByText('10 found', { exact: true })).toBeVisible()
+    await expect(page.getByRole('alert')).toHaveText(
+      'Only the first 10 files were read. 2 more files were left out.',
+    )
+  })
+
+  test('works in Indonesian', async ({ page }) => {
+    await page.goto('/')
+    await page.getByRole('button', { name: 'Switch to Bahasa Indonesia' }).click()
+    const dataTransfer = await filesTransfer(page, [{ name: 'refs.txt', content: A }])
+    await page.dispatchEvent('body', 'dragenter', { dataTransfer })
+    await expect(dropzone(page)).toContainText('Lepas untuk menambahkan ke daftarmu')
+    await page.dispatchEvent('body', 'drop', { dataTransfer })
+    await expect(page.getByRole('status').filter({ hasText: 'ditambahkan' })).toHaveText(
+      '1 referensi ditambahkan dari refs.txt.',
+    )
+  })
+
+  test('the message fits a phone screen', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 })
+    await page.goto('/')
+    const dataTransfer = await filesTransfer(page, [{ name: 'refs.txt', content: A }])
+    await page.dispatchEvent('body', 'dragenter', { dataTransfer })
+    await expect(dropzone(page)).toBeVisible()
+    await expectNoHorizontalScroll(page)
   })
 })

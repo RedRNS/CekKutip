@@ -49,6 +49,37 @@ export async function readReferenceFile(
     : { ok: true, text: joinReferences(references), kind, skipped }
 }
 
+/** At most this many files are read from one drop. The rest are counted and left alone. */
+export const MAX_FILES_PER_DROP = 10
+
+type ReadableFile = Pick<File, 'name' | 'size' | 'text'>
+
+export interface ReadFiles {
+  /** Every file that was read, in the order given, with what came of it. */
+  files: Array<{ name: string; result: UploadResult }>
+  /** The references of all the files that worked, as one block for the input box. Empty if none did. */
+  text: string
+  /** Files beyond MAX_FILES_PER_DROP, which were not read. */
+  ignored: number
+}
+
+/** Read several files for one drop. A file that fails does not stop the others. */
+export async function readReferenceFiles(files: readonly ReadableFile[]): Promise<ReadFiles> {
+  const taken = files.slice(0, MAX_FILES_PER_DROP)
+  const read: ReadFiles['files'] = []
+  for (const file of taken) read.push({ name: file.name, result: await readReferenceFile(file) })
+  const text = read.reduce((all, f) => (f.result.ok ? appendText(all, f.result.text) : all), '')
+  return { files: read, text, ignored: files.length - taken.length }
+}
+
+/**
+ * Whether what is being dragged carries files. Dragged text, links, and images from a page do not,
+ * and are left to the browser, so selecting and dragging text inside the box still works.
+ */
+export function dragHasFiles(types: ReadonlyArray<string> | null | undefined): boolean {
+  return Array.from(types ?? []).includes('Files')
+}
+
 /** Add text to what is already in the box, as a new paragraph. */
 export function appendText(existing: string, added: string): string {
   return existing.trim() === '' ? added : `${existing.trimEnd()}\n\n${added}`
