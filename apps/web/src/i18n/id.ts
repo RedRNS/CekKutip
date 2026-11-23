@@ -10,6 +10,7 @@ export const id: Dict = {
       home: 'Periksa daftar pustaka',
       how: 'Cara kerja',
       evaluation: 'Evaluasi',
+      format: 'Perbaiki penulisan referensi',
       about: 'Tentang',
       extension: 'Ekstensi browser',
       privacy: 'Privasi',
@@ -21,6 +22,7 @@ export const id: Dict = {
     check: 'Periksa',
     how: 'Cara kerja',
     evaluation: 'Evaluasi',
+    format: 'Format',
     about: 'Tentang',
     extension: 'Ekstensi',
     language: 'Bahasa',
@@ -343,6 +345,7 @@ export const id: Dict = {
       'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya. Judul yang tidak ditemukan cukup dekat oleh kedua layanan pertama dikirim juga, sendirian, ke Garuda, indeks nasional jurnal Indonesia.',
       'Kalau kamu menambahkan kunci Gemini sendiri, kunci itu tetap di browsermu. Kunci dikirim pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Ekstensi browser membaginya dengan situs di perangkatmu.',
       'Berkas .txt atau .bib yang kamu pilih atau lepas di halaman dibaca di browsermu, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
+      'Halaman Format menulis ulang referensimu di browsermu dengan aturan tetap. Tidak ada model bahasa yang membacanya, dan tidak ada yang kamu tempel di sana dikirim ke kami atau ke layanan mana pun.',
       'Server kami tidak menyimpan teksmu. Log kami hanya berisi id permintaan, jumlah referensi, waktu proses, dan kode galat.',
       'Kami mengikuti prinsip Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi: mengumpulkan seperlunya, memakainya untuk satu tujuan, dan tidak menyimpan yang tidak dibutuhkan. Ini gambaran cara kami bekerja, bukan pernyataan kepatuhan hukum.',
       'Jangan menempelkan informasi sensitif atau data pribadi. Daftar pustaka tidak membutuhkannya.',
@@ -544,6 +547,85 @@ export const id: Dict = {
       unsupported: 'Hanya berkas .txt dan .bib yang didukung.',
       empty: 'Tidak ada referensi yang ditemukan di berkas itu.',
       unreadable: 'Berkas itu tidak bisa dibaca sebagai teks.',
+    },
+  },
+  format: {
+    h1: 'Perbaiki penulisan referensi',
+    lede: 'Tempel referensimu, pilih gaya, lalu tiap artikel jurnal ditulis seperti yang diminta gaya itu. Semuanya jalan di browsermu: tidak ada yang dikirim.',
+    inputLabel: 'Referensi',
+    styleLegend: 'Gaya',
+    styles: { apa: 'APA 7', ieee: 'IEEE', harvard: 'Harvard' },
+    styleNote: {
+      apa: 'APA edisi ke-7, seperti yang ditulis situs APA Style. Nama jurnal dan volume dicetak miring.',
+      ieee: 'IEEE, bernomor menurut urutan yang kamu berikan. Inisial ditulis sebelum nama keluarga.',
+      harvard:
+        'Harvard dengan pola Cite Them Right, seperti di panduan universitas, misalnya panduan Open University. Harvard berbeda dari satu universitas ke universitas lain: periksa panduan kampusmu.',
+    },
+    sortLabel: 'Urutkan menurut penulis pertama (A sampai Z)',
+    sortHint: 'Daftar APA dan Harvard disusun menurut abjad.',
+    ieeeOrder: 'Daftar IEEE diberi nomor menurut urutan yang kamu berikan.',
+    sentenceLabel: 'Ubah judul menjadi huruf kecil (sentence case)',
+    sentenceHint:
+      'Huruf kapital hanya untuk kata pertama dan singkatan. Nama orang dan tempat ikut dikecilkan, jadi periksa lagi sesudahnya.',
+    example: 'Coba contoh',
+    clear: 'Hapus',
+    privacy:
+      'Referensimu ditulis ulang di browser ini dengan aturan tetap. Tidak ada model bahasa yang membacanya dan tidak ada yang dikirim ke server kami.',
+    resultsTitle: 'Hasil',
+    empty: 'Tempel referensi di sebelah kiri. Daftar yang sudah ditulis ulang muncul di sini.',
+    summary: (n: number, changed: number, same: number, kept: number) =>
+      `${n} referensi: ${changed} ditulis ulang, ${same} sudah sesuai, ${kept} dibiarkan seperti yang ditulis.`,
+    copyAll: 'Salin semua, dengan huruf miring',
+    copyAllPlain: 'Salin semua, teks biasa',
+    copyOne: 'Salin',
+    copyOneLabel: (n: number) => `Salin referensi ${n}`,
+    copied: 'Tersalin',
+    copyFailed: 'Tidak bisa menyalin. Pilih teksnya lalu salin sendiri.',
+    reference: (n: number) => `Referensi ${n}`,
+    asWritten: 'Seperti yang ditulis',
+    inStyle: (style: string) => `Dalam ${style}`,
+    status: {
+      changed: 'Ditulis ulang',
+      same: (style: string) => `Sudah sesuai ${style}`,
+      not_rewritten: 'Dibiarkan seperti yang ditulis',
+    },
+    whatChanged: 'Yang berubah',
+    fields: {
+      authors: 'Penulis',
+      year: 'Tahun',
+      title: 'Judul',
+      source: 'Jurnal dan halaman',
+      doi: 'DOI atau tautan',
+    },
+    nothing: 'kosong',
+    noPart: 'bukan bagian tersendiri',
+    arrow: 'menjadi',
+    reasons: {
+      not_journal_article:
+        'Ini bukan artikel jurnal yang bisa dibaca (mungkin buku, skripsi, laman web, atau makalah konferensi), jadi dibiarkan seperti yang ditulis. Hanya nomor daftar dan bentuk DOI yang dirapikan. Periksa dengan pedoman gayamu.',
+      unreadable:
+        'Penulis, tahun, judul, atau jurnalnya tidak bisa dibaca, jadi dibiarkan seperti yang ditulis. Periksa secara manual.',
+    },
+    notesTitle: 'Periksa secara manual',
+    notes: {
+      names_uncertain:
+        'Urutan beberapa nama ditebak: kata terakhir dianggap nama keluarga. Periksa nama-namanya.',
+      et_al_kept:
+        'Teksnya menulis "et al." dan penulis lain tidak ada di dalamnya. Tambahkan dari sumbernya bila gayamu menuliskan semua penulis.',
+      authors_shortened: (style: string): string =>
+        style === 'IEEE'
+          ? 'IEEE menulis penulis pertama dan "et al." bila penulisnya lebih dari enam, jadi nama lainnya tidak ditulis.'
+          : style === 'APA 7'
+            ? 'APA 7 menulis 19 penulis pertama, lalu "...", lalu penulis terakhir, bila penulisnya 21 atau lebih.'
+            : 'Sebagian penulis tidak ditulis.',
+      article_number_assumed:
+        'Satu nomor halaman dengan lima angka atau lebih, atau yang diawali huruf, dibaca sebagai nomor artikel. Periksa lagi.',
+      title_case: (style: string) =>
+        `Judulnya memakai huruf kapital di hampir setiap kata. ${style} meminta huruf kapital hanya untuk kata pertama, nama diri, dan singkatan. Judul dibiarkan seperti yang ditulis, karena nama diri tidak bisa dibedakan dari kata lain. Nyalakan "Ubah judul menjadi huruf kecil" untuk mengubahnya, lalu periksa nama diri.`,
+      sentence_case_applied:
+        'Judul diubah menjadi huruf kecil (sentence case). Nama orang dan tempat ikut dikecilkan: tulis lagi dengan huruf kapital bila perlu.',
+      ieee_journal_abbreviation:
+        'IEEE menyingkat nama jurnal (misalnya "Sci. Rep."). Di sini nama jurnal ditulis lengkap. Singkat dengan daftar IEEE bila jurnalmu memintanya.',
     },
   },
   split: {

@@ -1,0 +1,148 @@
+/* Format page: choose a style, and the references rewritten in it. */
+
+.fmt-styles {
+  min-width: 0;
+  margin: 0 0 var(--s-24);
+  padding: 0;
+  border: 0;
+}
+
+.fmt-styles legend {
+  padding: 0;
+  margin-bottom: var(--s-8);
+}
+
+.fmt-styles__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-8);
+}
+
+/* A choice is a bordered target. The chosen one has a thicker border and bold text as well as the
+   filled radio, so it reads without colour. */
+.fmt-style {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-8);
+  min-height: var(--target);
+  padding: 0 var(--s-16);
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--r-control);
+  cursor: pointer;
+}
+
+.fmt-style input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--brand);
+}
+
+.fmt-style:has(input:checked) {
+  padding: 0 calc(var(--s-16) - 1px);
+  border: 2px solid var(--brand);
+  font-weight: 600;
+}
+
+.fmt-summary {
+  max-width: none;
+  margin-bottom: var(--s-12);
+  color: var(--ink-muted);
+}
+
+/* ---------- The list of rewritten references ---------- */
+.fmt-list {
+  list-style: none;
+  margin-top: var(--s-16);
+  border-top: 1px solid var(--rule-strong);
+}
+
+.fmt-row {
+  padding-block: var(--s-16);
+  border-bottom: 1px solid var(--rule);
+}
+
+.fmt-row__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-16);
+  margin-bottom: var(--s-8);
+}
+
+.fmt-row__num {
+  font-family: var(--font-mono);
+  font-size: var(--fs-14);
+  color: var(--ink-muted);
+}
+
+/* The state is in words. The edge adds a shape: solid and thick for rewritten, thin for already matching,
+   dashed for kept as written. */
+.fmt-row__status {
+  padding-left: var(--s-8);
+  border-left: 4px solid var(--ink);
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+
+.fmt-row--same .fmt-row__status {
+  border-left-width: 1px;
+}
+
+.fmt-row--not_rewritten .fmt-row__status {
+  border-left-style: dashed;
+}
+
+.fmt-block + .fmt-block {
+  margin-top: var(--s-12);
+}
+
+.fmt-text {
+  max-width: none;
+  margin-top: var(--s-4);
+  overflow-wrap: anywhere;
+}
+
+.fmt-text--written {
+  color: var(--ink-muted);
+}
+
+.fmt-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-14);
+}
+
+.fmt-changes {
+  list-style: none;
+  margin-top: var(--s-4);
+  font-size: var(--fs-14);
+}
+
+.fmt-changes li {
+  max-width: none;
+  overflow-wrap: anywhere;
+}
+
+.fmt-changes li + li {
+  margin-top: var(--s-8);
+}
+
+.fmt-field {
+  font-weight: 600;
+}
+
+.fmt-before {
+  color: var(--ink-muted);
+}
+
+.fmt-notes ul {
+  margin-top: var(--s-4);
+  font-size: var(--fs-14);
+  color: var(--ink-muted);
+}
+
+.fmt-row .evidence__actions {
+  margin-top: var(--s-12);
+}

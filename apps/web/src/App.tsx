@@ -7,6 +7,7 @@ import { useI18n } from './i18n'
 import About from './pages/About'
 import Evaluation from './pages/Evaluation'
 import Extension from './pages/Extension'
+import Format from './pages/Format'
 import Home from './pages/Home'
 import HowItWorks from './pages/HowItWorks'
 import NotFound from './pages/NotFound'
@@ -41,6 +42,7 @@ export default function App() {
           <ScrollToTop />
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/format" element={<Format />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
             <Route path="/evaluation" element={<Evaluation />} />
             <Route path="/extension" element={<Extension />} />

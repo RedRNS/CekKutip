@@ -21,7 +21,7 @@ import { chromium } from '@playwright/test'
 const args = process.argv.slice(2)
 const base = (args.find((a) => !a.startsWith('--')) ?? 'http://localhost:8799').replace(/\/$/, '')
 const stock = args.includes('--default')
-const pages = ['', 'how-it-works', 'evaluation', 'extension', 'about', 'privacy']
+const pages = ['', 'format', 'how-it-works', 'evaluation', 'extension', 'about', 'privacy']
 const dir = mkdtempSync(path.join(tmpdir(), 'cekkutip-lh-'))
 const chrome = chromium.executablePath()
 

@@ -13,6 +13,7 @@ const PAGES = [
     title: 'Check a reference list',
     h1: 'Check a reference list before you submit it.',
   },
+  { path: '/format', title: 'Fix reference formatting', h1: 'Fix reference formatting' },
   { path: '/how-it-works', title: 'How it works', h1: 'How a check works' },
   { path: '/evaluation', title: 'Evaluation', h1: 'Evaluation' },
   { path: '/extension', title: 'Browser extension', h1: 'Browser extension' },
@@ -42,6 +43,8 @@ for (const p of PAGES) {
 test('navigation reaches every page, and Privacy is in the footer', async ({ page }) => {
   await page.goto('/')
   const nav = page.getByRole('navigation', { name: 'Main' })
+  await nav.getByRole('link', { name: 'Format' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Fix reference formatting')
   await nav.getByRole('link', { name: 'How it works' }).click()
   await expect(page).toHaveURL(/\/how-it-works$/)
   await expect(nav.getByRole('link', { name: 'How it works' })).toHaveAttribute(

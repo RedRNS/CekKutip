@@ -1,7 +1,7 @@
 import type { PublicConfig } from '@cekkutip/shared'
 import { checkLimits, joinReferences, splitReferences } from '@cekkutip/shared/split'
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { ChangeEvent, KeyboardEvent } from 'react'
+import type { KeyboardEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { EXAMPLE_TEXT, PLACEHOLDER_EXAMPLES } from '../data/example-list'
 import { fmt, useI18n } from '../i18n'
@@ -9,12 +9,13 @@ import { DEFAULT_CONFIG, fetchConfig } from '../lib/api'
 import { getKeyStore, useApiKey } from '../lib/apiKey'
 import type { ApiKeyView } from '../lib/apiKey'
 import { decideSelection, snippet } from '../lib/selection'
-import { MAX_FILES_PER_DROP, MAX_UPLOAD_BYTES, appendText, readReferenceFiles } from '../lib/upload'
-import { useFileDrop } from '../lib/useFileDrop'
+import { appendText } from '../lib/upload'
+import { MAX_UPLOAD_KB, useReferenceFiles } from '../lib/useReferenceFiles'
 import { useCheck } from '../state/useCheck'
 import { ApiKeyPanel } from './ApiKeyPanel'
 import { ResultsLedger } from './ResultsLedger'
 import { SplitPreview } from './SplitPreview'
+import { UploadNotes } from './UploadNotes'
 
 /** Read when a check starts, so the check always uses the key held at that moment. */
 const getOwnKey = () => getKeyStore().getState().key
@@ -77,9 +78,13 @@ export function WorkbenchCore({
   const errorId = useId()
   const resultsRef = useRef<HTMLElement>(null)
   const fileRef = useRef<HTMLInputElement>(null)
-  const [uploadNote, setUploadNote] = useState<{ added: string | null; problems: string[] } | null>(
-    null,
-  )
+  // Files chosen or dropped are read in the browser into the box. Nothing is sent until Check references.
+  const {
+    note: uploadNote,
+    clearNote,
+    onFile,
+    dropping,
+  } = useReferenceFiles((added) => setText((prev) => appendText(prev, added)))
 
   // What a selection from the page put in the box, so a newer selection can replace it but never the
   // person's own text. textRef lets the effect below read the box without re-running on every key.
@@ -93,7 +98,7 @@ export function WorkbenchCore({
   useEffect(() => {
     if (incomingText) {
       setText(incomingText.text)
-      setUploadNote(null)
+      clearNote()
       setOffered(null)
       lastFilled.current = incomingText.text
     }
@@ -108,7 +113,7 @@ export function WorkbenchCore({
     })
     if (action === 'fill') {
       setText(liveSelection.text)
-      setUploadNote(null)
+      clearNote()
       setOffered(null)
       lastFilled.current = liveSelection.text
     } else if (action === 'ask') {
@@ -165,44 +170,11 @@ export function WorkbenchCore({
 
   const clear = () => {
     setText('')
-    setUploadNote(null)
+    clearNote()
     setOffered(null)
     lastFilled.current = null
     reset()
   }
-
-  const maxKb = MAX_UPLOAD_BYTES / 1024
-
-  // One path for the file chooser and for files dropped on the page. The files are read here, in the
-  // browser, into the box. Nothing is sent until the person chooses Check references.
-  const addFiles = async (files: File[]) => {
-    if (files.length === 0) return
-    const read = await readReferenceFiles(files)
-    // With one file the message is about that file. With several, each line names its file.
-    const several = files.length > 1
-    const added: string[] = []
-    const problems: string[] = []
-    for (const { name, result } of read.files) {
-      if (result.ok) {
-        const line = t.upload.added(splitReferences(result.text).length, name)
-        added.push(result.skipped > 0 ? `${line} ${t.upload.skipped(result.skipped)}` : line)
-      } else {
-        const reason = fmt(t.upload.errors[result.error], { max: maxKb })
-        problems.push(several ? t.upload.failed(name, reason) : reason)
-      }
-    }
-    if (read.ignored > 0) problems.push(t.upload.ignored(read.ignored, MAX_FILES_PER_DROP))
-    if (read.text !== '') setText((prev) => appendText(prev, read.text))
-    setUploadNote({ added: added.length > 0 ? added.join(' ') : null, problems })
-  }
-
-  const onFile = (e: ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files ?? [])
-    e.target.value = '' // so the same file can be chosen again
-    void addFiles(files)
-  }
-
-  const dropping = useFileDrop((files) => void addFiles(files))
 
   return (
     <div className="workbench">
@@ -329,7 +301,7 @@ export function WorkbenchCore({
             type="file"
             accept=".txt,.bib,text/plain"
             hidden
-            onChange={(e) => void onFile(e)}
+            onChange={onFile}
           />
           <button
             type="button"
@@ -340,19 +312,8 @@ export function WorkbenchCore({
             {t.home.clear}
           </button>
         </div>
-        <p className="hint">{fmt(t.upload.hint, { max: maxKb })}</p>
-        {uploadNote?.added && (
-          <p className="hint" role="status">
-            {uploadNote.added}
-          </p>
-        )}
-        {uploadNote && uploadNote.problems.length > 0 && (
-          <div className="field-error" role="alert">
-            {uploadNote.problems.map((p) => (
-              <p key={p}>{p}</p>
-            ))}
-          </div>
-        )}
+        <p className="hint">{fmt(t.upload.hint, { max: MAX_UPLOAD_KB })}</p>
+        <UploadNotes note={uploadNote} />
 
         <div className={hasText ? 'check-bar check-bar--sticky' : 'check-bar'}>
           <button type="button" className="btn btn--primary" onClick={check} disabled={!canCheck}>

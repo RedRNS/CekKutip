@@ -230,6 +230,7 @@ Host keluar **hanya** `api.crossref.org`, `api.openalex.org`, `api.datacite.org`
 **Inti**
 
 - Pemeriksaan daftar pustaka dengan empat verdict, hasil mengalir per referensi.
+- **Perbaiki penulisan referensi** (halaman `/format`): artikel jurnal ditulis ulang dalam **APA 7, IEEE, atau Harvard** (pilihan pengguna, bisa diganti kapan saja). Teks asli dan hasilnya berdampingan dengan bagian yang berubah digarisbawahi, daftar perubahan per bagian (penulis, tahun, judul, jurnal dan halaman, DOI), catatan untuk hal yang tidak bisa diputuskan aturan, dan salin dengan huruf miring untuk Word atau sebagai teks biasa. Semuanya di browser dengan aturan tetap (`packages/shared/src/refformat/`): tanpa model bahasa dan tanpa jaringan. Buku, skripsi, laman web, dan prosiding tidak ditulis ulang. Aturan gaya mengikuti situs APA Style, panduan IEEE dari perpustakaan universitas, dan panduan Harvard (Cite Them Right) Open University dan DMU; Harvard berbeda antar kampus. Lihat DECISIONS butir 141.
 - Panel bukti dengan tabel perbandingan field (`table` sungguhan dengan `caption` dan `th scope`, bukan tabel bersarang).
 - Mode tanpa AI (parser regex), dan pemberitahuan jujur saat model tidak bisa dipakai.
 - Dua bahasa (EN dan ID), tanpa teks yang hilang di salah satunya (tipe `Dict` memaksa kuncinya sama).
@@ -331,7 +332,8 @@ Yang dijaga supaya hasilnya jujur:
 
 ```
 packages/shared/   skema dan tipe (zod), pemisah referensi, normalisasi, pembaca BibTeX, penulis APA 7,
-                   protokol kunci Gemini, validator ringkasan evaluasi
+                   penulis ulang APA 7, IEEE, dan Harvard (`refformat/`), protokol kunci Gemini,
+                   validator ringkasan evaluasi
 apps/server/       Express, pipeline (split, parse, retrieve, match, decide, format, run),
                    klien Crossref/OpenAlex/Garuda/DataCite/doi.org/Gemini, konfigurasi (ambang, batas)
 apps/web/          React + CSS biasa (token di styles/tokens.css), i18n EN dan ID, halaman, tes E2E

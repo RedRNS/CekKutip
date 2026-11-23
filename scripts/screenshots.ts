@@ -113,6 +113,7 @@ const states: State[] = [
       await page.locator('.keypanel__status').waitFor()
     },
   },
+  { name: 'format', path: '/format' },
   { name: 'how-it-works', path: '/how-it-works' },
   { name: 'evaluation-empty', path: '/evaluation' },
   { name: 'extension', path: '/extension' },

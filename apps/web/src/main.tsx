@@ -9,6 +9,7 @@ import './styles/base.css'
 import './styles/layout.css'
 import './styles/components.css'
 import './styles/workbench.css'
+import './styles/format.css'
 import './styles/print.css'
 
 import { StrictMode } from 'react'

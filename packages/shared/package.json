@@ -13,7 +13,8 @@
     "./bibtex": "./src/bibtex.ts",
     "./apa": "./src/apa.ts",
     "./evaluation": "./src/evaluation.ts",
-    "./testing": "./src/evaluation.fixture.ts"
+    "./testing": "./src/evaluation.fixture.ts",
+    "./refformat": "./src/refformat/index.ts"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

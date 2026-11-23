@@ -14,6 +14,7 @@ export const en = {
       home: 'Check a reference list',
       how: 'How it works',
       evaluation: 'Evaluation',
+      format: 'Fix reference formatting',
       about: 'About',
       extension: 'Browser extension',
       privacy: 'Privacy',
@@ -25,6 +26,7 @@ export const en = {
     check: 'Check',
     how: 'How it works',
     evaluation: 'Evaluation',
+    format: 'Format',
     about: 'About',
     extension: 'Extension',
     language: 'Language',
@@ -341,6 +343,7 @@ export const en = {
       'The title, authors, and DOI read from your references go to Crossref and OpenAlex, and to DataCite when needed, to look the work up. A title that neither of the first two finds close is also sent, alone, to Garuda, the national index of Indonesian journals.',
       'If you add your own Gemini key, it stays in your browser. It is sent with each check, used only to ask Google to read your references, and never stored or logged. The browser extension shares it with the site on your device.',
       'A .txt or .bib file you choose or drop on the page is read in your browser, like pasted text. Nothing is sent until you choose Check references.',
+      'The Format page rewrites your references in your browser by fixed rules. No language model reads them, and nothing you paste there is sent to us or to any service.',
       'Our server does not store your text. Our logs hold only a request id, the number of references, timings, and error codes.',
       'We follow the principles of Indonesian Law No. 27 of 2022 on Personal Data Protection: collect little, use it for one purpose, keep nothing we do not need. This describes our approach, not legal compliance.',
       'Do not paste sensitive or personal information. A reference list does not need any.',
@@ -542,6 +545,85 @@ export const en = {
       unsupported: 'Only .txt and .bib files are supported.',
       empty: 'No references were found in that file.',
       unreadable: 'That file could not be read as text.',
+    },
+  },
+  format: {
+    h1: 'Fix reference formatting',
+    lede: 'Paste your references, choose a style, and each journal article is written the way that style asks. It runs in your browser: nothing is sent.',
+    inputLabel: 'References',
+    styleLegend: 'Style',
+    styles: { apa: 'APA 7', ieee: 'IEEE', harvard: 'Harvard' },
+    styleNote: {
+      apa: 'APA 7th edition, as the APA Style site gives it. The journal and the volume are in italics.',
+      ieee: 'IEEE, numbered in the order you give. Initials come before the family name.',
+      harvard:
+        'Harvard in the Cite Them Right pattern, as university guides such as the Open University guide give it. Harvard differs from one university to the next: check your own guide.',
+    },
+    sortLabel: 'Sort by first author (A to Z)',
+    sortHint: 'APA and Harvard lists are in alphabetical order.',
+    ieeeOrder: 'IEEE lists are numbered in the order you gave them.',
+    sentenceLabel: 'Put titles in sentence case',
+    sentenceHint:
+      'Capitals only for the first word and for acronyms. Names of people and places are lowered too, so check them afterwards.',
+    example: 'Try an example',
+    clear: 'Clear',
+    privacy:
+      'Your references are rewritten in this browser by fixed rules. No language model reads them and nothing is sent to our server.',
+    resultsTitle: 'Result',
+    empty: 'Paste references on the left. The rewritten list appears here.',
+    summary: (n: number, changed: number, same: number, kept: number) =>
+      `${n} ${n === 1 ? 'reference' : 'references'}: ${changed} rewritten, ${same} already ${same === 1 ? 'matches' : 'match'}, ${kept} kept as written.`,
+    copyAll: 'Copy all, with italics',
+    copyAllPlain: 'Copy all, plain text',
+    copyOne: 'Copy',
+    copyOneLabel: (n: number) => `Copy reference ${n}`,
+    copied: 'Copied',
+    copyFailed: 'Could not copy. Select the text and copy it by hand.',
+    reference: (n: number) => `Reference ${n}`,
+    asWritten: 'As written',
+    inStyle: (style: string) => `In ${style}`,
+    status: {
+      changed: 'Rewritten',
+      same: (style: string) => `Already matches ${style}`,
+      not_rewritten: 'Kept as written',
+    },
+    whatChanged: 'What changed',
+    fields: {
+      authors: 'Authors',
+      year: 'Year',
+      title: 'Title',
+      source: 'Journal and pages',
+      doi: 'DOI or link',
+    },
+    nothing: 'nothing',
+    noPart: 'not a separate part',
+    arrow: 'becomes',
+    reasons: {
+      not_journal_article:
+        'This is not a journal article that can be read (it may be a book, a thesis, a web page, or a conference paper), so it is kept as written. Only the list number and the form of the DOI were tidied. Check it against your style guide.',
+      unreadable:
+        'The authors, the year, the title, or the journal could not be read, so it is kept as written. Check it by hand.',
+    },
+    notesTitle: 'Check by hand',
+    notes: {
+      names_uncertain:
+        'The order of some names was guessed: the last word is taken as the family name. Check the names.',
+      et_al_kept:
+        'The text says "et al." and the other authors are not in it. Add them from the source if your style lists every author.',
+      authors_shortened: (style: string): string =>
+        style === 'IEEE'
+          ? 'IEEE writes the first author and "et al." when there are more than six authors, so the other names were left out.'
+          : style === 'APA 7'
+            ? 'APA 7 writes the first 19 authors, then "...", then the last author, when there are 21 or more.'
+            : 'Some authors were left out.',
+      article_number_assumed:
+        'A single page number of five digits or more, or one that starts with a letter, was read as an article number. Check it.',
+      title_case: (style: string) =>
+        `The title has a capital on almost every word. ${style} asks for capitals only on the first word, names, and acronyms. It was left as written, because names cannot be told from other words. Turn on "Put titles in sentence case" to change it, then check the names.`,
+      sentence_case_applied:
+        'The title was put into sentence case. Names of people and places were lowered too: write them with capitals again where needed.',
+      ieee_journal_abbreviation:
+        'IEEE abbreviates journal names (for example "Sci. Rep."). The name is written in full here. Abbreviate it with the IEEE list if your journal asks.',
     },
   },
   split: {
