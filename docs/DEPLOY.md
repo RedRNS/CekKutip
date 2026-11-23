@@ -103,7 +103,7 @@ Variabel yang diatur image: `NODE_ENV=production`, `STATIC_DIR=/app/web`, `EVALU
 Kunci gratis punya batas harian. `GEMINI_API_KEY_2` dan `GEMINI_API_KEY_3` membuat server pindah ke kunci berikutnya saat Google menjawab 429 (batas habis) atau menolak kunci. Aturannya ada di DECISIONS butir 138.
 
 1. **Buat tiap kunci di proyek Google Cloud yang berbeda.** Kuota gratis dihitung per proyek, jadi dua kunci dari proyek yang sama memakai satu kuota dan tidak menolong. Di Google AI Studio pilih "Create API key in new project".
-2. **Layanan Render yang sudah ada:** buka layanan, **Environment**, tambahkan `GEMINI_API_KEY_2` dan `GEMINI_API_KEY_3`, lalu simpan. Render men-deploy ulang. (Blueprint hanya menanyakan nilai saat dibuat, jadi untuk layanan yang sudah berjalan variabelnya diisi di sini.) Untuk pengembangan lokal, isi di `.env`.
+2. **Layanan Render yang sudah ada:** buka layanan, **Environment**, tambahkan `GEMINI_API_KEY_2` dan `GEMINI_API_KEY_3`, lalu simpan. Render men-deploy ulang. (Nilai rahasia tidak pernah ikut dari repo, jadi variabelnya diisi di sini.) Untuk pengembangan lokal, isi di `.env`.
 3. **Periksa:** jalankan `npx tsx --env-file=.env scripts/smoke-gemini-keys.ts`. Skrip mengirim satu referensi contoh ke tiap kunci dan mencetak `ok`, batas habis, atau ditolak, tanpa pernah mencetak kuncinya. `/api/config` melapor `aiAvailable: true` bila minimal satu kunci terbaca.
 4. Kunci yang baru gagal dilewati 5 menit, lalu dicoba lagi lebih dulu. Bila ketiganya gagal, pemeriksaan tetap selesai dengan pembaca tanpa AI dan halaman menawarkan kunci milik pengunjung. Kunci milik pengunjung tidak pernah jatuh ke kunci server.
 
