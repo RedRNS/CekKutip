@@ -17,6 +17,11 @@ services:
       # Secrets: Render asks for these once, when the Blueprint is created. They are never in the repo.
       - key: GEMINI_API_KEY
         sync: false
+      # Backup keys, from other Google Cloud projects. Optional: leave empty to use one key.
+      - key: GEMINI_API_KEY_2
+        sync: false
+      - key: GEMINI_API_KEY_3
+        sync: false
       - key: CROSSREF_MAILTO
         sync: false
       - key: OPENALEX_API_KEY

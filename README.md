@@ -359,7 +359,7 @@ npm run build
 npm start                   # http://localhost:8787
 ```
 
-Tanpa `GEMINI_API_KEY` semuanya tetap jalan dengan parser regex (mode tanpa AI), dan antarmuka mengatakannya. Di `npm run dev:web`, tautan unduh ekstensi belum berfungsi karena zip dibuat saat build.
+Tanpa `GEMINI_API_KEY` (dan tanpa kunci cadangan) semuanya tetap jalan dengan parser regex (mode tanpa AI), dan antarmuka mengatakannya. Di `npm run dev:web`, tautan unduh ekstensi belum berfungsi karena zip dibuat saat build.
 
 ### Variabel lingkungan
 
@@ -368,6 +368,7 @@ Daftar lengkap dengan komentar ada di [.env.example](.env.example). Yang utama:
 | Variabel                                  | Untuk apa                                                                                       |
 | ----------------------------------------- | ----------------------------------------------------------------------------------------------- |
 | `GEMINI_API_KEY`                          | Kunci Google Gemini (hanya di server). Tanpa ini, mode AI tidak tersedia.                       |
+| `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3`    | Kunci cadangan, dipakai berurutan bila kunci di depannya habis atau ditolak. Opsional.          |
 | `GEMINI_MODEL`                            | Bawaan `gemini-3.1-flash-lite`.                                                                 |
 | `GEMINI_TEMPERATURE`                      | Bawaan `0`. Tulis `off` untuk berhenti mengirimnya bila model berikutnya menolak parameter itu. |
 | `CROSSREF_MAILTO`                         | Alamat kontak untuk "polite pool" Crossref. Disimpan di `.env`, tidak pernah di repo.           |

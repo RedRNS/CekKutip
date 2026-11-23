@@ -5,7 +5,7 @@ CekKutip adalah satu layanan Node yang melayani API dan aplikasi web hasil build
 ## Yang harus beres sebelum deploy
 
 1. **Isi `apps/web/src/site.config.ts`** (nama tim, anggota, pembimbing, kampus, email kontak, tautan GitHub, tautan demo). Selama masih ada `TODO`, build produksi gagal dengan sengaja, termasuk `docker build`. Jangan memakai `--build-arg ALLOW_TODO=1` untuk deploy sungguhan.
-2. **Siapkan kunci:** `GEMINI_API_KEY` (wajib untuk mode AI), `CROSSREF_MAILTO` (alamat kontak yang dikirim ke Crossref, disarankan), `OPENALEX_API_KEY` (gratis, sangat disarankan, lihat DECISIONS no. 21). Kunci hanya masuk ke variabel lingkungan host, tidak pernah ke repo.
+2. **Siapkan kunci:** `GEMINI_API_KEY` (wajib untuk mode AI; `GEMINI_API_KEY_2` dan `GEMINI_API_KEY_3` boleh ditambah sebagai cadangan, lihat bagian "Kunci Gemini cadangan"), `CROSSREF_MAILTO` (alamat kontak yang dikirim ke Crossref, disarankan), `OPENALEX_API_KEY` (gratis, sangat disarankan, lihat DECISIONS no. 21). Kunci hanya masuk ke variabel lingkungan host, tidak pernah ke repo.
 3. **Komit hasil evaluasi** (`eval/results/summary.json`) hanya bila sudah dari data sungguhan dan sudah ditinjau. Berkas itu ikut ke dalam image saat build. Tanpa berkas itu, halaman Evaluation menampilkan keadaan kosong yang jujur.
 
 ## Memilih host
@@ -46,7 +46,7 @@ Skrip itu mencetak verdict tiap contoh. Pada 18 November 2026, daftar contoh mem
 
 1. Dorong repo ke GitHub (privat tidak masalah). Pastikan `site.config.ts` sudah terisi.
 2. Di Render: **New, Blueprint**, pilih repo. Render membaca `render.yaml` (runtime docker, plan free, region singapore, `healthCheckPath: /api/health`).
-3. Render menanyakan nilai variabel rahasia (`GEMINI_API_KEY`, `CROSSREF_MAILTO`, `OPENALEX_API_KEY`, `PUBLIC_SITE_URL`). Isi di sini. Nilainya tidak masuk ke repo.
+3. Render menanyakan nilai variabel rahasia (`GEMINI_API_KEY`, `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3`, `CROSSREF_MAILTO`, `OPENALEX_API_KEY`, `PUBLIC_SITE_URL`). Isi di sini; kunci cadangan boleh dikosongkan. Nilainya tidak masuk ke repo.
 4. Tunggu build selesai. Buka `https://<layanan>.onrender.com/api/health`. Jawaban yang benar: `{"status":"ok","version":"0.1.0","uptimeSeconds":...}`.
 5. Buka `https://<layanan>.onrender.com/api/config`. Bila `aiAvailable` bernilai `false`, `GEMINI_API_KEY` belum terbaca.
 6. Jalankan pemanasan di atas, lalu ukur dengan PageSpeed Insights pada alamat itu (angka itu yang dibandingkan juri).
@@ -83,19 +83,29 @@ Atau `--env-file .env`. Image berjalan sebagai pengguna `node` (bukan root), tid
 
 Daftar lengkap dengan komentar ada di `.env.example`. Yang paling penting di produksi:
 
-| Variabel                                 | Untuk apa                                                                                                          |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `GEMINI_API_KEY`                         | Kunci mode AI. Tanpa ini server tetap jalan, memakai pembaca pola, dan `/api/config` melapor `aiAvailable: false`. |
-| `GEMINI_MODEL`                           | Bawaan `gemini-3.1-flash-lite`.                                                                                    |
-| `CROSSREF_MAILTO`                        | Alamat kontak untuk "polite pool" Crossref (10 permintaan per detik, 3 bersamaan, dibanding 5 dan 1).              |
-| `OPENALEX_API_KEY`                       | Kunci gratis: anggaran $1 per hari, dibanding $0,10 per hari per IP tanpa kunci.                                   |
-| `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS` | Bawaan 10 pemeriksaan per 10 menit per IP.                                                                         |
-| `MAX_REFERENCES`, `MAX_REFERENCE_CHARS`  | Bawaan 40 dan 600. Ditegakkan di server.                                                                           |
-| `TRUST_PROXY`                            | Jumlah proxy di depan server (lihat di atas).                                                                      |
-| `PUBLIC_SITE_URL`                        | Alamat publik situs.                                                                                               |
-| `ENABLE_EXPERIMENT_MODES`                | **Harus tetap `false`.** Server juga menolaknya selama `NODE_ENV=production`.                                      |
+| Variabel                                 | Untuk apa                                                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `GEMINI_API_KEY`                         | Kunci mode AI. Tanpa ini server tetap jalan, memakai pembaca pola, dan `/api/config` melapor `aiAvailable: false`.   |
+| `GEMINI_API_KEY_2`, `GEMINI_API_KEY_3`   | Kunci cadangan, dipakai berurutan bila kunci di depannya habis atau ditolak Google. Opsional. Lihat bagian di bawah. |
+| `GEMINI_MODEL`                           | Bawaan `gemini-3.1-flash-lite`.                                                                                      |
+| `CROSSREF_MAILTO`                        | Alamat kontak untuk "polite pool" Crossref (10 permintaan per detik, 3 bersamaan, dibanding 5 dan 1).                |
+| `OPENALEX_API_KEY`                       | Kunci gratis: anggaran $1 per hari, dibanding $0,10 per hari per IP tanpa kunci.                                     |
+| `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS` | Bawaan 10 pemeriksaan per 10 menit per IP.                                                                           |
+| `MAX_REFERENCES`, `MAX_REFERENCE_CHARS`  | Bawaan 40 dan 600. Ditegakkan di server.                                                                             |
+| `TRUST_PROXY`                            | Jumlah proxy di depan server (lihat di atas).                                                                        |
+| `PUBLIC_SITE_URL`                        | Alamat publik situs.                                                                                                 |
+| `ENABLE_EXPERIMENT_MODES`                | **Harus tetap `false`.** Server juga menolaknya selama `NODE_ENV=production`.                                        |
 
 Variabel yang diatur image: `NODE_ENV=production`, `STATIC_DIR=/app/web`, `EVALUATION_SUMMARY=/app/eval/results/summary.json`.
+
+### Kunci Gemini cadangan
+
+Kunci gratis punya batas harian. `GEMINI_API_KEY_2` dan `GEMINI_API_KEY_3` membuat server pindah ke kunci berikutnya saat Google menjawab 429 (batas habis) atau menolak kunci. Aturannya ada di DECISIONS butir 138.
+
+1. **Buat tiap kunci di proyek Google Cloud yang berbeda.** Kuota gratis dihitung per proyek, jadi dua kunci dari proyek yang sama memakai satu kuota dan tidak menolong. Di Google AI Studio pilih "Create API key in new project".
+2. **Layanan Render yang sudah ada:** buka layanan, **Environment**, tambahkan `GEMINI_API_KEY_2` dan `GEMINI_API_KEY_3`, lalu simpan. Render men-deploy ulang. (Blueprint hanya menanyakan nilai saat dibuat, jadi untuk layanan yang sudah berjalan variabelnya diisi di sini.) Untuk pengembangan lokal, isi di `.env`.
+3. **Periksa:** jalankan `npx tsx --env-file=.env scripts/smoke-gemini-keys.ts`. Skrip mengirim satu referensi contoh ke tiap kunci dan mencetak `ok`, batas habis, atau ditolak, tanpa pernah mencetak kuncinya. `/api/config` melapor `aiAvailable: true` bila minimal satu kunci terbaca.
+4. Kunci yang baru gagal dilewati 5 menit, lalu dicoba lagi lebih dulu. Bila ketiganya gagal, pemeriksaan tetap selesai dengan pembaca tanpa AI dan halaman menawarkan kunci milik pengunjung. Kunci milik pengunjung tidak pernah jatuh ke kunci server.
 
 ## Memeriksa sebuah deploy
 
@@ -136,7 +146,7 @@ Situs di `https://cekkutip.onrender.com` (Render, gratis, Singapore), diuji dari
 | Gejala                                                                                   | Penyebab dan jalan keluar                                                                                                                              |
 | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | Build gagal: `site.config.ts still has N TODO placeholder(s)`                            | Isi `site.config.ts`. Ini sengaja.                                                                                                                     |
-| Kotak "tanpa AI" tercentang dan nonaktif, pemberitahuan bilang pembaca AI belum dipasang | `GEMINI_API_KEY` kosong atau tidak terbaca. Periksa `/api/config`.                                                                                     |
+| Kotak "tanpa AI" tercentang dan nonaktif, pemberitahuan bilang pembaca AI belum dipasang | `GEMINI_API_KEY` dan kedua kunci cadangan kosong atau tidak terbaca. Periksa `/api/config`.                                                            |
 | Banyak pengguna cepat mendapat "Kamu sudah mencapai batas pemeriksaan"                   | Batas 10 per 10 menit per IP. Naikkan `RATE_LIMIT_MAX`, dan periksa `TRUST_PROXY`.                                                                     |
 | Banyak hasil `Could not check`                                                           | Crossref atau OpenAlex lambat atau menolak. Isi `CROSSREF_MAILTO` dan `OPENALEX_API_KEY`. Cek log: baris `lookup_error` hanya memuat kode, bukan teks. |
 | Halaman Evaluation tetap kosong                                                          | Belum ada `eval/results/summary.json` di image, atau berkasnya bertanda `sample` atau tidak lengkap. Itu perilaku yang benar.                          |
