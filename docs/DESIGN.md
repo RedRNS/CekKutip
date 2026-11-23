@@ -39,6 +39,35 @@ Semua pasangan lolos. Angka terukur, bukan salinan dari brief:
 - Teks ink pada putih: Verified 6,58, Mismatch 6,33, Suspect 7,22, Out-of-index 8,06. Pada tint: 5,76, 5,61, 5,92, 6,79.
 - Solid untuk grafis pada putih: Verified 5,13, Mismatch 3,37, Suspect 5,44, Out-of-index 5,43 (minimal 3:1). Solid Mismatch tidak dipakai untuk teks.
 
+## Tema gelap (23 Nov 2026)
+
+Nama token yang sama dengan nilai lain, di `tokens.css`. **Tidak ada aturan CSS khusus tema** di tempat lain: komponen hanya membaca token, jadi tema gelap tidak bisa menyimpang dari yang terang. Tiap pasangan warna diperiksa pada setiap tes oleh `apps/web/src/styles/tokens.test.ts` (teks 4,5:1, garis dan grafis 3:1), dan `npx tsx scripts/contrast.ts` mencetak angkanya untuk kedua tema dari berkas yang sama.
+
+| Token         | Terang    | Gelap     |
+| ------------- | --------- | --------- |
+| paper         | `#F6F8F7` | `#0E191D` |
+| surface       | `#FFFFFF` | `#142329` |
+| ink           | `#12232E` | `#E5EDEF` |
+| ink-muted     | `#4B5B66` | `#A7B6BD` |
+| rule          | `#C9D4D1` | `#2B3D44` |
+| rule-strong   | `#6B7C78` | `#74878F` |
+| brand         | `#12343B` | `#7FD0C6` |
+| brand-hover   | `#0C262C` | `#A2E2D9` |
+| on-brand      | `#FFFFFF` | `#0A1418` |
+| accent        | `#0B6B63` | `#5CC2B6` |
+| accent-tint   | `#E3F0EE` | `#183632` |
+
+Verdict (solid / ink / tint), gelap: Verified `#4CAF50` / `#86D68F` / `#14301A`. Mismatch `#D9962B` (grafis saja) / `#F0B866` / `#33260C`. Suspect `#E5604F` / `#FF9C90` / `#3B1613`. Out-of-index `#8D9AAB` / `#B9C4D1` / `#20282F`.
+
+- **Satu token baru:** `--on-brand`, warna teks di atas latar brand. Di tema terang putih, di tema gelap hampir hitam, karena `--brand` di tema gelap menjadi hijau-kebiruan terang (tombol utama dan tautan lompat tidak lagi menulis putih langsung).
+- **Kontras terukur (gelap):** ink pada paper 15,05:1, ink-muted pada paper 8,57:1, accent pada paper 8,38:1, on-brand pada brand 10,43:1, rule-strong pada paper 4,77:1 dan pada surface 4,30:1. Teks verdict pada surface: Verified 9,24, Mismatch 9,03, Suspect 7,99, Out-of-index 9,12. Pada tint: 8,20, 8,26, 7,95, 8,45. Solid untuk grafis pada surface: Verified 5,80, Mismatch 6,41, Suspect 4,70, Out-of-index 5,64.
+- **Verdict tetap terbaca tanpa warna:** glif, bingkai putus-putus untuk Out-of-index, pola bilah, dan teks tidak berubah. Warna hanya mengikuti latar.
+- **Cara memilih tema:** mengikuti pengaturan sistem (`prefers-color-scheme`) sampai orang itu memakai tombol bulan atau matahari di header. Pilihannya disimpan di browser itu (`localStorage`, hanya kemudahan) dan menang atas sistem. `public/theme.js` kecil dan berhenti-dulu di `<head>` memasang pilihan itu sebelum halaman digambar, supaya tidak ada kilatan tema yang salah. Tanpa penyimpanan, sistem yang menentukan. Dua blok gelap di `tokens.css` (mengikuti sistem, dan pilihan sendiri) harus sama persis, dan dites.
+- **Cetak selalu terang:** kedua blok gelap berada di dalam `@media screen`, jadi cetak tetap hitam di atas putih.
+- **Kontrol bawaan** (kotak centang, bilah gulir, kolom isian) mengikuti tema lewat `color-scheme`. Warna bilah alamat ponsel mengikuti latar header tiap tema.
+- **Ekstensi browser:** panel samping memakai token yang sama, jadi mengikuti pengaturan sistem. Ia tidak punya tombol.
+- Bukan tujuan: tema ketiga, jadwal otomatis, atau pilihan warna oleh pengguna.
+
 ## Tipografi
 
 - Newsreader 500 dan 600 (judul), IBM Plex Sans 400/500/600 (UI), IBM Plex Mono 400 (DOI, kode, nomor). Self-host lewat `@fontsource`, subset Latin, `font-display: swap`.

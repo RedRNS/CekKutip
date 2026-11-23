@@ -88,6 +88,32 @@
   text-decoration: none;
 }
 
+/* The language switch and the theme switch, together at the end of the header. */
+.site-header__tools {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--target);
+  height: var(--target);
+  padding: 0;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--r-control);
+  color: var(--ink-muted);
+  cursor: pointer;
+}
+
+.theme-toggle:hover {
+  color: var(--brand);
+  border-color: var(--rule-strong);
+}
+
 .site-nav {
   order: 3;
   width: 100%;

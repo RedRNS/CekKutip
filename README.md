@@ -459,6 +459,7 @@ Pilihan host, perilaku tidur dan bangun host gratis, UptimeRobot, dan daftar per
 Antarmuka dirancang agar tiap layar menjawab tiga hal: apa yang bisa kulakukan, apa hasilnya, dan apa langkah berikutnya. Gayanya netral dan editorial: tanpa emoji, gradien, blur kaca, ilustrasi stok, tombol pil, atau bayangan dekoratif.
 
 - **Warna netral:** paper `#F6F8F7`, surface `#FFFFFF`, ink `#12232E`, brand `#12343B`, accent `#0B6B63`. Tiap verdict punya warna solid, warna teks, dan warna latar sendiri. Rasio kontras dihitung oleh `scripts/contrast.ts`.
+- **Mode gelap:** mengikuti pengaturan sistem, dengan tombol di header untuk memilih sendiri (pilihan diingat di browser, tanpa kilatan saat halaman dimuat). Nilai token gelap diperiksa kontrasnya pada setiap tes. Cetak tetap hitam di atas putih. Ekstensi browser mengikuti sistem.
 - **Verdict terbaca tanpa warna:** bentuk glif, pola bilah, dan teks.
 - **Responsif:** diperiksa pada lebar 375, 768, dan 1280 px dalam EN dan ID, lebar maksimum 1180 px.
 - **Aksesibilitas:** tautan lompat ke konten, daftar hasil berupa `ol` yang bisa dibuka dengan keyboard, tabel perbandingan sungguhan, dan tes axe pada semua halaman.

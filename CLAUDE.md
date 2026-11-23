@@ -84,7 +84,7 @@ Warna netral: paper `#F6F8F7`, surface `#FFFFFF`, ink `#12232E`, ink-muted `#4B5
 
 Verdict (solid / ink / tint): Verified `#2E7D32` `#1E6B2A` `#E7F3E8`; Mismatch `#C27D0E` `#8A5300` `#FBF0DC` (solid hanya untuk grafis); Suspect `#C0392B` `#A32A1E` `#F9E4E1`; Out-of-index `#5F6B7A` `#465160` `#E9ECEF`.
 
-Font (self-host `@fontsource`, subset Latin): Newsreader (judul), IBM Plex Sans (UI), IBM Plex Mono (DOI, kode). Radius 2 px kontrol, 4 px panel. Jarak: 4, 8, 12, 16, 24, 32, 48, 72. Lebar maksimum 1180 px. Verdict harus terbaca tanpa warna: bentuk glif, pola bilah, dan teks.
+Font (self-host `@fontsource`, subset Latin): Newsreader (judul), IBM Plex Sans (UI), IBM Plex Mono (DOI, kode). Radius 2 px kontrol, 4 px panel. Jarak: 4, 8, 12, 16, 24, 32, 48, 72. Lebar maksimum 1180 px. Verdict harus terbaca tanpa warna: bentuk glif, pola bilah, dan teks. Tema gelap (DECISIONS butir 142): token yang sama dengan nilai lain di `tokens.css` (mengikuti sistem, atau pilihan lewat tombol header yang memasang `data-theme`), diperiksa kontrasnya oleh `tokens.test.ts`. **Jangan menulis warna di luar `tokens.css`** dan jangan membuat aturan CSS khusus tema; komponen hanya membaca token. Cetak selalu terang (blok gelap di dalam `@media screen`).
 
 ## Alur kerja per tahap
 

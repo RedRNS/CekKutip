@@ -1,4 +1,9 @@
-/** WCAG contrast ratios for the design tokens. Run: npx tsx scripts/contrast.ts */
+/**
+ * WCAG contrast ratios for the design tokens, in both themes. Run: npx tsx scripts/contrast.ts
+ * The colours are read from apps/web/src/styles/tokens.css, so this cannot drift from the stylesheet.
+ * The same pairs are checked on every test run by apps/web/src/styles/tokens.test.ts.
+ */
+import { readFileSync } from 'node:fs'
 
 function lum(hex: string): number {
   const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
@@ -15,39 +20,81 @@ export function ratio(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05)
 }
 
-const paper = '#F6F8F7'
-const white = '#FFFFFF'
-const pairs: [string, string, string, number][] = [
-  ['ink on paper', '#12232E', paper, 4.5],
-  ['ink-muted on paper', '#4B5B66', paper, 4.5],
-  ['ink-muted on white', '#4B5B66', white, 4.5],
-  ['accent (links, focus) on paper', '#0B6B63', paper, 4.5],
-  ['accent on white', '#0B6B63', white, 4.5],
-  ['accent on accent-tint', '#0B6B63', '#E3F0EE', 4.5],
-  ['white on brand (primary button)', white, '#12343B', 4.5],
-  ['white on brand-hover', white, '#0C262C', 4.5],
-  ['brand on white (secondary button)', '#12343B', white, 4.5],
-  ['rule-strong on white (input border)', '#6B7C78', white, 3],
-  ['rule-strong on paper', '#6B7C78', paper, 3],
-  ['verified ink on white', '#1E6B2A', white, 4.5],
-  ['verified ink on tint', '#1E6B2A', '#E7F3E8', 4.5],
-  ['mismatch ink on white', '#8A5300', white, 4.5],
-  ['mismatch ink on tint', '#8A5300', '#FBF0DC', 4.5],
-  ['suspect ink on white', '#A32A1E', white, 4.5],
-  ['suspect ink on tint', '#A32A1E', '#F9E4E1', 4.5],
-  ['out-of-index ink on white', '#465160', white, 4.5],
-  ['out-of-index ink on tint', '#465160', '#E9ECEF', 4.5],
-  ['verified solid on white (graphic)', '#2E7D32', white, 3],
-  ['mismatch solid on white (graphic)', '#C27D0E', white, 3],
-  ['suspect solid on white (graphic)', '#C0392B', white, 3],
-  ['out-of-index solid on white (graphic)', '#5F6B7A', white, 3],
+const css = readFileSync(new URL('../apps/web/src/styles/tokens.css', import.meta.url), 'utf8')
+
+/** The text between the braces of the first rule that starts with `selector`. */
+function ruleBody(source: string, selector: string): string {
+  const start = source.indexOf(selector)
+  const open = source.indexOf('{', start)
+  let depth = 0
+  for (let i = open; i < source.length; i++) {
+    if (source[i] === '{') depth++
+    if (source[i] === '}' && --depth === 0) return source.slice(open + 1, i)
+  }
+  throw new Error(`no rule for ${selector}`)
+}
+
+function colours(block: string): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const m of block.matchAll(/--([a-z-]+):\s*(#[0-9a-fA-F]{6})\b/g)) {
+    out[m[1] as string] = (m[2] as string).toUpperCase()
+  }
+  return out
+}
+
+const themes: [string, Record<string, string>][] = [
+  ['light', colours(ruleBody(css, ':root {'))],
+  [
+    'dark',
+    colours(
+      ruleBody(
+        ruleBody(css, '@media screen and (prefers-color-scheme: dark)'),
+        ":root:not([data-theme='light'])",
+      ),
+    ),
+  ],
+]
+
+const VERDICTS = ['verified', 'mismatch', 'suspect', 'oui'] as const
+
+/** [foreground token, background token, least ratio, label]. Text is 4.5, lines and graphics are 3. */
+const pairs: [string, string, number, string][] = [
+  ['ink', 'paper', 4.5, 'ink on paper'],
+  ['ink', 'surface', 4.5, 'ink on surface'],
+  ['ink-muted', 'paper', 4.5, 'ink-muted on paper'],
+  ['ink-muted', 'surface', 4.5, 'ink-muted on surface'],
+  ['accent', 'paper', 4.5, 'accent (links, focus) on paper'],
+  ['accent', 'surface', 4.5, 'accent on surface'],
+  ['accent', 'accent-tint', 4.5, 'accent on accent-tint'],
+  ['ink', 'accent-tint', 4.5, 'ink on accent-tint'],
+  ['on-brand', 'brand', 4.5, 'on-brand on brand (primary button)'],
+  ['on-brand', 'brand-hover', 4.5, 'on-brand on brand-hover'],
+  ['brand', 'paper', 4.5, 'brand on paper (wordmark)'],
+  ['brand', 'surface', 4.5, 'brand on surface (secondary button)'],
+  ['rule-strong', 'paper', 3, 'rule-strong on paper (input border)'],
+  ['rule-strong', 'surface', 3, 'rule-strong on surface'],
+  ...VERDICTS.flatMap((v): [string, string, number, string][] => [
+    [`${v}-ink`, 'surface', 4.5, `${v} ink on surface`],
+    [`${v}-ink`, `${v}-tint`, 4.5, `${v} ink on tint`],
+    [`${v}-solid`, 'surface', 3, `${v} solid on surface (graphic)`],
+  ]),
 ]
 
 let failed = 0
-for (const [label, fg, bg, min] of pairs) {
-  const r = ratio(fg, bg)
-  const ok = r >= min
-  if (!ok) failed++
-  console.log(`${ok ? 'pass' : 'FAIL'}  ${r.toFixed(2).padStart(5)}:1  (min ${min})  ${label}`)
+for (const [theme, tokens] of themes) {
+  console.log(`\n${theme}`)
+  for (const [fg, bg, min, label] of pairs) {
+    const a = tokens[fg]
+    const b = tokens[bg]
+    if (a === undefined || b === undefined) {
+      failed++
+      console.log(`FAIL  missing token for ${label}`)
+      continue
+    }
+    const r = ratio(a, b)
+    const ok = r >= min
+    if (!ok) failed++
+    console.log(`${ok ? 'pass' : 'FAIL'}  ${r.toFixed(2).padStart(5)}:1  (min ${min})  ${label}`)
+  }
 }
 if (process.argv[1]?.includes('contrast') && failed) process.exitCode = 1

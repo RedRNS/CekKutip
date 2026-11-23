@@ -118,3 +118,37 @@ test.describe('language', () => {
     await context.close()
   })
 })
+
+for (const lang of ['English', 'Bahasa Indonesia'] as const) {
+  for (const layout of ['wide', 'narrow'] as const) {
+    test(`the diagram on How it works keeps every word inside its box (${lang}, ${layout})`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(
+        layout === 'wide' ? { width: 1280, height: 800 } : { width: 375, height: 800 },
+      )
+      await page.goto('/how-it-works')
+      if (lang === 'Bahasa Indonesia') {
+        await page.getByRole('button', { name: 'Switch to Bahasa Indonesia' }).click()
+      }
+      const outside = await page.evaluate((which) => {
+        const svg = document.querySelector(`.pipeline__svg--${which}`)
+        const found: { text: string; right: number; limit: number }[] = []
+        for (const g of svg?.querySelectorAll('g[transform]') ?? []) {
+          const rect = g.querySelector('rect')
+          if (!rect) continue
+          const width = rect.getBBox().width
+          for (const text of g.querySelectorAll('text')) {
+            const box = text.getBBox()
+            // A box edge, and a little air before it.
+            if (box.x + box.width > width - 8) {
+              found.push({ text: text.textContent ?? '', right: box.x + box.width, limit: width - 8 })
+            }
+          }
+        }
+        return found
+      }, layout)
+      expect(outside).toEqual([])
+    })
+  }
+}

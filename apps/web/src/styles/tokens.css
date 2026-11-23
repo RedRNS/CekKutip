@@ -1,5 +1,8 @@
 /* Design tokens. Source of truth: docs/DESIGN.md. Do not add colors outside this file. */
 :root {
+  /* Tells the browser both themes exist, so form controls and scrollbars follow the one in use. */
+  color-scheme: light dark;
+
   /* Neutrals (95% of every surface) */
   --paper: #f6f8f7;
   --surface: #ffffff;
@@ -13,6 +16,7 @@
   --accent: #0b6b63;
   --accent-tint: #e3f0ee;
   --brand-hover: #0c262c; /* primary button hover */
+  --on-brand: #ffffff; /* text on a brand background: the primary button, the skip link */
   --dev-warn: #fff8d6; /* development banner only */
 
   /* Verdict colors. solid = lines, bars, graphics. ink = text. tint = background. */
@@ -69,4 +73,76 @@
   :root {
     --gutter: 16px;
   }
+}
+
+/*
+ * Dark theme. The same names with new values, so no rule anywhere else changes. Verdicts keep their
+ * glyphs, frames, and words: the colours only follow the background. Every pair is checked by
+ * tokens.test.ts (text 4.5:1, lines and graphics 3:1). Two blocks hold the same values: one follows the
+ * system unless the person chose light, and one is the person's own choice (the header switch).
+ * Both are screen only, so print stays black on white.
+ */
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --paper: #0e191d;
+    --surface: #142329;
+    --ink: #e5edef;
+    --ink-muted: #a7b6bd;
+    --rule: #2b3d44;
+    --rule-strong: #74878f;
+    --brand: #7fd0c6;
+    --accent: #5cc2b6;
+    --accent-tint: #183632;
+    --brand-hover: #a2e2d9;
+    --on-brand: #0a1418;
+    --dev-warn: #3b3511;
+    --verified-solid: #4caf50;
+    --verified-ink: #86d68f;
+    --verified-tint: #14301a;
+    --mismatch-solid: #d9962b;
+    --mismatch-ink: #f0b866;
+    --mismatch-tint: #33260c;
+    --suspect-solid: #e5604f;
+    --suspect-ink: #ff9c90;
+    --suspect-tint: #3b1613;
+    --oui-solid: #8d9aab;
+    --oui-ink: #b9c4d1;
+    --oui-tint: #20282f;
+  }
+}
+
+@media screen {
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+    --paper: #0e191d;
+    --surface: #142329;
+    --ink: #e5edef;
+    --ink-muted: #a7b6bd;
+    --rule: #2b3d44;
+    --rule-strong: #74878f;
+    --brand: #7fd0c6;
+    --accent: #5cc2b6;
+    --accent-tint: #183632;
+    --brand-hover: #a2e2d9;
+    --on-brand: #0a1418;
+    --dev-warn: #3b3511;
+    --verified-solid: #4caf50;
+    --verified-ink: #86d68f;
+    --verified-tint: #14301a;
+    --mismatch-solid: #d9962b;
+    --mismatch-ink: #f0b866;
+    --mismatch-tint: #33260c;
+    --suspect-solid: #e5604f;
+    --suspect-ink: #ff9c90;
+    --suspect-tint: #3b1613;
+    --oui-solid: #8d9aab;
+    --oui-ink: #b9c4d1;
+    --oui-tint: #20282f;
+  }
+}
+
+/* The person chose light while the system is dark. */
+:root[data-theme='light'] {
+  color-scheme: light;
 }

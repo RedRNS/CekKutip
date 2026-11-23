@@ -119,7 +119,7 @@ select {
   z-index: 100;
   padding: var(--s-12) var(--s-16);
   background: var(--brand);
-  color: #fff;
+  color: var(--on-brand);
   border-radius: var(--r-control);
 }
 

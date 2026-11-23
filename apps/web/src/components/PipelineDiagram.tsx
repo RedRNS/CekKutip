@@ -1,7 +1,7 @@
 import { useI18n } from '../i18n'
 
-const NODE_W = 236
-const STEP_X = 288
+const NODE_W = 248
+const STEP_X = 284
 
 /** Hand-drawn pipeline: Parse (language model) then three fixed-code steps. Two layouts, one per breakpoint. */
 export function PipelineDiagram() {

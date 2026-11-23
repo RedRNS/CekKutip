@@ -32,6 +32,7 @@ export const en = {
     language: 'Language',
     skip: 'Skip to content',
     switchTo: { en: 'Switch to English', id: 'Switch to Bahasa Indonesia' },
+    theme: { toDark: 'Switch to dark mode', toLight: 'Switch to light mode' },
   },
   footer: {
     privacy: 'Privacy',
@@ -111,7 +112,7 @@ export const en = {
       'Four steps in a row: Parse, Retrieve, Match, Decide. Only Parse uses a language model. The other three are fixed code.',
     diagramSteps: [
       { name: 'Parse', note: 'Reads the fields', tag: 'Language model' },
-      { name: 'Retrieve', note: 'Crossref, OpenAlex, then Garuda', tag: 'No model' },
+      { name: 'Retrieve', note: 'Crossref, OpenAlex, Garuda', tag: 'No model' },
       { name: 'Match', note: 'Compares four fields', tag: 'No model' },
       { name: 'Decide', note: 'Fixed rules, one verdict', tag: 'No model' },
     ],

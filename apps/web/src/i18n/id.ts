@@ -28,6 +28,7 @@ export const id: Dict = {
     language: 'Bahasa',
     skip: 'Langsung ke isi',
     switchTo: { en: 'Ganti ke English', id: 'Ganti ke Bahasa Indonesia' },
+    theme: { toDark: 'Ganti ke mode gelap', toLight: 'Ganti ke mode terang' },
   },
   footer: {
     privacy: 'Privasi',
@@ -112,7 +113,7 @@ export const id: Dict = {
       'Empat langkah berurutan: Parse, Retrieve, Match, Decide. Hanya Parse yang memakai model bahasa. Tiga langkah lainnya adalah kode dengan aturan tetap.',
     diagramSteps: [
       { name: 'Parse', note: 'Membaca field', tag: 'Model bahasa' },
-      { name: 'Retrieve', note: 'Crossref, OpenAlex, lalu Garuda', tag: 'Tanpa model' },
+      { name: 'Retrieve', note: 'Crossref, OpenAlex, Garuda', tag: 'Tanpa model' },
       { name: 'Match', note: 'Membandingkan empat field', tag: 'Tanpa model' },
       { name: 'Decide', note: 'Aturan tetap, satu verdict', tag: 'Tanpa model' },
     ],

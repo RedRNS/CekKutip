@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { useI18n } from '../i18n'
 import { LangSwitch } from './LangSwitch'
+import { ThemeToggle } from './ThemeToggle'
 
 export function Header() {
   const { t } = useI18n()
@@ -30,7 +31,10 @@ export function Header() {
             ))}
           </ul>
         </nav>
-        <LangSwitch />
+        <div className="site-header__tools">
+          <LangSwitch />
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   )
