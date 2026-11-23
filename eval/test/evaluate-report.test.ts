@@ -381,7 +381,14 @@ describe('the scripts, end to end, on the template data with no network', () => 
       cwd: REPO_ROOT,
       encoding: 'utf8',
       shell: true,
-      env: { ...process.env, GEMINI_API_KEY: '', CROSSREF_MAILTO: '', OPENALEX_API_KEY: '' },
+      env: {
+        ...process.env,
+        GEMINI_API_KEY: '',
+        GEMINI_API_KEY_2: '',
+        GEMINI_API_KEY_3: '',
+        CROSSREF_MAILTO: '',
+        OPENALEX_API_KEY: '',
+      },
     })
 
   it('refuses to write results made from the template into eval/results', () => {

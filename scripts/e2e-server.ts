@@ -26,7 +26,10 @@ if (process.env.E2E_SKIP_BUILD !== '1') {
 Object.assign(process.env, {
   NODE_ENV: 'test',
   PORT: process.env.E2E_PORT ?? '8799',
+  // No server AI key, backups included: a key exported in the developer's shell must not leak in.
   GEMINI_API_KEY: '',
+  GEMINI_API_KEY_2: '',
+  GEMINI_API_KEY_3: '',
   CROSSREF_MAILTO: '',
   OPENALEX_API_KEY: '',
   RETRIEVAL_CACHE_DIR: fileURLToPath(new URL('../apps/web/e2e/cache', import.meta.url)),

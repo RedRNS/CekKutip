@@ -90,7 +90,13 @@ describe('tuning is allowed on the dev split only', () => {
       cwd: REPO_ROOT,
       encoding: 'utf8',
       shell: true,
-      env: { ...process.env, GEMINI_API_KEY: '', CROSSREF_MAILTO: '' },
+      env: {
+        ...process.env,
+        GEMINI_API_KEY: '',
+        GEMINI_API_KEY_2: '',
+        GEMINI_API_KEY_3: '',
+        CROSSREF_MAILTO: '',
+      },
     })
     expect(res.status).toBe(2)
     expect(res.stderr).toMatch(/dev split only/)
