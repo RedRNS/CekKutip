@@ -1,6 +1,6 @@
 # Ekstensi browser CekKutip
 
-Memeriksa daftar pustaka langsung dari browser, tanpa membuka situs. Ini alat yang sama dengan situs CekKutip: referensi dikirim ke server CekKutip, dicari di Crossref, OpenAlex, dan DataCite, lalu diberi satu verdict oleh aturan tetap (bukan oleh AI). Verdict adalah ajakan memeriksa, bukan tuduhan.
+Memeriksa daftar pustaka langsung dari browser, tanpa membuka situs. Ini alat yang sama dengan situs CekKutip: referensi dikirim ke server CekKutip, dicari di Crossref, OpenAlex, Garuda, dan DataCite, lalu diberi satu verdict oleh aturan tetap (bukan oleh AI). Verdict adalah ajakan memeriksa, bukan tuduhan.
 
 Untuk Chrome dan Edge versi 127 ke atas (Manifest V3, memakai API panel samping). Brave, Firefox, dan Safari belum diuji.
 

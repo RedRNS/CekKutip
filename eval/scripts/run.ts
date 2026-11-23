@@ -6,7 +6,7 @@
  * Options:
  *   --split dev|test|all        which rows to run (default: dev)
  *   --system NAME               cekkutip | b1_llm_only | b2_crossref_top1 | b3_doi_check (default: cekkutip)
- *   --ablation a1|a2|a3|a4      cekkutip only
+ *   --ablation a1|a2|a3|a4|a5   cekkutip only
  *   --parse llm|regex           how references are read (default: llm when GEMINI_API_KEY is set, else regex)
  *   --out DIR                   output folder (default: eval/results, or eval/results-sample for template data)
  *   --data FILE                 dataset (default: eval/data/references.csv, else the template)

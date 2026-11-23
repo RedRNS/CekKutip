@@ -86,6 +86,27 @@ describe('apaReference', () => {
     expect(apaReference(record())).toBe('A title. (2020).')
   })
 
+  it('never links a Garuda page: Garuda is an index of journals, not where the article is published', () => {
+    const garuda = record({
+      source: 'garuda',
+      url: 'https://garuda.kemdiktisaintek.go.id/documents/detail/5105249',
+      title: 'Evaluasi kinerja algoritma',
+      authors: ['Wantoro'],
+      authorsFull: ['Agus Wantoro'],
+      year: 2025,
+      venue: 'Jurnal Informatika Polinema',
+      volume: '11',
+      issue: '3',
+    })
+    expect(apaReference(garuda)).toBe(
+      'Wantoro, A. (2025). Evaluasi kinerja algoritma. Jurnal Informatika Polinema, 11(3).',
+    )
+    // If a Garuda record ever carried a DOI, the DOI is still the right link.
+    expect(apaReference({ ...garuda, doi: '10.33795/jip.v11i3.7290' })).toMatch(
+      /https:\/\/doi\.org\/10\.33795\/jip\.v11i3\.7290$/,
+    )
+  })
+
   it('does not add a second full stop after a title that ends with a question mark', () => {
     expect(apaReference(record({ title: 'Why?', venue: 'J' }))).toBe('Why? (2020). J.')
   })

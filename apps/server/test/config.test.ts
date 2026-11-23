@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { loadEnv } from '../src/config/env.js'
 import { loadLimits } from '../src/config/limits.js'
 import { DEFAULT_THRESHOLDS } from '../src/config/thresholds.js'
+import { buildPipelineDeps } from '../src/wiring.js'
 
 describe('config', () => {
   it('uses the documented defaults', () => {
@@ -68,5 +69,25 @@ describe('Gemini keys', () => {
     const e = loadEnv({})
     expect(e.geminiApiKeys).toEqual([])
     expect(e.geminiApiKey).toBeUndefined()
+  })
+})
+
+describe('Garuda switch', () => {
+  it('is on by default, and for blank or unrecognised values', () => {
+    expect(loadEnv({}).garudaEnabled).toBe(true)
+    expect(loadEnv({ GARUDA_ENABLED: '' }).garudaEnabled).toBe(true)
+    expect(loadEnv({ GARUDA_ENABLED: 'true' }).garudaEnabled).toBe(true)
+    expect(loadEnv({ GARUDA_ENABLED: 'maybe' }).garudaEnabled).toBe(true)
+  })
+
+  it.each(['false', 'FALSE', ' 0 ', 'no', 'off'])('is off for %j', (value) => {
+    expect(loadEnv({ GARUDA_ENABLED: value }).garudaEnabled).toBe(false)
+  })
+
+  it('decides whether the pipeline gets a Garuda client at all', () => {
+    expect(buildPipelineDeps(loadEnv({}), loadLimits({})).retrieve.garuda).toBeDefined()
+    expect(
+      buildPipelineDeps(loadEnv({ GARUDA_ENABLED: 'false' }), loadLimits({})).retrieve.garuda,
+    ).toBeUndefined()
   })
 })

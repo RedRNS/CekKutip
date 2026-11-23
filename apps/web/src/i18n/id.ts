@@ -5,7 +5,7 @@ export const id: Dict = {
   meta: {
     siteName: 'CekKutip',
     description:
-      'Tempel referensimu. CekKutip mencari tiap referensi di Crossref dan OpenAlex, lalu memberi tahu apakah referensi itu ada dan apakah detailnya cocok.',
+      'Tempel referensimu. CekKutip mencari tiap referensi di Crossref, OpenAlex, dan Garuda, lalu memberi tahu apakah referensi itu ada dan apakah detailnya cocok.',
     titles: {
       home: 'Periksa daftar pustaka',
       how: 'Cara kerja',
@@ -71,7 +71,7 @@ export const id: Dict = {
     placeholderHint: 'Satu referensi per paragraf, atau diberi nomor.',
     noAi: 'Jangan kirim teksku ke layanan AI (kurang akurat)',
     notice:
-      'Teksmu dikirim ke Google Gemini untuk membaca field-nya, lalu ke Crossref dan OpenAlex untuk dicari. Kami tidak menyimpannya.',
+      'Teksmu dikirim ke Google Gemini untuk membaca field-nya, lalu ke Crossref dan OpenAlex untuk dicari. Judul yang tidak ditemukan keduanya dikirim juga ke Garuda, indeks jurnal Indonesia. Kami tidak menyimpannya.',
     noticeLink: 'Rincian privasi',
     check: 'Periksa referensi',
     example: 'Coba contoh',
@@ -87,7 +87,7 @@ export const id: Dict = {
         name: 'Parse',
         text: 'Model bahasa membaca field-nya. Model tidak pernah memutuskan hasilnya.',
       },
-      { name: 'Retrieve', text: 'Kami mencari karyanya di Crossref, lalu OpenAlex.' },
+      { name: 'Retrieve', text: 'Kami mencari karyanya di Crossref, lalu OpenAlex, lalu Garuda (jurnal Indonesia).' },
       { name: 'Match', text: 'Kami membandingkan judul, penulis, tahun, dan venue.' },
       { name: 'Decide', text: 'Aturan tetap memberi satu dari empat verdict.' },
     ],
@@ -110,7 +110,7 @@ export const id: Dict = {
       'Empat langkah berurutan: Parse, Retrieve, Match, Decide. Hanya Parse yang memakai model bahasa. Tiga langkah lainnya adalah kode dengan aturan tetap.',
     diagramSteps: [
       { name: 'Parse', note: 'Membaca field', tag: 'Model bahasa' },
-      { name: 'Retrieve', note: 'Crossref, lalu OpenAlex', tag: 'Tanpa model' },
+      { name: 'Retrieve', note: 'Crossref, OpenAlex, lalu Garuda', tag: 'Tanpa model' },
       { name: 'Match', note: 'Membandingkan empat field', tag: 'Tanpa model' },
       { name: 'Decide', note: 'Aturan tetap, satu verdict', tag: 'Tanpa model' },
     ],
@@ -182,7 +182,7 @@ export const id: Dict = {
       'Tidak bisa diperiksa adalah status, bukan verdict. Status ini tidak pernah merugikan sebuah referensi.',
     limitsTitle: 'Keterbatasan',
     limits: [
-      'Crossref dan OpenAlex tidak lengkap. Sumber yang nyata bisa saja tidak ada di keduanya. Karena itu ada Out-of-index.',
+      'Crossref, OpenAlex, dan Garuda tidak lengkap. Sumber yang nyata bisa saja tidak ada di ketiganya. Karena itu ada Out-of-index.',
       'Verified berarti karyanya ada dan detailnya sesuai, bukan bahwa sumbermu mendukung klaimmu.',
       'Model bisa salah membaca format yang tidak lazim. Bila gagal, pembaca tanpa AI mengambil alih untuk referensi itu.',
     ],
@@ -276,6 +276,7 @@ export const id: Dict = {
         a2: 'A2: tanpa OpenAlex',
         a3: 'A3: pembaca pola, bukan model',
         a4: 'A4: tanpa pengecekan penulis',
+        a5: 'A5: tanpa Garuda',
       } as Record<string, string>,
     },
     metricsTitle: 'Yang akan kami laporkan',
@@ -322,6 +323,11 @@ export const id: Dict = {
         text: 'Indeks kedua, dipakai bila Crossref tidak punya record yang cukup dekat.',
       },
       {
+        name: 'Garuda',
+        url: 'https://garuda.kemdiktisaintek.go.id/',
+        text: 'Indeks nasional jurnal Indonesia. Ditanya terakhir, dan hanya untuk artikel jurnal yang tidak ada di Crossref dan OpenAlex. Yang dikirim hanya judulnya.',
+      },
+      {
         name: 'Google Gemini',
         url: 'https://ai.google.dev/',
         text: 'Membaca tiap referensi menjadi field. Tidak pernah memutuskan verdict.',
@@ -334,7 +340,7 @@ export const id: Dict = {
     items: [
       'Secara bawaan, teks referensimu dikirim ke Google Gemini, hanya untuk membaca field: penulis, tahun, judul. Pilih "Jangan kirim teksku ke layanan AI" untuk menghindarinya. Hasilnya jadi kurang akurat.',
       'Google menyatakan bahwa konten yang dikirim lewat tier gratisnya dapat dipakai untuk meningkatkan produknya dan dibaca peninjau manusia.',
-      'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya.',
+      'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya. Judul yang tidak ditemukan cukup dekat oleh kedua layanan pertama dikirim juga, sendirian, ke Garuda, indeks nasional jurnal Indonesia.',
       'Kalau kamu menambahkan kunci Gemini sendiri, kunci itu tetap di browsermu. Kunci dikirim pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Ekstensi browser membaginya dengan situs di perangkatmu.',
       'Berkas .txt atau .bib yang kamu pilih atau lepas di halaman dibaca di browsermu, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
       'Server kami tidak menyimpan teksmu. Log kami hanya berisi id permintaan, jumlah referensi, waktu proses, dan kode galat.',
@@ -408,7 +414,7 @@ export const id: Dict = {
     copied: 'Tersalin',
     copyFailed: 'Tidak bisa menyalin. Pilih teksnya lalu salin secara manual.',
   },
-  sources: { crossref: 'Crossref', openalex: 'OpenAlex', datacite: 'DataCite' },
+  sources: { crossref: 'Crossref', openalex: 'OpenAlex', datacite: 'DataCite', garuda: 'Garuda' },
   types: {
     journal_article: 'artikel jurnal',
     book: 'buku',

@@ -118,3 +118,31 @@ if (want('datacite')) {
     save(file, JSON.parse(r.body))
   }
 }
+
+// Garuda (garuda.kemdiktisaintek.go.id): it has no API, so the fixture is the HTML result page, cut down
+// to the result header and the result list. A hit, no hit, and a page of ten results of different shapes.
+if (want('garuda'))
+  for (const [file, q] of [
+    [
+      'garuda-search-wantoro.html',
+      'Evaluasi Kinerja Algoritma Machine Learning (ML) Menggunakan Seleksi Fitur Pada Klasifikasi Diabetes',
+    ],
+    [
+      'garuda-search-nomatch.html',
+      'Dampak Media Sosial Terhadap Prestasi Belajar Mahasiswa Universitas Contoh',
+    ],
+    ['garuda-search-many.html', 'analisis sentimen'],
+  ] as const) {
+    const params = new URLSearchParams({ q, select: 'title' })
+    const res = await fetch(`https://garuda.kemdiktisaintek.go.id/documents?${params.toString()}`, {
+      headers: { accept: 'text/html', 'user-agent': 'CekKutip-fixture-recorder/0.1' },
+    })
+    await sleep(1500)
+    const html = await res.text()
+    const found = html.indexOf('Found ')
+    if (!res.ok || found < 0) throw new Error(`garuda: unexpected page for ${file} (${res.status})`)
+    const start = html.lastIndexOf('<h2', found)
+    const lastAction = html.lastIndexOf('class="action-article"')
+    const end = lastAction < 0 ? found + 1500 : html.indexOf('</p>', lastAction) + 4
+    save(file, html.slice(start, end) + '\n')
+  }

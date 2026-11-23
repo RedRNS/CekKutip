@@ -1,11 +1,16 @@
 import type { Scheduler } from './scheduler.js'
 
-/** The only hosts this server may call (brief section 11). */
+/**
+ * The only hosts this server may call (brief section 11). Garuda, the national index of Indonesian
+ * journals, was added at the product owner's request (DECISIONS 140). It has no API, so its search
+ * page is read as HTML. SINTA is not here: it refuses programs with a 403.
+ */
 export const ALLOWED_HOSTS: readonly string[] = [
   'api.crossref.org',
   'api.openalex.org',
   'api.datacite.org',
   'doi.org',
+  'garuda.kemdiktisaintek.go.id',
 ]
 
 export type ServiceErrorCode =
@@ -49,6 +54,16 @@ export interface HttpResult {
   json: unknown
   headers: Headers
 }
+
+export interface TextResult {
+  status: number
+  /** The body for 2xx; null for 404. */
+  text: string | null
+  headers: Headers
+}
+
+/** The largest page getText accepts. Garuda's result page is about 50 KB. */
+const MAX_TEXT_CHARS = 1_000_000
 
 export interface HttpClientOptions {
   fetchImpl?: typeof fetch
@@ -115,6 +130,30 @@ export class HttpClient {
    * (honouring Retry-After). When retries run out this throws ServiceUnavailableError.
    */
   async getJson(rawUrl: string, opts: GetJsonOptions): Promise<HttpResult> {
+    const res = await this.request(rawUrl, opts)
+    if (res.text === null) return { status: res.status, json: null, headers: res.headers }
+    try {
+      return { status: res.status, json: JSON.parse(res.text), headers: res.headers }
+    } catch {
+      throw new ServiceUnavailableError(opts.service, 'bad_response', res.status)
+    }
+  }
+
+  /**
+   * GET a page as text, for a service that has no JSON API (Garuda). The same rules as getJson:
+   * 404 returns `text: null`, 403 is `blocked`, 429 and 5xx and network failures are retried.
+   * A body over MAX_TEXT_CHARS is refused, since no real answer is that large.
+   */
+  async getText(rawUrl: string, opts: GetJsonOptions): Promise<TextResult> {
+    const res = await this.request(rawUrl, opts)
+    if (res.text !== null && res.text.length > MAX_TEXT_CHARS) {
+      throw new ServiceUnavailableError(opts.service, 'bad_response', res.status)
+    }
+    return res
+  }
+
+  /** The shared request loop: the body as text for 2xx, null for 404, a thrown error for the rest. */
+  private async request(rawUrl: string, opts: GetJsonOptions): Promise<TextResult> {
     assertAllowedUrl(rawUrl, this.allowedHosts)
     let lastError: ServiceUnavailableError | null = null
 
@@ -126,15 +165,9 @@ export class HttpClient {
         opts.onResponse?.(res.headers)
 
         if (res.status >= 200 && res.status < 300) {
-          let json: unknown
-          try {
-            json = JSON.parse(res.text)
-          } catch {
-            throw new ServiceUnavailableError(opts.service, 'bad_response', res.status)
-          }
-          return { status: res.status, json, headers: res.headers }
+          return { status: res.status, text: res.text, headers: res.headers }
         }
-        if (res.status === 404) return { status: 404, json: null, headers: res.headers }
+        if (res.status === 404) return { status: 404, text: null, headers: res.headers }
         if (res.status === 403) throw new ServiceUnavailableError(opts.service, 'blocked', 403)
         if (res.status === 429 || res.status >= 500) {
           const retryAfter = parseRetryAfter(res.headers.get('retry-after'), this.now())

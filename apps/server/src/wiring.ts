@@ -1,6 +1,7 @@
 import { createCrossrefClient } from './clients/crossref.js'
 import { createDataciteClient } from './clients/datacite.js'
 import { createDoiClient } from './clients/doi.js'
+import { createGarudaClient } from './clients/garuda.js'
 import { createGeminiClient } from './clients/gemini.js'
 import type { GeminiClient, GeminiOptions } from './clients/gemini.js'
 import { createGeminiPool } from './clients/gemini-pool.js'
@@ -45,12 +46,20 @@ export function buildPipelineDeps(env: Env, limits: Limits): PipelineDeps {
     dir: env.retrievalCacheDir,
     replayOnly: env.retrievalCacheReplayOnly,
   })
+  // Garuda is a web page, not an API, and can be slow or down. It gets one retry and a shorter wait than
+  // the others, and the client stops asking for a minute after a failure (see clients/garuda.ts).
+  const garudaHttp = new HttpClient({
+    userAgent: `CekKutip/${TOOL_VERSION}`,
+    timeoutMs: Math.min(limits.requestTimeoutMs, 6000),
+    maxRetries: 1,
+  })
   return {
     retrieve: {
       crossref: createCrossrefClient({ http, cache, mailto: env.crossrefMailto }),
       openalex: createOpenAlexClient({ http, cache, apiKey: env.openalexApiKey }),
       datacite: createDataciteClient({ http, cache, mailto: env.crossrefMailto }),
       doi: createDoiClient({ http, cache }),
+      garuda: env.garudaEnabled ? createGarudaClient({ http: garudaHttp, cache }) : undefined,
     },
     gemini: buildGeminiReader(env),
   }

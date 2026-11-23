@@ -17,7 +17,7 @@ npm run eval:kappa                                   # kesepakatan dua pelabel (
 npm run eval:tune                                    # pilih TAU_T, TAU_A, TAU_L, TAU_V pada dev saja
 # bekukan nilainya di docs/DECISIONS.md bersama hash commit
 npm run eval -- --split test --system cekkutip --out eval/results
-npm run eval -- --split test --system cekkutip --ablation a1 --out eval/results   # a1, a2, a3, a4
+npm run eval -- --split test --system cekkutip --ablation a1 --out eval/results   # a1, a2, a3, a4, a5
 npm run eval -- --split test --system b1_llm_only --out eval/results
 npm run eval -- --split test --system b2_crossref_top1 --out eval/results
 npm run eval -- --split test --system b3_doi_check --out eval/results
@@ -38,6 +38,7 @@ Jalankan split `test` **sekali**, setelah ambang dibekukan. Jangan mengubah atur
 | ablation `a2`      | tanpa OpenAlex (juga tanpa pandangan kedua T2)                                                               |
 | ablation `a3`      | parser regex menggantikan model                                                                              |
 | ablation `a4`      | tanpa pengecekan penulis                                                                                     |
+| ablation `a5`      | tanpa Garuda (hanya Crossref dan OpenAlex). Sistem lain, termasuk `cekkutip` dan `a2`, memakai Garuda      |
 
 Sistem hanya menerima id dan teks referensi. Label emas tidak pernah masuk ke pipeline (dibuktikan tes).
 

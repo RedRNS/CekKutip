@@ -74,7 +74,13 @@ export function apaReference(record: MatchedRecord): string {
   const volIssue = `${volume}${issue}`
   const pages = record.pages ? record.pages.replace(/(\d)\s*-\s*(\d)/, `$1${EN_DASH}$2`) : ''
   const source = [record.venue ?? '', volIssue, pages].filter(Boolean).join(', ')
-  const link = record.doi ? `https://doi.org/${record.doi}` : (record.url ?? '')
+  // A DOI, or else the record's own address. Garuda only indexes journals and does not publish the
+  // article, so a Garuda page is never the link of a reference.
+  const link = record.doi
+    ? `https://doi.org/${record.doi}`
+    : record.source === 'garuda'
+      ? ''
+      : (record.url ?? '')
 
   // With no author, the title comes first and the date follows it.
   const head =

@@ -89,7 +89,7 @@ const manifest = {
   name: 'CekKutip',
   version,
   description:
-    'Check a reference list against Crossref, OpenAlex, and DataCite. Verdicts come from fixed rules.',
+    'Check a reference list against Crossref, OpenAlex, Garuda, and DataCite. Verdicts come from fixed rules.',
   icons: iconMap,
   // No default_popup: a popup closes the moment the person clicks outside it, and a check that is
   // running goes with it. The icon opens the side panel instead (background.js sets that up).

@@ -1,5 +1,5 @@
 /**
- * Live smoke test: call the real Crossref, OpenAlex, DataCite, and doi.org through our clients.
+ * Live smoke test: call the real Crossref, OpenAlex, DataCite, Garuda, and doi.org through our clients.
  * Usage: npx tsx --env-file=.env scripts/smoke-live.ts     (reads CROSSREF_MAILTO, OPENALEX_API_KEY)
  *        npx tsx scripts/smoke-live.ts                     (public pool, no key)
  * Makes about ten requests. Prints counts and field values, never the contact address.
@@ -7,6 +7,7 @@
 import { createCrossrefClient } from '../apps/server/src/clients/crossref.js'
 import { createDataciteClient } from '../apps/server/src/clients/datacite.js'
 import { createDoiClient } from '../apps/server/src/clients/doi.js'
+import { createGarudaClient } from '../apps/server/src/clients/garuda.js'
 import { createOpenAlexClient } from '../apps/server/src/clients/openalex.js'
 import { HttpClient } from '../apps/server/src/lib/http.js'
 
@@ -74,4 +75,17 @@ await step(
         'Errors in Bibliographic Citations: A Continuing Problem, Revisited',
       )
     ).length,
+)
+// Garuda has no API: this checks that its result page still reads the way the client expects. A change
+// in its layout shows up here as FAIL (bad_response) and not as a silent "not found".
+const garuda = createGarudaClient({ http: new HttpClient({ userAgent: 'CekKutip-smoke/0.1' }) })
+await step('garuda title search (a Polinema article Crossref lacks)', async () =>
+  (
+    await garuda.searchTitle(
+      'Evaluasi Kinerja Algoritma Machine Learning (ML) Menggunakan Seleksi Fitur Pada Klasifikasi Diabetes',
+    )
+  ).map((r) => ({ title: r.title.slice(0, 40), year: r.year, venue: r.venue, issue: r.issue })),
+)
+await step('garuda title that does not exist (must be an empty list, not an error)', async () =>
+  (await garuda.searchTitle('Zxqvbn plorgle fwemp dakkunator semprulan 9917')).length,
 )

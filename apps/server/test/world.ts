@@ -2,6 +2,7 @@ import { createCrossrefClient } from '../src/clients/crossref.js'
 import { createDataciteClient } from '../src/clients/datacite.js'
 import { createDoiClient } from '../src/clients/doi.js'
 import type { GeminiClient } from '../src/clients/gemini.js'
+import { createGarudaClient } from '../src/clients/garuda.js'
 import { createOpenAlexClient } from '../src/clients/openalex.js'
 import { RetrievalCache } from '../src/lib/cache.js'
 import { Scheduler } from '../src/lib/scheduler.js'
@@ -103,9 +104,45 @@ export const FIXTURE_RULES: Rule[] = [
     match: urlHas('api.openalex.org'),
     respond: () => ok(fixtureText('openalex-search-nomatch.json')),
   },
+  // Garuda: the cited Wantoro title is there, everything else is not.
+  {
+    repeat: true,
+    match: (u) => u.includes('garuda.kemdiktisaintek.go.id') && u.includes('Evaluasi'),
+    respond: () => ok(fixtureText('garuda-search-wantoro.html')),
+  },
+  {
+    repeat: true,
+    match: urlHas('garuda.kemdiktisaintek.go.id'),
+    respond: () => ok(fixtureText('garuda-search-nomatch.html')),
+  },
 ]
 
-export function world(rules: Rule[] = FIXTURE_RULES, gemini?: GeminiClient) {
+/** A journal article that Garuda holds but Crossref and OpenAlex do not (Jurnal Informatika Polinema 11(3), 2025). */
+export const REF_WANTORO =
+  'Wantoro, A., et al. (2025). Evaluasi Kinerja Algoritma Machine Learning (ML) Menggunakan Seleksi Fitur Pada Klasifikasi Diabetes. JIP (Jurnal Inform. Polinema), 11(3).'
+
+/** Rules that make Crossref and OpenAlex answer "nothing found" for every search. */
+export const NOTHING_IN_CROSSREF_AND_OPENALEX: Rule[] = [
+  { repeat: true, match: urlHas('query.bibliographic'), respond: () => ok({ message: { items: [] } }) },
+  { repeat: true, match: urlHas('api.openalex.org'), respond: () => ok({ results: [] }) },
+]
+
+export const GARUDA_NOTHING: Rule = {
+  repeat: true,
+  match: urlHas('garuda.kemdiktisaintek.go.id'),
+  respond: () => ok(fixtureText('garuda-search-nomatch.html')),
+}
+export const GARUDA_HAS_WANTORO: Rule = {
+  repeat: true,
+  match: urlHas('garuda.kemdiktisaintek.go.id'),
+  respond: () => ok(fixtureText('garuda-search-wantoro.html')),
+}
+
+export function world(
+  rules: Rule[] = FIXTURE_RULES,
+  gemini?: GeminiClient,
+  extra: { garuda?: boolean } = {},
+) {
   const { fetchImpl, calls } = stubFetch(rules)
   const http = testHttp(fetchImpl)
   const cache = new RetrievalCache()
@@ -117,6 +154,11 @@ export function world(rules: Rule[] = FIXTURE_RULES, gemini?: GeminiClient) {
       openalex: createOpenAlexClient({ http, cache, scheduler: instant() }),
       datacite: createDataciteClient({ http, cache, scheduler: instant() }),
       doi: createDoiClient({ http, cache, scheduler: instant() }),
+      // `garuda: false` is a server where Garuda is switched off (GARUDA_ENABLED=false).
+      garuda:
+        extra.garuda === false
+          ? undefined
+          : createGarudaClient({ http, cache, scheduler: instant() }),
     },
     gemini,
     now: () => NOW,

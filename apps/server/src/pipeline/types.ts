@@ -3,12 +3,14 @@ import { DEFAULT_THRESHOLDS } from '../config/thresholds.js'
 
 /**
  * What the pipeline does. The same code serves the product and the evaluation harness:
- * the ablations (A1 to A4) are switches here, not copies of the code.
+ * the ablations (A1 to A5) are switches here, not copies of the code.
  */
 export interface PipelineOptions {
   parseMode: 'llm' | 'regex'
-  /** A2 turns this off: Crossref only. */
+  /** A2 turns this off: Crossref only (and Garuda, which comes after both). */
   useOpenAlex: boolean
+  /** A5 turns this off: Garuda, the national index of Indonesian journals, is not asked. */
+  useGaruda: boolean
   /** A1 turns this off: Out-of-index is folded into Suspect. */
   abstain: boolean
   /** A4 turns this off: authors are neither compared nor used in the decision. */
@@ -19,13 +21,14 @@ export interface PipelineOptions {
 export const DEFAULT_OPTIONS: PipelineOptions = {
   parseMode: 'llm',
   useOpenAlex: true,
+  useGaruda: true,
   abstain: true,
   checkAuthors: true,
   thresholds: DEFAULT_THRESHOLDS,
 }
 
-export type AblationName = 'a1' | 'a2' | 'a3' | 'a4'
-export const ABLATIONS: readonly AblationName[] = ['a1', 'a2', 'a3', 'a4']
+export type AblationName = 'a1' | 'a2' | 'a3' | 'a4' | 'a5'
+export const ABLATIONS: readonly AblationName[] = ['a1', 'a2', 'a3', 'a4', 'a5']
 
 export function applyAblation(options: PipelineOptions, name: AblationName): PipelineOptions {
   switch (name) {
@@ -37,6 +40,8 @@ export function applyAblation(options: PipelineOptions, name: AblationName): Pip
       return { ...options, parseMode: 'regex' }
     case 'a4':
       return { ...options, checkAuthors: false }
+    case 'a5':
+      return { ...options, useGaruda: false }
   }
 }
 

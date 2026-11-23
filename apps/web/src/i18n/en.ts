@@ -9,7 +9,7 @@ export const en = {
   meta: {
     siteName: 'CekKutip',
     description:
-      'Paste your references. CekKutip looks each one up in Crossref and OpenAlex and tells you if it exists and if the details match.',
+      'Paste your references. CekKutip looks each one up in Crossref, OpenAlex, and Garuda and tells you if it exists and if the details match.',
     titles: {
       home: 'Check a reference list',
       how: 'How it works',
@@ -73,7 +73,7 @@ export const en = {
     placeholderHint: 'One reference per paragraph, or numbered.',
     noAi: 'Do not send my text to an AI service (less accurate)',
     notice:
-      'Your text goes to Google Gemini to read the fields, then to Crossref and OpenAlex for lookup. We do not store it.',
+      'Your text goes to Google Gemini to read the fields, then to Crossref and OpenAlex for lookup. A title that neither finds is also sent to Garuda, the Indonesian journal index. We do not store it.',
     noticeLink: 'Privacy details',
     check: 'Check references',
     example: 'Try an example',
@@ -86,7 +86,7 @@ export const en = {
     howMore: 'See a full example',
     steps: [
       { name: 'Parse', text: 'A language model reads the fields. It never decides the result.' },
-      { name: 'Retrieve', text: 'We look the work up in Crossref, then OpenAlex.' },
+      { name: 'Retrieve', text: 'We look the work up in Crossref, then OpenAlex, then Garuda (Indonesian journals).' },
       { name: 'Match', text: 'We compare title, authors, year, and venue.' },
       { name: 'Decide', text: 'Fixed rules give one of four verdicts.' },
     ],
@@ -109,7 +109,7 @@ export const en = {
       'Four steps in a row: Parse, Retrieve, Match, Decide. Only Parse uses a language model. The other three are fixed code.',
     diagramSteps: [
       { name: 'Parse', note: 'Reads the fields', tag: 'Language model' },
-      { name: 'Retrieve', note: 'Crossref, then OpenAlex', tag: 'No model' },
+      { name: 'Retrieve', note: 'Crossref, OpenAlex, then Garuda', tag: 'No model' },
       { name: 'Match', note: 'Compares four fields', tag: 'No model' },
       { name: 'Decide', note: 'Fixed rules, one verdict', tag: 'No model' },
     ],
@@ -181,7 +181,7 @@ export const en = {
       'Could not check is a status, not a verdict. It never counts against a reference.',
     limitsTitle: 'Limits',
     limits: [
-      'Crossref and OpenAlex are incomplete. A real source can be missing from both. That is why Out-of-index exists.',
+      'Crossref, OpenAlex, and Garuda are incomplete. A real source can be missing from all three. That is why Out-of-index exists.',
       'Verified means the work exists and the details agree, not that your source supports your claim.',
       'The model can misread an unusual format. If it fails, the no-AI reader takes over for that reference.',
     ],
@@ -274,6 +274,7 @@ export const en = {
         a2: 'A2: no OpenAlex',
         a3: 'A3: pattern reader instead of the model',
         a4: 'A4: no author check',
+        a5: 'A5: no Garuda',
       } as Record<string, string>,
     },
     metricsTitle: 'What we will report',
@@ -320,6 +321,11 @@ export const en = {
         text: 'A second index, used when Crossref has no close record.',
       },
       {
+        name: 'Garuda',
+        url: 'https://garuda.kemdiktisaintek.go.id/',
+        text: 'The national index of Indonesian journals. Asked last, and only for a journal article that Crossref and OpenAlex do not hold. Only the title is sent.',
+      },
+      {
         name: 'Google Gemini',
         url: 'https://ai.google.dev/',
         text: 'Reads each reference into fields. It never decides a verdict.',
@@ -332,7 +338,7 @@ export const en = {
     items: [
       'By default, your reference text is sent to Google Gemini, only to read the fields: authors, year, title. Choose "Do not send my text to an AI service" to avoid this. Results are then less accurate.',
       'Google states that content sent through its free tier can be used to improve its products and read by human reviewers.',
-      'The title, authors, and DOI read from your references go to Crossref and OpenAlex, and to DataCite when needed, to look the work up.',
+      'The title, authors, and DOI read from your references go to Crossref and OpenAlex, and to DataCite when needed, to look the work up. A title that neither of the first two finds close is also sent, alone, to Garuda, the national index of Indonesian journals.',
       'If you add your own Gemini key, it stays in your browser. It is sent with each check, used only to ask Google to read your references, and never stored or logged. The browser extension shares it with the site on your device.',
       'A .txt or .bib file you choose or drop on the page is read in your browser, like pasted text. Nothing is sent until you choose Check references.',
       'Our server does not store your text. Our logs hold only a request id, the number of references, timings, and error codes.',
@@ -404,7 +410,7 @@ export const en = {
     copied: 'Copied',
     copyFailed: 'Could not copy. Select the text and copy it by hand.',
   },
-  sources: { crossref: 'Crossref', openalex: 'OpenAlex', datacite: 'DataCite' },
+  sources: { crossref: 'Crossref', openalex: 'OpenAlex', datacite: 'DataCite', garuda: 'Garuda' },
   types: {
     journal_article: 'journal article',
     book: 'book',

@@ -1,6 +1,6 @@
 # CekKutip
 
-Pemeriksa daftar pustaka untuk mahasiswa Indonesia. Kamu menempelkan referensi, CekKutip mencari tiap referensi di Crossref dan OpenAlex (dan DataCite untuk DOI arXiv dan Zenodo), lalu memberi satu dari empat verdict. **Verdict adalah ajakan memeriksa ulang, bukan tuduhan.**
+Pemeriksa daftar pustaka untuk mahasiswa Indonesia. Kamu menempelkan referensi, CekKutip mencari tiap referensi di Crossref dan OpenAlex (Garuda untuk jurnal Indonesia, dan DataCite untuk DOI arXiv dan Zenodo), lalu memberi satu dari empat verdict. **Verdict adalah ajakan memeriksa ulang, bukan tuduhan.**
 
 - Situs: <https://cekkutip.onrender.com> (layanan gratis Render: tidur setelah 15 menit tanpa kunjungan dan butuh sekitar satu menit untuk bangun, jadi kunjungan pertama bisa lambat)
 - Kode: <https://github.com/RedRNS/CekKutip>
@@ -122,6 +122,7 @@ daftar hasil <------------- split -> PARSE (satu-satunya tahap berbasis model) -
                                    |               tidak ada -> doi.org/doiRA -> DataCite -------> DataCite
                                    |   tanpa DOI: Crossref bibliographic --------------------> Crossref
                                    |               tanpa kandidat memadai -> OpenAlex ----------> OpenAlex
+                                   |               masih tanpa kandidat, artikel jurnal -> Garuda -> Garuda
                                    v
                               MATCH   skor judul, penulis, tahun, venue
                                    |
@@ -136,7 +137,7 @@ daftar hasil <------------- split -> PARSE (satu-satunya tahap berbasis model) -
 
 **Parse.** Satu-satunya tahap yang memakai model. Daftar dibagi menjadi batch seimbang (maksimum 8 referensi per batch, sampai 3 batch paralel). Keluaran divalidasi dengan zod, dan setiap DOI, judul, venue, penulis, tahun, volume, nomor, dan halaman harus benar-benar tertulis di teks referensi. Bila tidak, keluaran ditolak, diulang sekali sebagai panggilan tunggal, lalu jatuh ke parser regex. Rinciannya di [Peran model bahasa](#peran-model-bahasa).
 
-**Retrieve.** Klien HTTP dengan timeout 8 detik, percobaan ulang dengan backoff, penghormatan `Retry-After`, dan penjadwal laju per layanan. Referensi ber-DOI dicari lewat DOI: Crossref dulu, lalu bila Crossref tidak punya, doi.org/doiRA ditanya siapa registrarnya. DOI yang tidak terdaftar menjadi `Suspect`, DOI DataCite (arXiv, Zenodo) diambil dari DataCite, dan DOI registri lain menjadi `Out-of-index`. Referensi tanpa DOI dicari lewat pencarian bibliografi Crossref, dengan OpenAlex sebagai cadangan bila Crossref tidak punya kandidat yang cukup mirip. Hasil pencarian (hanya metadata publik) disimpan di cache memori 24 jam dengan kunci berupa hash. Kegagalan layanan tidak pernah di-cache dan tidak pernah menjadi verdict.
+**Retrieve.** Klien HTTP dengan timeout 8 detik, percobaan ulang dengan backoff, penghormatan `Retry-After`, dan penjadwal laju per layanan. Referensi ber-DOI dicari lewat DOI: Crossref dulu, lalu bila Crossref tidak punya, doi.org/doiRA ditanya siapa registrarnya. DOI yang tidak terdaftar menjadi `Suspect`, DOI DataCite (arXiv, Zenodo) diambil dari DataCite, dan DOI registri lain menjadi `Out-of-index`. Referensi tanpa DOI dicari lewat pencarian bibliografi Crossref, dengan OpenAlex sebagai cadangan bila Crossref tidak punya kandidat yang cukup mirip, dan Garuda (indeks nasional jurnal Indonesia, dibaca dari halaman pencariannya karena tidak punya API) bila keduanya tidak punya dan referensinya dikutip seperti artikel jurnal. Halaman Garuda yang tidak dikenali, atau Garuda yang tidak bisa dijangkau, menjadi `check_failed` dan tidak pernah "tidak ada". Hasil pencarian (hanya metadata publik) disimpan di cache memori 24 jam dengan kunci berupa hash. Kegagalan layanan tidak pernah di-cache dan tidak pernah menjadi verdict.
 
 **Match.** Menghitung empat skor untuk kandidat terbaik:
 
@@ -218,10 +219,11 @@ Kunci bersama milik situs punya batas harian (tier gratis), jadi bisa habis kala
 | -------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Crossref | Pencarian DOI dan pencarian bibliografi (sumber utama)                | Dengan alamat kontak (`CROSSREF_MAILTO`) masuk "polite pool": 10 permintaan per detik dan 3 bersamaan, dibanding 5 dan 1. Klien mengikuti batas yang diiklankan. |
 | OpenAlex | Cadangan bila Crossref tidak punya kandidat, dan pandangan kedua (T2) | Berbiaya per pencarian. Anggaran gratis $0,10 per hari per IP tanpa kunci, $1 per hari dengan kunci gratis (`OPENALEX_API_KEY`).                                 |
+| Garuda   | Indeks nasional jurnal Indonesia: sumber ketiga untuk artikel jurnal yang tidak ada di Crossref dan OpenAlex | Tanpa API: halaman hasil pencarian dibaca sebagai HTML. Satu permintaan pada satu waktu, jeda 600 ms, berhenti 60 detik setelah satu kegagalan. `GARUDA_ENABLED=false` mematikannya. Hanya judul yang dikirim. |
 | DataCite | DOI non-Crossref (arXiv, Zenodo)                                      | Penerbit seperti Zenodo atau arXiv bukan venue, jadi preprint tidak kena `mismatch_venue` untuk DOI ini.                                                         |
 | doi.org  | Menanyakan registrar sebuah DOI (`doiRA`)                             | Membedakan "tidak terdaftar" (`Suspect`) dari "milik registri lain" (`Out-of-index`).                                                                            |
 
-Host keluar **hanya** `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, dan `doi.org`, juga pada setiap redirect (diikuti manual, maksimum 3 lompatan, daftar putih diperiksa tiap lompatan).
+Host keluar **hanya** `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`, dan `garuda.kemdiktisaintek.go.id`, juga pada setiap redirect (diikuti manual, maksimum 3 lompatan, daftar putih diperiksa tiap lompatan).
 
 ## Fitur
 
@@ -259,7 +261,7 @@ Panduan lengkap (pemasangan, izin, privasi, pengembangan): [extension/README.md]
 **Privasi**
 
 - Teks referensi dikirim ke Google Gemini **hanya** untuk membaca field, kecuali kamu memilih mode tanpa AI. Google menyatakan konten yang dikirim lewat tier gratis dapat dipakai untuk meningkatkan produknya.
-- Judul, penulis, dan DOI hasil bacaan dikirim ke Crossref, OpenAlex, dan DataCite untuk pencarian.
+- Judul, penulis, dan DOI hasil bacaan dikirim ke Crossref, OpenAlex, dan DataCite untuk pencarian. Judul saja dikirim ke Garuda, dan hanya bila Crossref dan OpenAlex tidak menemukannya.
 - Server **tidak menyimpan teks pengguna**. `AppLogger` hanya punya metode bertipe tetap (id, jumlah, waktu, kode galat), jadi teks tidak bisa masuk log. Tes memastikan teks penanda tidak muncul di log pada pemeriksaan sukses, layanan gagal, masukan tidak valid, dan batas terlampaui.
 - Cache hanya memuat metadata publik dengan kunci berupa hash.
 - Berkas yang diunggah dibaca di browser dan tidak diunggah ke server.
@@ -301,6 +303,7 @@ Harness di [eval/](eval/) mengukur CekKutip terhadap tiga baseline dan empat abl
 | `b3_doi_check`     | `verified` bila ada DOI di teks dan terdaftar di Crossref          |
 | ablation `a1`      | tanpa abstain (`out_of_index` menjadi `suspect`)                   |
 | ablation `a2`      | tanpa OpenAlex (juga tanpa pandangan kedua T2)                     |
+| ablation `a5`      | tanpa Garuda                                                       |
 | ablation `a3`      | parser regex menggantikan model                                    |
 | ablation `a4`      | tanpa pengecekan penulis                                           |
 
@@ -330,7 +333,7 @@ Yang dijaga supaya hasilnya jujur:
 packages/shared/   skema dan tipe (zod), pemisah referensi, normalisasi, pembaca BibTeX, penulis APA 7,
                    protokol kunci Gemini, validator ringkasan evaluasi
 apps/server/       Express, pipeline (split, parse, retrieve, match, decide, format, run),
-                   klien Crossref/OpenAlex/DataCite/doi.org/Gemini, konfigurasi (ambang, batas)
+                   klien Crossref/OpenAlex/Garuda/DataCite/doi.org/Gemini, konfigurasi (ambang, batas)
 apps/web/          React + CSS biasa (token di styles/tokens.css), i18n EN dan ID, halaman, tes E2E
 extension/         ekstensi browser (di luar workspace npm), tes Playwright dengan Chromium sungguhan
 eval/              harness evaluasi, data, cache, hasil
@@ -373,6 +376,7 @@ Daftar lengkap dengan komentar ada di [.env.example](.env.example). Yang utama:
 | `GEMINI_TEMPERATURE`                      | Bawaan `0`. Tulis `off` untuk berhenti mengirimnya bila model berikutnya menolak parameter itu. |
 | `CROSSREF_MAILTO`                         | Alamat kontak untuk "polite pool" Crossref. Disimpan di `.env`, tidak pernah di repo.           |
 | `OPENALEX_API_KEY`                        | Kunci gratis OpenAlex (anggaran harian 10 kali lipat dibanding tanpa kunci).                    |
+| `GARUDA_ENABLED`                          | Bawaan menyala. `false` mematikan Garuda (bila tampilan halamannya berubah dan kodenya belum disesuaikan). |
 | `RATE_LIMIT_MAX`, `RATE_LIMIT_WINDOW_MS`  | Batas laju `/api/check`. Bawaan 10 per 10 menit per IP.                                         |
 | `MAX_REFERENCES`, `MAX_REFERENCE_CHARS`   | Batas masukan, ditegakkan di server. Bawaan 40 dan 600.                                         |
 | `TRUST_PROXY`                             | Jumlah proxy di depan server, supaya batas laju memakai IP pengguna yang benar.                 |
@@ -422,7 +426,7 @@ Kali pertama menjalankan Playwright, pasang browsernya dengan `npx playwright in
 Tes tidak memakai jaringan dan tidak butuh kunci: respons Crossref, OpenAlex, DataCite, dan doi.org direkam sebagai fixture (`npm run fixtures:record` merekam ulang). Alat bantu pemeriksaan langsung (memakai jaringan, dijalankan sendiri):
 
 ```
-npm run smoke:live                                            # klien nyata terhadap Crossref, OpenAlex, doi.org
+npm run smoke:live                                            # klien nyata terhadap Crossref, OpenAlex, Garuda, doi.org
 npx tsx --env-file=.env scripts/smoke-gemini.ts               # tahap Parse terhadap Gemini nyata
 npx tsx scripts/smoke-check.ts                                # 12 referensi ke server yang sedang jalan
 npx tsx scripts/check-examples.ts http://localhost:8787 llm   # verdict daftar contoh

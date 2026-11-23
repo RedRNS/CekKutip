@@ -1,6 +1,6 @@
 # Arsitektur CekKutip
 
-Satu layanan Node (Express) melayani API dan aplikasi web hasil build. Pengguna menempelkan daftar pustaka. Server memecahnya, meminta model bahasa membaca field-nya, mencari tiap karya di Crossref dan OpenAlex, membandingkan, lalu memutuskan verdict dengan aturan tetap. Model bahasa tidak pernah memutuskan verdict.
+Satu layanan Node (Express) melayani API dan aplikasi web hasil build. Pengguna menempelkan daftar pustaka. Server memecahnya, meminta model bahasa membaca field-nya, mencari tiap karya di Crossref, OpenAlex, dan Garuda, membandingkan, lalu memutuskan verdict dengan aturan tetap. Model bahasa tidak pernah memutuskan verdict.
 
 ## Aliran data
 
@@ -25,6 +25,7 @@ ResultsLedger <-------------- runPipeline
                                    |           404 -> doi.org/doiRA -> tidak terdaftar | DataCite -> api.datacite.org | registri lain
                                    |   tanpa DOI: Crossref bibliographic ---------------> Crossref
                                    |           bila tidak ada kandidat >= TAU_L -> OpenAlex  -> OpenAlex
+                                   |           masih tidak ada, dikutip seperti artikel jurnal -> Garuda (HTML)
                                    v
                               MATCH  skor judul, penulis, tahun, venue; kandidat terbaik
                                    |
@@ -43,7 +44,7 @@ Teks penjelasan untuk pengguna dibuat di klien dari templat per kode alasan (`i1
 | -------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Split    | `packages/shared/src/split.ts`                                                                | Deterministik, dipakai browser dan server supaya "N found" sama dengan yang diperiksa. Memisah pada baris kosong, nomor, atau pola penulis. Batas jumlah dan panjang ditolak, tidak dipotong.                           |
 | Parse    | `pipeline/parse.ts`, `clients/gemini.ts`, `pipeline/regex-parse.ts`                           | Satu-satunya tahap yang memakai model. Keluaran divalidasi dengan zod **dan** harus benar-benar tertulis di teks referensi. Gagal: ulang sekali sebagai panggilan tunggal, lalu parser regex.                           |
-| Retrieve | `pipeline/retrieve.ts`, `clients/*.ts` (Crossref, OpenAlex, DataCite, doi.org), `lib/http.ts` | Klien HTTP dengan timeout 8 detik, retry, `Retry-After`, daftar putih host, dan penjadwal laju per layanan yang mengikuti batas yang diiklankan Crossref. Kegagalan layanan dilempar sebagai `ServiceUnavailableError`. |
+| Retrieve | `pipeline/retrieve.ts`, `clients/*.ts` (Crossref, OpenAlex, Garuda, DataCite, doi.org), `lib/http.ts` | Klien HTTP dengan timeout 8 detik, retry, `Retry-After`, daftar putih host, dan penjadwal laju per layanan yang mengikuti batas yang diiklankan Crossref. Kegagalan layanan dilempar sebagai `ServiceUnavailableError`. |
 | Match    | `pipeline/match.ts`, `lib/similarity.ts`                                                      | Levenshtein ternormalisasi, subjudul, nama keluarga (tahan `et al.`, inisial, satu nama), singkatan venue.                                                                                                              |
 | Decide   | `pipeline/decide.ts`                                                                          | Fungsi murni. Diuji pada setiap baris tabel keputusan.                                                                                                                                                                  |
 | Format   | `pipeline/format.ts`                                                                          | Perbandingan field untuk panel bukti.                                                                                                                                                                                   |
@@ -55,7 +56,7 @@ Teks penjelasan untuk pengguna dibuat di klien dari templat per kode alasan (`i1
 - **Abstain adalah fitur.** `out_of_index` untuk tipe sumber yang sering tidak terindeks, data terlalu sedikit, atau DOI di registri lain.
 - **Model hanya membaca.** Keluaran model yang memuat DOI, judul, venue, penulis, atau tahun yang tidak tertulis di teks ditolak. Field tambahan seperti "verdict" dibuang oleh skema.
 - **Privasi.** `AppLogger` hanya punya metode bertipe tetap (id, jumlah, waktu, kode), jadi teks pengguna tidak bisa masuk log. Cache hanya memuat metadata publik dengan kunci berupa hash. Server tidak menyimpan teks. Dibuktikan tes.
-- **Host keluar** hanya `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`, juga pada setiap redirect.
+- **Host keluar** hanya `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`, `garuda.kemdiktisaintek.go.id`, juga pada setiap redirect.
 
 ## Kunci Gemini milik pengguna dan ekstensi
 

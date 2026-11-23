@@ -106,12 +106,9 @@ export function decide(input: DecideInput): Decision {
 
   // No usable record. A candidate between TAU_L and TAU_T without a DOI counts as "not matched yet".
   // Row 6: cited like a journal article.
-  const journalLike =
-    parsed.type === 'journal_article' ||
-    (parsed.venue !== null && !VENUE_IS_NOT_A_JOURNAL.has(parsed.type)) ||
-    parsed.volume !== null ||
-    parsed.doi !== null
-  if (journalLike) return done(6, 'suspect', ['suspect_no_record_journal'])
+  if (isCitedLikeAJournalArticle(parsed)) {
+    return done(6, 'suspect', ['suspect_no_record_journal'])
+  }
 
   // Row 7: a type that Crossref and OpenAlex often do not hold. Abstain.
   return done(7, 'out_of_index', ['out_of_index_type'])
@@ -125,6 +122,20 @@ const VENUE_IS_NOT_A_JOURNAL: ReadonlySet<ReferenceType> = new Set([
   'report',
   'web_page',
 ])
+
+/**
+ * Row 6's condition: cited like something an index would hold (an article with a journal or volume, or
+ * one that carries a DOI). The same test decides whether Garuda is worth asking: a reference that fails
+ * it ends as Out-of-index whatever Garuda says.
+ */
+export function isCitedLikeAJournalArticle(parsed: ParsedReference): boolean {
+  return (
+    parsed.type === 'journal_article' ||
+    (parsed.venue !== null && !VENUE_IS_NOT_A_JOURNAL.has(parsed.type)) ||
+    parsed.volume !== null ||
+    parsed.doi !== null
+  )
+}
 
 /**
  * Whether a search candidate counts as the cited work: its title reaches TAU_T, and (T1) it is not a

@@ -1,6 +1,6 @@
 # CekKutip: panduan untuk sesi Claude
 
-CekKutip memeriksa daftar pustaka mahasiswa Indonesia. Pengguna menempelkan referensi. Server mencari tiap referensi di Crossref dan OpenAlex, lalu memberi satu verdict: `Verified`, `Mismatch`, `Suspect`, atau `Out-of-index`. Untuk lomba GYIIF 2027. Tenggat versi online: 29 November 2026. Rencana lengkap: `docs/PLAN.md`. Keputusan teknis: `docs/DECISIONS.md`.
+CekKutip memeriksa daftar pustaka mahasiswa Indonesia. Pengguna menempelkan referensi. Server mencari tiap referensi di Crossref dan OpenAlex (dan Garuda untuk jurnal Indonesia, butir 140), lalu memberi satu verdict: `Verified`, `Mismatch`, `Suspect`, atau `Out-of-index`. Untuk lomba GYIIF 2027. Tenggat versi online: 29 November 2026. Rencana lengkap: `docs/PLAN.md`. Keputusan teknis: `docs/DECISIONS.md`.
 
 ## Prinsip produk (tidak boleh dilanggar)
 
@@ -18,7 +18,7 @@ CekKutip memeriksa daftar pustaka mahasiswa Indonesia. Pengguna menempelkan refe
 - Jangan klaim CekKutip yang pertama atau satu-satunya.
 - UI: tanpa emoji, gradien, blur kaca, ilustrasi stok, tombol pil, bayangan dekoratif, Tailwind, atau pustaka komponen. Kata terlarang di teks: supercharge, seamless, unlock, revolutionize, magic, powerful, cutting-edge, "Welcome to".
 - Jangan menulis teks referensi pengguna ke log.
-- Host keluar hanya: `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`.
+- Host keluar hanya: `api.crossref.org`, `api.openalex.org`, `api.datacite.org`, `doi.org`, dan `garuda.kemdiktisaintek.go.id` (ditambahkan atas permintaan pemilik produk, butir 140). Garuda tidak punya API, jadi halaman pencariannya dibaca sebagai HTML: halaman yang tidak dikenali adalah kegagalan (`check_failed`), **tidak pernah** "tidak ada", dan `GARUDA_ENABLED=false` mematikannya. SINTA tidak dipakai (menjawab 403 untuk program) dan jangan ditembus.
 - Kunci Gemini milik pengguna dan ekstensi browser (DECISIONS butir 112 sampai 119, atas permintaan pemilik produk): kunci dikirim hanya lewat header `x-gemini-key`, **tidak boleh disimpan, masuk log, atau muncul di respons** (ada tes). Ekstensi **tidak boleh meminta akses ke semua situs saat dipasang**: membaca teks yang dipilih di situs lain adalah izin **opsional** yang diminta hanya saat pengguna menyalakan pengaturannya, dan dikembalikan saat dimatikan (butir 129 sampai 135). Folder `extension/` **bukan** workspace npm (jangan jadikan workspace: `npm ci` di Dockerfile gagal). Sinkronisasi kunci situs dan ekstensi ada di `packages/shared/src/apikey.ts`. Halaman `/extension` menawarkan zip yang dibangun pada setiap build situs (DECISIONS butir 120 sampai 123): build web gagal bila build ekstensi gagal, dan `/downloads/*` yang tidak ada dijawab 404.
 - Kunci Gemini cadangan di server (DECISIONS butir 138): `GEMINI_API_KEY`, `_2`, `_3` dipakai berurutan, pindah hanya karena 429 atau kunci ditolak (`createGeminiPool`, `apps/server/src/clients/gemini-pool.ts`). Kunci server sama terlarangnya dengan kunci pengguna untuk disimpan, dicatat, atau dikirim ke klien. Kunci pengunjung tidak pernah jatuh ke kunci server. Satu kunci saja berarti klien biasa tanpa pembungkus. `.env` jangan dibuka atau dicetak.
 - P1 selesai (DECISIONS butir 99 sampai 108): DataCite, pratinjau pemisahan, unggah `.txt`/`.bib`, APA 7 dari record, cetak. Berkas dibaca di browser dan tidak diunggah. Referensi APA dan BibTeX dibuat deterministik di `packages/shared` (`apa.ts`, `bibtex.ts`), tanpa model.
@@ -42,7 +42,7 @@ npm run e2e:server        # server putar-ulang di :8799 (untuk tangkapan layar)
 npm run lighthouse        # Lighthouse (ponsel) untuk semua halaman; argumen: baseUrl, --default (butuh e2e:server)
 npm run screenshots       # tangkapan layar 375/768/1280 + axe (butuh e2e:server); argumen: baseUrl en|id
 npx tsx scripts/check-examples.ts <baseUrl> llm|regex   # verdict daftar contoh
-npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, doi.org (membaca .env)
+npm run smoke:live        # klien nyata terhadap Crossref, OpenAlex, Garuda, doi.org (membaca .env)
 npm run build:extension   # ekstensi browser ke extension/dist (CEKKUTIP_URL untuk server lain)
 npm run package:extension # zip berversi di extension/ untuk dibagikan (Drive). Zip untuk halaman /extension dibuat otomatis tiap build web (apps/web/dist/downloads/), jangan di-commit
 npm run test:extension    # Playwright, Chromium sungguhan memuat ekstensi (server putar-ulang)

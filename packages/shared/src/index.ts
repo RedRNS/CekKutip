@@ -64,7 +64,7 @@ export const ParsedReferenceSchema = z.object({
 export type ParsedReference = z.infer<typeof ParsedReferenceSchema>
 
 export const MatchedRecordSchema = z.object({
-  source: z.enum(['crossref', 'openalex', 'datacite']),
+  source: z.enum(['crossref', 'openalex', 'datacite', 'garuda']),
   doi: z.string().nullable(),
   url: z.string().nullable(),
   title: z.string(),

@@ -14,8 +14,12 @@ import {
   REF_ARXIV_OK,
   REF_ARXIV_WRONG_YEAR,
   REF_DATACITE,
+  GARUDA_HAS_WANTORO,
+  GARUDA_NOTHING,
+  NOTHING_IN_CROSSREF_AND_OPENALEX,
   REF_FAKE_DOI,
   REF_OK,
+  REF_WANTORO,
   REF_WITH_DOI,
   REF_WRONG,
   THESIS,
@@ -217,6 +221,7 @@ describe('verdicts from recorded API responses', () => {
         match: urlHas('query.bibliographic'),
         respond: () => ok({ message: { items: [] } }),
       },
+      GARUDA_NOTHING, // A2 leaves Garuda on, and Garuda has nothing here either
     ])
     const r = await only(REF_OK, w, applyAblation(regexOptions(), 'a2'))
     expect(w.calls.some((c) => c.url.includes('openalex'))).toBe(false)
@@ -226,6 +231,158 @@ describe('verdicts from recorded API responses', () => {
   it('A1 (no abstain): the thesis becomes Suspect', async () => {
     const r = await only(THESIS, world(), applyAblation(regexOptions(), 'a1'))
     expect(r.status).toBe('suspect')
+  })
+})
+
+describe('Garuda, the third source for Indonesian journals', () => {
+  const garudaCalls = (w: ReturnType<typeof world>) =>
+    w.calls.filter((c) => c.url.includes('garuda.kemdiktisaintek.go.id'))
+
+  it('Verified: an article only Garuda holds is found, and the record says where it came from', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, GARUDA_HAS_WANTORO])
+    const r = await only(REF_WANTORO, w)
+    expect(r).toMatchObject({
+      status: 'verified',
+      reasons: ['verified_all_match'],
+      record: {
+        source: 'garuda',
+        doi: null,
+        url: 'https://garuda.kemdiktisaintek.go.id/documents/detail/5105249',
+        venue: 'Jurnal Informatika Polinema',
+        volume: '11',
+        issue: '3',
+        year: 2025,
+      },
+    })
+    // Crossref and OpenAlex were asked first, and Garuda after them.
+    const hosts = w.calls.map((c) => new URL(c.url).hostname)
+    expect(hosts.indexOf('api.crossref.org')).toBeLessThan(hosts.indexOf('api.openalex.org'))
+    expect(hosts.indexOf('api.openalex.org')).toBeLessThan(
+      hosts.indexOf('garuda.kemdiktisaintek.go.id'),
+    )
+  })
+
+  it('Suspect: still the answer when Garuda has no such title either', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, GARUDA_NOTHING])
+    const r = await only(FAKE_JOURNAL, w)
+    expect(r).toMatchObject({ status: 'suspect', reasons: ['suspect_no_record_journal'] })
+    expect(garudaCalls(w).length).toBeGreaterThan(0)
+  })
+
+  it('is not asked when Crossref already has a candidate that reaches TAU_L', async () => {
+    const w = world()
+    const r = await only(REF_OK, w)
+    expect(r.status).toBe('verified')
+    expect(garudaCalls(w)).toHaveLength(0)
+  })
+
+  it('is not asked when OpenAlex already supplies a candidate that reaches TAU_L', async () => {
+    const w = world([
+      { repeat: true, match: urlHas('query.bibliographic'), respond: () => ok({ message: { items: [] } }) },
+      { repeat: true, match: urlHas('api.openalex.org'), respond: () => ok(fixtureText('openalex-search-walters.json')) },
+    ])
+    const r = await only(REF_OK, w)
+    expect(r).toMatchObject({ status: 'verified', record: { source: 'openalex' } })
+    expect(garudaCalls(w)).toHaveLength(0)
+  })
+
+  it('is not asked about a thesis, which would end as Out-of-index whatever Garuda said', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, GARUDA_NOTHING])
+    const r = await only(THESIS, w)
+    expect(r).toMatchObject({ status: 'out_of_index', reasons: ['out_of_index_type'] })
+    expect(garudaCalls(w)).toHaveLength(0)
+  })
+
+  it('is not asked for a reference that carries a DOI', async () => {
+    const w = world()
+    const r = await only(REF_FAKE_DOI, w)
+    expect(r.status).toBe('suspect')
+    expect(garudaCalls(w)).toHaveLength(0)
+  })
+
+  it('A5 (no Garuda): never asked, and the same reference stays Suspect', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, GARUDA_HAS_WANTORO])
+    const r = await only(REF_WANTORO, w, applyAblation(regexOptions(), 'a5'))
+    expect(garudaCalls(w)).toHaveLength(0)
+    expect(r).toMatchObject({ status: 'suspect', reasons: ['suspect_no_record_journal'] })
+  })
+
+  it('a server with Garuda switched off behaves the same way', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, GARUDA_HAS_WANTORO], undefined, {
+      garuda: false,
+    })
+    const r = await only(REF_WANTORO, w)
+    expect(garudaCalls(w)).toHaveLength(0)
+    expect(r.status).toBe('suspect')
+  })
+
+  it('A2 (no OpenAlex) still asks Garuda after Crossref', async () => {
+    const w = world([
+      { repeat: true, match: urlHas('query.bibliographic'), respond: () => ok({ message: { items: [] } }) },
+      GARUDA_HAS_WANTORO,
+    ])
+    const r = await only(REF_WANTORO, w, applyAblation(regexOptions(), 'a2'))
+    expect(w.calls.some((c) => c.url.includes('openalex'))).toBe(false)
+    expect(r).toMatchObject({ status: 'verified', record: { source: 'garuda' } })
+  })
+
+  it('Mismatch: Garuda holds the work but the cited year is wrong (no year filter hides it)', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, GARUDA_HAS_WANTORO])
+    const r = await only(REF_WANTORO.replace('(2025)', '(2022)'), w)
+    expect(r).toMatchObject({ status: 'mismatch', record: { source: 'garuda' } })
+    expect(r.reasons).toContain('mismatch_year')
+  })
+
+  it('check_failed, not suspect: Garuda cannot be reached after the other two found nothing', async () => {
+    const w = world([
+      ...NOTHING_IN_CROSSREF_AND_OPENALEX,
+      { repeat: true, match: urlHas('garuda.kemdiktisaintek.go.id'), respond: () => status(503) },
+    ])
+    const r = await only(REF_WANTORO, w)
+    expect(r).toMatchObject({
+      status: 'check_failed',
+      reasons: ['check_failed_network'],
+      record: null,
+    })
+    expect(w.errors).toEqual(['server_error'])
+  })
+
+  it('check_failed, not suspect: Garuda refuses programs (403)', async () => {
+    const w = world([
+      ...NOTHING_IN_CROSSREF_AND_OPENALEX,
+      { repeat: true, match: urlHas('garuda.kemdiktisaintek.go.id'), respond: () => status(403, 'Forbidden') },
+    ])
+    expect((await only(REF_WANTORO, w)).status).toBe('check_failed')
+    expect(w.errors).toEqual(['blocked'])
+  })
+
+  it('check_failed, not suspect: Garuda answers with a page that is not a result page', async () => {
+    const w = world([
+      ...NOTHING_IN_CROSSREF_AND_OPENALEX,
+      { repeat: true, match: urlHas('garuda.kemdiktisaintek.go.id'), respond: () => ok('<html>Maintenance</html>') },
+    ])
+    expect((await only(REF_WANTORO, w)).status).toBe('check_failed')
+    expect(w.errors).toEqual(['bad_response'])
+  })
+
+  it('a Garuda failure costs only the references that needed Garuda', async () => {
+    const w = world([
+      { repeat: true, match: urlHas('garuda.kemdiktisaintek.go.id'), respond: () => status(503) },
+      ...FIXTURE_RULES,
+      ...NOTHING_IN_CROSSREF_AND_OPENALEX, // after the fixtures: what Crossref and OpenAlex say about Wantoro
+    ])
+    const { results } = await check([REF_OK, REF_WANTORO], w)
+    expect(results.map((r) => r.status)).toEqual(['verified', 'check_failed'])
+  })
+
+  it('never sends more than the title to Garuda', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, GARUDA_NOTHING])
+    await only(REF_WANTORO, w)
+    for (const c of garudaCalls(w)) {
+      const url = new URL(c.url)
+      expect([...url.searchParams.keys()].sort()).toEqual(['q', 'select'])
+      expect(c.url).not.toMatch(/Wantoro|Polinema|2025/i)
+    }
   })
 })
 

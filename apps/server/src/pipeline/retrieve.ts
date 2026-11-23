@@ -1,11 +1,13 @@
 import type { MatchedRecord, ParsedReference } from '@cekkutip/shared'
 import type { CrossrefClient } from '../clients/crossref.js'
 import type { DataciteClient } from '../clients/datacite.js'
+import type { GarudaClient } from '../clients/garuda.js'
 import type { DoiClient } from '../clients/doi.js'
 import type { OpenAlexClient } from '../clients/openalex.js'
 import { ServiceUnavailableError } from '../lib/http.js'
 import { normalizeText } from '../lib/normalize.js'
 import { titleSimilarity } from '../lib/similarity.js'
+import { isCitedLikeAJournalArticle } from './decide.js'
 import type { PipelineOptions, Retrieval } from './types.js'
 
 export interface RetrieveDeps {
@@ -13,6 +15,8 @@ export interface RetrieveDeps {
   openalex: OpenAlexClient
   datacite: DataciteClient
   doi: DoiClient
+  /** Absent when Garuda is switched off (GARUDA_ENABLED=false). */
+  garuda?: GarudaClient
 }
 
 /** A title shorter than this (after normalization) is too little to search with. */
@@ -26,7 +30,8 @@ const recordKey = (r: MatchedRecord) =>
  * - With a DOI: Crossref by DOI. If Crossref has no record, ask doi.org who registered it;
  *   a DataCite DOI (arXiv, Zenodo) is then fetched from DataCite.
  * - Without a DOI: Crossref bibliographic search; OpenAlex only when Crossref has no candidate
- *   whose title reaches TAU_L.
+ *   whose title reaches TAU_L; then Garuda (the national index of Indonesian journals), only when
+ *   neither has one, and only for a reference cited like a journal article (DECISIONS 140).
  *
  * Throws ServiceUnavailableError when a service fails. The caller reports `check_failed`;
  * a service failure is never turned into "not found".
@@ -34,7 +39,7 @@ const recordKey = (r: MatchedRecord) =>
 export async function retrieve(
   parsed: ParsedReference,
   deps: RetrieveDeps,
-  opts: Pick<PipelineOptions, 'useOpenAlex' | 'thresholds'>,
+  opts: Pick<PipelineOptions, 'useOpenAlex' | 'useGaruda' | 'thresholds'>,
 ): Promise<Retrieval> {
   if (parsed.doi) {
     const found = await deps.crossref.getByDoi(parsed.doi)
@@ -66,17 +71,29 @@ export async function retrieve(
     year: parsed.year,
   })
 
-  const best = candidates.reduce((m, c) => Math.max(m, titleSimilarity(title, c.title)), 0)
-  if (best >= opts.thresholds.tauL || !opts.useOpenAlex) {
-    return { kind: 'candidates', candidates, openAlexUsed: false }
+  const bestTitle = (list: MatchedRecord[]) =>
+    list.reduce((m, c) => Math.max(m, titleSimilarity(title, c.title)), 0)
+  const merge = (have: MatchedRecord[], extra: MatchedRecord[]) => {
+    const seen = new Set(have.map(recordKey))
+    return [...have, ...extra.filter((r) => !seen.has(recordKey(r)))]
   }
 
+  let all = candidates
+  let openAlexUsed = false
   // No Crossref candidate reaches the minimum: try OpenAlex.
-  const extra = await deps.openalex.searchTitle(title)
-  const seen = new Set(candidates.map(recordKey))
-  return {
-    kind: 'candidates',
-    openAlexUsed: true,
-    candidates: [...candidates, ...extra.filter((r) => !seen.has(recordKey(r)))],
+  if (opts.useOpenAlex && bestTitle(all) < opts.thresholds.tauL) {
+    all = merge(all, await deps.openalex.searchTitle(title))
+    openAlexUsed = true
   }
+  // Still none: a journal article that Crossref and OpenAlex do not hold may be in Garuda. A failure
+  // here throws, so the reference becomes check_failed and never a suspect.
+  if (
+    opts.useGaruda &&
+    deps.garuda !== undefined &&
+    isCitedLikeAJournalArticle(parsed) &&
+    bestTitle(all) < opts.thresholds.tauL
+  ) {
+    all = merge(all, await deps.garuda.searchTitle(title))
+  }
+  return { kind: 'candidates', candidates: all, openAlexUsed }
 }

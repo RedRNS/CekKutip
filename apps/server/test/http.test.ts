@@ -170,12 +170,67 @@ describe('HttpClient.getJson', () => {
   })
 })
 
+describe('HttpClient.getText', () => {
+  const PAGE = 'https://garuda.kemdiktisaintek.go.id/documents?q=x'
+  const html = (status: number, body = '<p>Found 0 documents</p>') =>
+    new Response(body, { status, headers: { 'content-type': 'text/html' } })
+
+  it('returns the body as text on 200, asking for HTML', async () => {
+    const { http, fetchImpl } = client([html(200)], { userAgent: 'CekKutip/test' })
+    const r = await http.getText(PAGE, { service: 'garuda', headers: { accept: 'text/html' } })
+    expect(r).toMatchObject({ status: 200, text: '<p>Found 0 documents</p>' })
+    const init = (fetchImpl.mock.calls[0] as unknown as [string, RequestInit])[1]
+    expect(init.headers).toMatchObject({ accept: 'text/html', 'user-agent': 'CekKutip/test' })
+  })
+
+  it('returns text null on 404 without retrying', async () => {
+    const { http, fetchImpl } = client([html(404, 'gone')])
+    const r = await http.getText(PAGE, { service: 'garuda' })
+    expect(r).toMatchObject({ status: 404, text: null })
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+  })
+
+  it('retries a 500 and then succeeds, like getJson', async () => {
+    const { http, fetchImpl } = client([html(500, ''), html(200, 'ok')])
+    const r = await http.getText(PAGE, { service: 'garuda' })
+    expect(r.text).toBe('ok')
+    expect(fetchImpl).toHaveBeenCalledTimes(2)
+  })
+
+  it('reports 403 as blocked, without retrying', async () => {
+    const { http, fetchImpl } = client([html(403, 'Forbidden')])
+    await expect(http.getText(PAGE, { service: 'garuda' })).rejects.toMatchObject({
+      service: 'garuda',
+      code: 'blocked',
+    })
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+  })
+
+  it('refuses a page larger than the limit, so a wrong answer cannot fill memory', async () => {
+    const { http } = client([html(200, 'x'.repeat(1_000_001))])
+    await expect(http.getText(PAGE, { service: 'garuda' })).rejects.toMatchObject({
+      code: 'bad_response',
+    })
+  })
+
+  it('never puts the request URL into an error message', async () => {
+    const secret = 'my-private-thesis-title-xyz'
+    const { http } = client([html(500, ''), html(500, ''), html(500, '')])
+    const err = await http
+      .getText(`https://garuda.kemdiktisaintek.go.id/documents?q=${secret}`, { service: 'garuda' })
+      .catch((e: unknown) => e)
+    expect(err).toBeInstanceOf(ServiceUnavailableError)
+    expect(String((err as Error).message)).not.toContain(secret)
+  })
+})
+
 describe('host allow-list', () => {
   it.each([
     'https://api.crossref.org/works',
     'https://api.openalex.org/works',
     'https://api.datacite.org/dois/10.1/x',
     'https://doi.org/doiRA/10.1/x',
+    'https://garuda.kemdiktisaintek.go.id/documents?q=x',
   ])('allows %s', (u) => {
     expect(assertAllowedUrl(u).protocol).toBe('https:')
   })
@@ -186,6 +241,9 @@ describe('host allow-list', () => {
     'https://api.crossref.org.evil.test/works',
     'https://user:pw@api.crossref.org/works',
     'https://doi.org.evil.test/x',
+    'https://garuda.kemdiktisaintek.go.id.evil.test/documents',
+    'http://garuda.kemdiktisaintek.go.id/documents',
+    'https://sinta.kemdiktisaintek.go.id/', // SINTA answers 403 to programs and is not used
   ])('rejects %s', (u) => {
     expect(() => assertAllowedUrl(u)).toThrow(DisallowedHostError)
   })

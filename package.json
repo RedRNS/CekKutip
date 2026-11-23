@@ -2,7 +2,7 @@
   "name": "cekkutip",
   "version": "0.1.0",
   "private": true,
-  "description": "Reference list checker for Indonesian students. Verdicts come from fixed rules over Crossref and OpenAlex data.",
+  "description": "Reference list checker for Indonesian students. Verdicts come from fixed rules over Crossref, OpenAlex, and Garuda data.",
   "type": "module",
   "engines": {
     "node": ">=22"

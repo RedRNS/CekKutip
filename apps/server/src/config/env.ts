@@ -13,6 +13,11 @@ export interface Env {
   geminiTemperature: number | undefined
   crossrefMailto: string | undefined
   openalexApiKey: string | undefined
+  /**
+   * Whether Garuda is asked after Crossref and OpenAlex. On unless GARUDA_ENABLED says no. Garuda has
+   * no API and is read as a web page, so this is the way to stop using it if its layout changes.
+   */
+  garudaEnabled: boolean
   enableExperimentModes: boolean
   retrievalCacheDir: string | undefined
   retrievalCacheReplayOnly: boolean
@@ -29,6 +34,10 @@ const text = (v: string | undefined): string | undefined => {
 
 const flag = (v: string | undefined): boolean =>
   ['1', 'true', 'yes'].includes(text(v)?.toLowerCase() ?? '')
+
+/** On unless the variable clearly says no. Used for switches that are on by default. */
+const unlessOff = (v: string | undefined): boolean =>
+  !['0', 'false', 'no', 'off'].includes(text(v)?.toLowerCase() ?? '')
 
 function int(v: string | undefined, fallback: number): number {
   const t = text(v)
@@ -63,6 +72,7 @@ export function loadEnv(env: NodeJS.ProcessEnv = process.env): Env {
           : Number(temperature),
     crossrefMailto: text(env.CROSSREF_MAILTO),
     openalexApiKey: text(env.OPENALEX_API_KEY),
+    garudaEnabled: unlessOff(env.GARUDA_ENABLED),
     // Never on in production, whatever the variable says.
     enableExperimentModes: nodeEnv !== 'production' && flag(env.ENABLE_EXPERIMENT_MODES),
     retrievalCacheDir: text(env.RETRIEVAL_CACHE_DIR),
