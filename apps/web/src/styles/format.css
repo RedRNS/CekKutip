@@ -146,3 +146,92 @@
 .fmt-row .evidence__actions {
   margin-top: var(--s-12);
 }
+
+/* ---------- Download a .bib ---------- */
+.bib-panel {
+  margin-top: var(--s-24);
+  padding: var(--s-16);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--r-control);
+}
+
+.bib-panel__title {
+  margin-bottom: var(--s-8);
+  font-size: var(--fs-18);
+}
+
+.bib-switches {
+  min-width: 0;
+  margin: var(--s-16) 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.bib-card {
+  margin-top: var(--s-16);
+  padding-top: var(--s-16);
+  border-top: 1px solid var(--rule);
+}
+
+.bib-card__title {
+  font-family: var(--font-ui);
+  font-size: var(--fs-16);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.bib-card__summary {
+  max-width: none;
+  margin-top: var(--s-4);
+}
+
+/* The base rule for details reserves room; a list that opens in a panel does not need it. */
+.bib-details {
+  min-height: 0;
+}
+
+.bib-list {
+  list-style: none;
+  margin-top: var(--s-8);
+  font-size: var(--fs-14);
+}
+
+.bib-list li {
+  max-width: none;
+  overflow-wrap: anywhere;
+}
+
+.bib-list li + li {
+  margin-top: var(--s-8);
+}
+
+.bib-key {
+  margin-right: var(--s-4);
+  font-family: var(--font-mono);
+  font-weight: 500;
+}
+
+.bib-change {
+  display: block;
+  margin-top: 2px;
+  color: var(--ink-muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.bib-pre {
+  max-height: 20rem;
+  margin-top: var(--s-8);
+  padding: var(--s-12);
+  overflow: auto;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: var(--r-control);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre;
+}

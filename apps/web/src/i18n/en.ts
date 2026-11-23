@@ -626,6 +626,77 @@ export const en = {
       ieee_journal_abbreviation:
         'IEEE abbreviates journal names (for example "Sci. Rep."). The name is written in full here. Abbreviate it with the IEEE list if your journal asks.',
     },
+    bib: {
+      title: 'BibTeX',
+      fileTitle: (name: string, n: number) => `${name}: ${n} ${n === 1 ? 'entry' : 'entries'}`,
+      summary: (fixed: number, flagged: number) =>
+        `${fixed} ${fixed === 1 ? 'fix' : 'fixes'} made, ${flagged} to check by hand.`,
+      nothingToFix: 'Nothing needed fixing. The file is as it was.',
+      keepsNote:
+        'Your citation keys, comments, order, and spacing are kept. Only the fixes listed below are made, in the text of your file.',
+      switchesTitle: 'Habits that some styles rely on',
+      switchesNote: 'They are off, so the file stays as you wrote it.',
+      monthLabel: 'Write the month in its own field',
+      monthHint: (n: number) =>
+        n === 0
+          ? 'No entry has the month written inside year.'
+          : `${n} ${n === 1 ? 'entry has' : 'entries have'} the month written inside year, as in "Sep. 2025". The style ieeetr shows the month only when it is written there. Turn this on to give it a month field.`,
+      copiesLabel: 'Remove a url and a note that only repeat the DOI',
+      copiesHint: (n: number) =>
+        n === 0
+          ? 'No entry repeats its DOI in url or note.'
+          : `${n} ${n === 1 ? 'entry repeats' : 'entries repeat'} the DOI in url or note. Some styles print the DOI from them. Turn this on to remove the copies.`,
+      download: 'Download cleaned .bib',
+      fixesTitle: (n: number) => `What was fixed (${n})`,
+      flagsTitle: (n: number) => `To check by hand (${n})`,
+      removed: 'removed',
+      becomes: 'becomes',
+      rules: {
+        journal_period: 'A full stop after the closing bracket of the journal name was removed.',
+        doi_prefix: 'The DOI is written without the link in front of it.',
+        pages_dash: 'The page range is written with two hyphens.',
+        et_al: '"et al." is written as "and others".',
+        year_period: 'The year is written as a number.',
+        month_from_year: 'The month was moved out of year into its own field.',
+        drop_url_copy: 'The url was removed: it only repeated the DOI.',
+        drop_note_copy: 'The note was removed: it only repeated the DOI.',
+      },
+      flags: {
+        no_key: (_detail: string): string => 'This entry has no citation key.',
+        duplicate_key: (_detail: string): string => 'This citation key is used by an earlier entry.',
+        author_one_name: (_detail: string): string =>
+          'The authors are written as one name (double braces), so BibTeX prints them as a single author. Write each author on their own, separated by "and".',
+        duplicate_work: (other: string): string => `This looks like the same work as ${other}.`,
+        looks_like_preprint: (journal: string): string =>
+          `This is an @article, but its journal is "${journal}", a preprint server. A @misc entry may fit better.`,
+        looks_like_proceedings: (journal: string): string =>
+          `This is an @article, but its journal is "${journal}", which reads as a conference. An @inproceedings entry may fit better.`,
+        number_zero: (_detail: string): string => 'The issue number is 0.',
+        future_date: (date: string): string => `The date ${date} has not happened yet.`,
+        missing_field: (fields: string): string => `Missing for this kind of entry: ${fields}.`,
+      },
+      newTitle: 'A new .bib from these references',
+      newSummary: (entries: number, kept: number) =>
+        `${entries} ${entries === 1 ? 'entry' : 'entries'} for the journal articles that could be read${
+          kept === 0
+            ? ''
+            : kept === 1
+              ? '. 1 reference that could not be made into an entry stays in the file as a comment'
+              : `. ${kept} references that could not be made into entries stay in the file as comments`
+        }.`,
+      newNote:
+        'Keys are made from the first author and the year. Check them before you use the file in a document.',
+      nothingToWrite:
+        'None of these references could be read as a journal article, so there is no entry to write.',
+      downloadNew: 'Download as .bib',
+      preview: 'Preview',
+      previewLabel: 'The .bib file that would be downloaded',
+      loadedNote:
+        'The list comes from the file you loaded. To make a .bib from pasted references, clear the file first.',
+      header:
+        '% Made by CekKutip from references pasted as text. The keys were made automatically: check them before you use this file.',
+      keptHeader: '% These references could not be made into entries:',
+    },
   },
   split: {
     summary: (n: number) => `Review how your list was split (${n})`,

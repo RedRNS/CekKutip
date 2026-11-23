@@ -14,12 +14,18 @@ export interface UploadNote {
 
 export const MAX_UPLOAD_KB = MAX_UPLOAD_BYTES / 1024
 
+/** A .bib file as it was, to be cleaned. */
+export interface BibFile {
+  name: string
+  text: string
+}
+
 /**
  * Files chosen with the button or dropped anywhere on the page. They are read in the browser, and the text
- * of the ones that worked goes to `onText`. Nothing is sent anywhere. The same for the checker and for
- * the page that rewrites references.
+ * of the ones that worked goes to `onText`. A .bib file is also handed to `onBib` as it was, for cleaning.
+ * Nothing is sent anywhere. The same for the checker and for the page that rewrites references.
  */
-export function useReferenceFiles(onText: (text: string) => void) {
+export function useReferenceFiles(onText: (text: string) => void, onBib?: (file: BibFile) => void) {
   const { t } = useI18n()
   const [note, setNote] = useState<UploadNote | null>(null)
   const clearNote = useCallback(() => setNote(null), [])
@@ -42,6 +48,9 @@ export function useReferenceFiles(onText: (text: string) => void) {
     }
     if (read.ignored > 0) problems.push(t.upload.ignored(read.ignored, MAX_FILES_PER_DROP))
     if (read.text !== '') onText(read.text)
+    for (const { name, result } of read.files) {
+      if (result.ok && result.kind === 'bib' && result.raw !== undefined) onBib?.({ name, text: result.raw })
+    }
     setNote({ added: added.length > 0 ? added.join(' ') : null, problems })
   }
 

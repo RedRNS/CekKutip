@@ -14,6 +14,8 @@ export type UploadResult =
       kind: 'txt' | 'bib'
       /** Entries in a .bib file that have no title and were left out. */
       skipped: number
+      /** A .bib file as it was, with its keys and fields, for making a cleaned .bib. Not there for .txt. */
+      raw?: string
     }
   | { ok: false; error: UploadError }
 
@@ -46,7 +48,7 @@ export async function readReferenceFile(
   const { references, skipped } = referencesFromBibtex(raw)
   return references.length === 0
     ? { ok: false, error: 'empty' }
-    : { ok: true, text: joinReferences(references), kind, skipped }
+    : { ok: true, text: joinReferences(references), kind, skipped, raw }
 }
 
 /** At most this many files are read from one drop. The rest are counted and left alone. */

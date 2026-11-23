@@ -628,6 +628,71 @@ export const id: Dict = {
       ieee_journal_abbreviation:
         'IEEE menyingkat nama jurnal (misalnya "Sci. Rep."). Di sini nama jurnal ditulis lengkap. Singkat dengan daftar IEEE bila jurnalmu memintanya.',
     },
+    bib: {
+      title: 'BibTeX',
+      fileTitle: (name: string, n: number) => `${name}: ${n} entri`,
+      summary: (fixed: number, flagged: number) =>
+        `${fixed} perbaikan dibuat, ${flagged} perlu diperiksa secara manual.`,
+      nothingToFix: 'Tidak ada yang perlu diperbaiki. Berkasnya tetap seperti semula.',
+      keepsNote:
+        'Kunci sitasi, komentar, urutan, dan jarak di berkasmu dipertahankan. Hanya perbaikan yang tercantum di bawah yang dibuat, di dalam teks berkasmu.',
+      switchesTitle: 'Kebiasaan yang diandalkan sebagian gaya',
+      switchesNote: 'Keduanya mati, jadi berkas tetap seperti yang kamu tulis.',
+      monthLabel: 'Tulis bulan di field tersendiri',
+      monthHint: (n: number) =>
+        n === 0
+          ? 'Tidak ada entri yang menulis bulan di dalam year.'
+          : `${n} entri menulis bulan di dalam year, seperti "Sep. 2025". Gaya ieeetr hanya menampilkan bulan bila ditulis di sana. Nyalakan ini untuk memberinya field month.`,
+      copiesLabel: 'Hapus url dan note yang hanya mengulang DOI',
+      copiesHint: (n: number) =>
+        n === 0
+          ? 'Tidak ada entri yang mengulang DOI-nya di url atau note.'
+          : `${n} entri mengulang DOI di url atau note. Sebagian gaya mencetak DOI dari sana. Nyalakan ini untuk menghapus salinannya.`,
+      download: 'Unduh .bib yang sudah dibersihkan',
+      fixesTitle: (n: number) => `Yang diperbaiki (${n})`,
+      flagsTitle: (n: number) => `Perlu diperiksa secara manual (${n})`,
+      removed: 'dihapus',
+      becomes: 'menjadi',
+      rules: {
+        journal_period: 'Titik setelah tanda kurung tutup pada nama jurnal dihapus.',
+        doi_prefix: 'DOI ditulis tanpa tautan di depannya.',
+        pages_dash: 'Rentang halaman ditulis dengan dua tanda hubung.',
+        et_al: '"et al." ditulis sebagai "and others".',
+        year_period: 'Tahun ditulis sebagai angka.',
+        month_from_year: 'Bulan dipindahkan dari year ke field tersendiri.',
+        drop_url_copy: 'url dihapus: isinya hanya mengulang DOI.',
+        drop_note_copy: 'note dihapus: isinya hanya mengulang DOI.',
+      },
+      flags: {
+        no_key: (_detail: string): string => 'Entri ini tidak punya kunci sitasi.',
+        duplicate_key: (_detail: string): string => 'Kunci sitasi ini dipakai oleh entri sebelumnya.',
+        author_one_name: (_detail: string): string =>
+          'Penulisnya ditulis sebagai satu nama (kurung kurawal ganda), jadi BibTeX mencetaknya sebagai satu penulis. Tulis tiap penulis sendiri-sendiri, dipisah "and".',
+        duplicate_work: (other: string): string => `Tampaknya karya yang sama dengan ${other}.`,
+        looks_like_preprint: (journal: string): string =>
+          `Ini @article, tetapi jurnalnya "${journal}", sebuah server preprint. Entri @misc mungkin lebih cocok.`,
+        looks_like_proceedings: (journal: string): string =>
+          `Ini @article, tetapi jurnalnya "${journal}", yang terbaca sebagai konferensi. Entri @inproceedings mungkin lebih cocok.`,
+        number_zero: (_detail: string): string => 'Nomor terbitannya 0.',
+        future_date: (date: string): string => `Tanggal ${date} belum terjadi.`,
+        missing_field: (fields: string): string => `Yang belum ada untuk jenis entri ini: ${fields}.`,
+      },
+      newTitle: '.bib baru dari referensi ini',
+      newSummary: (entries: number, kept: number) =>
+        `${entries} entri untuk artikel jurnal yang bisa dibaca${kept > 0 ? `. ${kept} referensi yang tidak bisa dijadikan entri tetap ada di berkas sebagai komentar` : ''}.`,
+      newNote:
+        'Kunci dibuat dari penulis pertama dan tahun. Periksa dulu sebelum berkasnya dipakai di dokumen.',
+      nothingToWrite:
+        'Tidak ada referensi yang bisa dibaca sebagai artikel jurnal, jadi tidak ada entri yang ditulis.',
+      downloadNew: 'Unduh sebagai .bib',
+      preview: 'Pratinjau',
+      previewLabel: 'Berkas .bib yang akan diunduh',
+      loadedNote:
+        'Daftarnya berasal dari berkas yang kamu muat. Untuk membuat .bib dari referensi yang ditempel, hapus berkasnya dulu.',
+      header:
+        '% Dibuat oleh CekKutip dari referensi yang ditempel sebagai teks. Kuncinya dibuat otomatis: periksa dulu sebelum berkas ini dipakai.',
+      keptHeader: '% Referensi ini tidak bisa dijadikan entri:',
+    },
   },
   split: {
     summary: (n: number) => `Periksa cara daftarmu dipecah (${n})`,

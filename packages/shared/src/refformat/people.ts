@@ -36,7 +36,7 @@ export function isInitials(s: string): boolean {
   return /^(?:\p{Lu}\.?[\s-]*)+$/u.test(t) && t.includes('.')
 }
 
-const isOrg = (s: string): boolean =>
+export const isOrganisationName = (s: string): boolean =>
   !isInitials(s) && (ORG_WORDS.test(s) || /^\p{Lu}{3,}$/u.test(s.trim()))
 
 /** Some initials in a given name: "W. H." gives W and H, "Agus" gives A, "Jean-Paul" gives J-P. */
@@ -76,7 +76,7 @@ interface Natural {
 /** A name in plain order: "Agus Wantoro", "W. H. Walters", "Ludwig van Beethoven", "Sugiyono". */
 function naturalName(text: string): Natural {
   const t = collapse(text)
-  if (isOrg(t)) return { person: { family: t, given: '', org: true }, uncertain: false }
+  if (isOrganisationName(t)) return { person: { family: t, given: '', org: true }, uncertain: false }
   const words = t.split(' ')
   if (words.length === 1) return { person: { family: t, given: '', org: false }, uncertain: false }
 
@@ -131,7 +131,7 @@ export function parsePeople(input: string): People {
   if (s === '') return { people: [], etAl, uncertain: false }
 
   // An organisation such as "Kementerian Pendidikan dan Kebudayaan" is not a list of two.
-  if (!s.includes(',') && isOrg(s)) {
+  if (!s.includes(',') && isOrganisationName(s)) {
     return { people: [{ family: s, given: '', org: true }], etAl, uncertain: false }
   }
 

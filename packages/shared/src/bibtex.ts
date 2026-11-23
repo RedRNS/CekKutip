@@ -36,7 +36,7 @@ const WORD = /[A-Za-z0-9_\-:.+/]/
 const isSpace = (c: string | undefined) => c !== undefined && /\s/.test(c)
 
 /** Read a brace-balanced group starting at `{`. Returns the inner text and the index after `}`; null when unbalanced. */
-function readBraced(text: string, start: number): { value: string; end: number } | null {
+export function readBraced(text: string, start: number): { value: string; end: number } | null {
   let depth = 0
   for (let i = start; i < text.length; i++) {
     const c = text[i]
@@ -54,7 +54,7 @@ function readBraced(text: string, start: number): { value: string; end: number }
 }
 
 /** Read a "..." value. Quotes inside braces do not end it. */
-function readQuoted(text: string, start: number): { value: string; end: number } | null {
+export function readQuoted(text: string, start: number): { value: string; end: number } | null {
   let depth = 0
   for (let i = start + 1; i < text.length; i++) {
     const c = text[i]

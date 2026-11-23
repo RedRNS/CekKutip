@@ -84,6 +84,21 @@ describe('formatReferences: one reference', () => {
   })
 })
 
+describe('formatReferences: the article that was read', () => {
+  it('carries the journal article it read, for making a .bib, and nothing for what it did not rewrite', () => {
+    const [a, b] = formatReferences([GRADY_APA, BOOK], opts())
+    expect(a?.article).toMatchObject({ year: '2019', journal: 'Psychology of Popular Media Culture', doi: '10.1037/ppm0000185' })
+    expect(a?.article?.authors.map((p) => p.family)).toEqual(['Grady', 'Her', 'Moreno', 'Perez', 'Yelinek'])
+    expect(b?.article).toBeNull()
+  })
+
+  it('is the same whichever style the text is written in', () => {
+    const apa = formatReferences([GRADY_APA], opts())[0]?.article
+    const ieee = formatReferences([GRADY_APA], opts({ style: 'ieee' }))[0]?.article
+    expect(ieee).toEqual(apa)
+  })
+})
+
 describe('formatReferences: notes', () => {
   it('gives the notes that go with a reference', () => {
     const apa = formatReferences([WANTORO], opts())[0]

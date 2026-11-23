@@ -22,3 +22,14 @@ export type {
 } from './types.js'
 export { annotate } from './annotate.js'
 export type { Run } from './annotate.js'
+export { cleanBibtex } from './bib-clean.js'
+export type {
+  BibFix,
+  BibFlag,
+  BibFlagCode,
+  BibRule,
+  CleanBibOptions,
+  CleanBibResult,
+} from './bib-clean.js'
+export { bibtexFromReferences } from './bib-write.js'
+export type { BibWriteItem, BibWriteLabels, BibWriteResult } from './bib-write.js'

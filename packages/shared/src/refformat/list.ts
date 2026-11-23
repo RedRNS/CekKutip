@@ -3,7 +3,7 @@ import { formatArticle } from './format.js'
 import { parseReference } from './parse.js'
 import { plain } from './pieces.js'
 import { FIELDS } from './types.js'
-import type { FieldName, FormatStyle, NoteCode, Piece } from './types.js'
+import type { FieldName, FormatStyle, JournalArticle, NoteCode, Piece } from './types.js'
 
 export interface FormatListOptions {
   style: FormatStyle
@@ -37,6 +37,8 @@ export interface FormatItem {
   text: string
   changes: FieldChange[]
   notes: NoteCode[]
+  /** The journal article that was read, as data (for a .bib). Null when the reference was not rewritten. */
+  article: JournalArticle | null
 }
 
 const collapse = (s: string) => s.replace(/[*_]/g, '').replace(/\s+/g, ' ').trim()
@@ -69,6 +71,7 @@ export function formatReferences(raws: readonly string[], opts: FormatListOption
           text: parsed.cleaned,
           changes: [],
           notes: [],
+          article: null,
         },
       })
       return
@@ -99,6 +102,7 @@ export function formatReferences(raws: readonly string[], opts: FormatListOption
         text,
         changes,
         notes: [...(parsed.ref.namesUncertain ? (['names_uncertain'] as const) : []), ...f.notes],
+        article: parsed.ref,
       },
     })
   })

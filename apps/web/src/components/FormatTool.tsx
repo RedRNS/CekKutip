@@ -11,6 +11,8 @@ import { copyPlain, copyRich } from '../lib/clipboard'
 import { itemHtml, itemText, listHtml, listText } from '../lib/formatExport'
 import { appendText } from '../lib/upload'
 import { MAX_UPLOAD_KB, useReferenceFiles } from '../lib/useReferenceFiles'
+import type { BibFile } from '../lib/useReferenceFiles'
+import { BibtexPanel } from './BibtexPanel'
 import { UploadNotes } from './UploadNotes'
 
 const STYLE_KEY = 'cekkutip.format.style'
@@ -158,11 +160,18 @@ export function FormatTool() {
   const [sort, setSort] = useState(true)
   const [sentenceCase, setSentenceCase] = useState(false)
   const [copiedAll, setCopiedAll] = useState<CopyState>('idle')
+  // .bib files that were loaded, as they were, and the two habits the cleaned copy may put right.
+  const [bibFiles, setBibFiles] = useState<BibFile[]>([])
+  const [monthFromYear, setMonthFromYear] = useState(false)
+  const [dropDoiCopies, setDropDoiCopies] = useState(false)
   const inputId = useId()
   const styleHintId = useId()
   const fileRef = useRef<HTMLInputElement>(null)
 
-  const upload = useReferenceFiles((added) => setText((prev) => appendText(prev, added)))
+  const upload = useReferenceFiles(
+    (added) => setText((prev) => appendText(prev, added)),
+    (file) => setBibFiles((prev) => [...prev.filter((f) => f.name !== file.name), file]),
+  )
 
   // Typing stays smooth with a long list: the rewrite follows a moment behind.
   const deferred = useDeferredValue(text)
@@ -278,10 +287,11 @@ export function FormatTool() {
             className="btn btn--secondary"
             onClick={() => {
               setText('')
+              setBibFiles([])
               upload.clearNote()
               setCopiedAll('idle')
             }}
-            disabled={text === ''}
+            disabled={text === '' && bibFiles.length === 0}
           >
             {t.format.clear}
           </button>
@@ -314,6 +324,14 @@ export function FormatTool() {
                 {copyText(t, copiedAll)}
               </span>
             </div>
+            <BibtexPanel
+              files={bibFiles}
+              items={items}
+              monthFromYear={monthFromYear}
+              dropDoiCopies={dropDoiCopies}
+              onMonthFromYear={setMonthFromYear}
+              onDropDoiCopies={setDropDoiCopies}
+            />
             <ol className="fmt-list">
               {items.map((item) => (
                 <FormatRow key={`${style}-${item.index}`} item={item} styleName={styleName} />

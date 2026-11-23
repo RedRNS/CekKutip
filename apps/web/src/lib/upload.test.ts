@@ -31,7 +31,13 @@ describe('readReferenceFile', () => {
 
   it('turns a .bib file into one reference per paragraph and counts entries without a title', async () => {
     const r = await readReferenceFile(file('refs.bib', BIB))
-    expect(r).toEqual({ ok: true, kind: 'bib', skipped: 1, text: 'Doe, J. (2020). A study. J.' })
+    // The file is handed back as it was, so a cleaned .bib can be made from it: the lines are only for reading.
+    expect(r).toEqual({ ok: true, kind: 'bib', skipped: 1, text: 'Doe, J. (2020). A study. J.', raw: BIB })
+  })
+
+  it('hands back no raw text for a .txt file', async () => {
+    const r = await readReferenceFile(file('refs.txt', 'Doe, J. (2020). A study.'))
+    expect(r.ok && 'raw' in r).toBe(false)
   })
 
   it('is not case-sensitive about the extension', async () => {
