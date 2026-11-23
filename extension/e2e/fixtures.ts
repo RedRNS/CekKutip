@@ -80,8 +80,22 @@ export const summary = (page: Page) => page.getByText('Use your own Gemini API k
 export const keyInput = (page: Page) => page.getByLabel('Gemini API key', { exact: true })
 export const keyStatus = (page: Page) => page.locator('.keypanel__status')
 
+/**
+ * Make sure the key panel is open. It opens by itself when the server has no AI key (as on the
+ * replay server) and stays closed otherwise, so a plain click on its row would sometimes close it.
+ * Waits for the page to go quiet first, so the server's answer about the AI reader has been used.
+ */
+export async function ensureKeyPanelOpen(page: Page) {
+  await page.waitForLoadState('networkidle')
+  const open = await page
+    .locator('details.keypanel')
+    .evaluate((el) => (el as HTMLDetailsElement).open)
+  if (!open) await page.locator('details.keypanel > summary').click()
+  await expect(keyInput(page)).toBeVisible()
+}
+
 export async function saveKey(page: Page, key: string) {
-  await summary(page).click()
+  await ensureKeyPanelOpen(page)
   await keyInput(page).fill(key)
   await page.getByRole('button', { name: 'Save key' }).click()
 }

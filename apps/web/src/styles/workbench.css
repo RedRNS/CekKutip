@@ -549,6 +549,56 @@
   margin-top: var(--s-8);
 }
 
+/*
+ * The closed row is a control, not a line of small text: a border, the full touch target, and an
+ * arrow the page draws (the browser's own marker is easy to miss). The arrow and the words carry
+ * the meaning, so it reads without colour.
+ */
+.details.keypanel > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  width: auto;
+  min-height: var(--target);
+  padding: var(--s-8) var(--s-12);
+  border: 1px solid var(--rule-strong);
+  border-radius: 2px;
+  background: var(--surface);
+  color: var(--ink);
+  font-size: var(--fs-14);
+  font-weight: 600;
+  list-style: none;
+}
+
+.details.keypanel > summary::-webkit-details-marker {
+  display: none;
+}
+
+.details.keypanel > summary::after {
+  content: '';
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin: -4px 4px 0 0;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.details.keypanel[open] > summary {
+  margin-bottom: var(--s-12);
+}
+
+.details.keypanel[open] > summary::after {
+  margin-top: 4px;
+  transform: rotate(-135deg);
+}
+
+.details.keypanel > summary:hover {
+  border-color: var(--accent);
+}
+
 .keypanel__input {
   display: block;
   width: 100%;

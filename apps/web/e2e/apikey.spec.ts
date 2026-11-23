@@ -19,9 +19,38 @@ const summary = (page: Page) => page.getByText('Use your own Gemini API key (opt
 const keyInput = (page: Page) => page.getByLabel('Gemini API key', { exact: true })
 const status = (page: Page) => page.locator('.keypanel__status')
 
+/**
+ * Make sure the key panel is open. It opens by itself when the server has no AI key (as on the
+ * replay server) and stays closed otherwise, so a plain click on its row would sometimes close it.
+ * Waits for the page to go quiet first, so the server's answer about the AI reader has been used.
+ */
+async function ensureKeyPanelOpen(page: Page) {
+  await page.waitForLoadState('networkidle')
+  const open = await page
+    .locator('details.keypanel')
+    .evaluate((el) => (el as HTMLDetailsElement).open)
+  if (!open) await page.locator('details.keypanel > summary').click()
+  await expect(page.locator('details.keypanel > summary ~ form input').first()).toBeVisible()
+}
+
+/** The shared AI reader is set up on the server (the replay server has none, so say it has). */
+async function sharedReaderAvailable(page: Page) {
+  await page.route('**/api/config', (route) =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        maxReferences: 12,
+        maxReferenceChars: 600,
+        toolVersion: 't',
+        aiAvailable: true,
+      }),
+    }),
+  )
+}
+
 async function openPanel(page: Page) {
   await page.goto('/')
-  await summary(page).click()
+  await ensureKeyPanelOpen(page)
 }
 
 const stored = (page: Page) =>
@@ -76,7 +105,10 @@ const fromExtension = (page: Page, message: unknown) =>
   page.evaluate((m) => window.postMessage(m, window.location.origin), message)
 
 test.describe('your own Gemini key on the website', () => {
-  test('is offered, closed, with the plain facts about it', async ({ page }) => {
+  test('is offered, closed while the shared reader works, with the plain facts about it', async ({
+    page,
+  }) => {
+    await sharedReaderAvailable(page)
     await page.goto('/')
     await expect(summary(page)).toBeVisible()
     await expect(keyInput(page)).toBeHidden()
@@ -109,7 +141,7 @@ test.describe('your own Gemini key on the website', () => {
     await keyInput(page).fill(KEY)
     await page.getByRole('button', { name: 'Save key' }).click()
     await page.reload()
-    await summary(page).click()
+    await ensureKeyPanelOpen(page)
     await expect(status(page)).toHaveText('Using your key: AIza...rstu')
   })
 
@@ -133,7 +165,7 @@ test.describe('your own Gemini key on the website', () => {
     await expect(page.getByText('Key removed. The shared reader is used.')).toBeVisible()
     expect((await stored(page)).key).toBeNull()
     await page.reload()
-    await summary(page).click()
+    await ensureKeyPanelOpen(page)
     await expect(status(page)).toHaveText('No key saved. The shared reader is used.')
   })
 
@@ -158,7 +190,7 @@ test.describe('your own Gemini key on the website', () => {
   test('works in Indonesian', async ({ page }) => {
     await page.goto('/')
     await page.getByRole('button', { name: 'Switch to Bahasa Indonesia' }).click()
-    await page.getByText('Pakai kunci API Gemini milikmu (opsional)').click()
+    await ensureKeyPanelOpen(page)
     await expect(
       page.getByText('Belum ada kunci tersimpan. Pembaca bersama dipakai.'),
     ).toBeVisible()
@@ -202,7 +234,7 @@ test.describe('checking with your own key', () => {
     const noAi = page.getByLabel(/Do not send my text to an AI service/)
     await expect(noAi).toBeChecked()
     await expect(noAi).toBeDisabled()
-    await summary(page).click()
+    await ensureKeyPanelOpen(page)
     await keyInput(page).fill(KEY)
     await page.getByRole('button', { name: 'Save key' }).click()
     await expect(noAi).not.toBeChecked()
@@ -400,9 +432,86 @@ test.describe('sharing the key with the browser extension', () => {
     await openPanel(page)
     const other = await context.newPage()
     await other.goto('/')
-    await other.getByText('Use your own Gemini API key (optional)').click()
+    await ensureKeyPanelOpen(other)
     await other.getByLabel('Gemini API key', { exact: true }).fill(KEY)
     await other.getByRole('button', { name: 'Save key' }).click()
     await expect(status(page)).toHaveText('Using your key: AIza...rstu')
+  })
+})
+
+test.describe('the key panel is easy to find, and opens when it is the way forward', () => {
+  const panel = (page: Page) => page.locator('details.keypanel')
+
+  test('the closed row looks like a control: bordered, a full touch target, with an arrow', async ({
+    page,
+  }) => {
+    await sharedReaderAvailable(page)
+    await page.goto('/')
+    const row = panel(page).locator('summary')
+    await expect(row).toHaveCSS('border-top-style', 'solid')
+    const box = await row.boundingBox()
+    expect(box?.height).toBeGreaterThanOrEqual(44)
+    // The arrow is drawn by the page (the browser's own marker is too small to notice).
+    await expect(row).toHaveCSS('list-style-type', 'none')
+    expect(await row.evaluate((el) => getComputedStyle(el, '::after').content)).not.toBe('none')
+  })
+
+  test('stays closed while the shared AI reader is available', async ({ page }) => {
+    await sharedReaderAvailable(page)
+    await page.goto('/')
+    await expect(summary(page)).toBeVisible()
+    await expect(panel(page)).not.toHaveAttribute('open', '')
+    await expect(keyInput(page)).toBeHidden()
+  })
+
+  test('is open from the start when the server has no AI key', async ({ page }) => {
+    await page.goto('/')
+    await expect(keyInput(page)).toBeVisible()
+    await expect(panel(page)).toHaveAttribute('open', '')
+  })
+
+  test('stays closed once the person has closed it', async ({ page }) => {
+    await page.goto('/')
+    await expect(keyInput(page)).toBeVisible()
+    await summary(page).click()
+    await expect(keyInput(page)).toBeHidden()
+    await input(page).fill(REF)
+    await expect(page.getByText('1 found')).toBeVisible()
+    await expect(keyInput(page)).toBeHidden()
+  })
+
+  test('is not forced open for someone who already has their own key', async ({ page }) => {
+    await page.addInitScript(
+      ([name, value]) => window.localStorage.setItem(name as string, value as string),
+      [STORAGE, JSON.stringify({ key: KEY, updatedAt: 500 })],
+    )
+    await page.goto('/')
+    await expect(summary(page)).toBeVisible()
+    await expect(panel(page)).not.toHaveAttribute('open', '')
+  })
+
+  for (const issue of ['quota', 'rejected'] as const) {
+    test(`opens by itself when the shared reader could not be used (${issue})`, async ({
+      page,
+    }) => {
+      await sharedReaderAvailable(page)
+      await watchCheck(page, (done) => void (done.aiIssue = issue))
+      await page.goto('/')
+      await expect(keyInput(page)).toBeHidden()
+      await input(page).fill(REF)
+      await checkButton(page).click()
+      await expect(page.getByText('1 of 1 checked')).toBeVisible()
+      await expect(keyInput(page)).toBeVisible()
+    })
+  }
+
+  test('does not open when the check had no AI problem', async ({ page }) => {
+    await sharedReaderAvailable(page)
+    await watchCheck(page)
+    await page.goto('/')
+    await input(page).fill(REF)
+    await checkButton(page).click()
+    await expect(page.getByText('1 of 1 checked')).toBeVisible()
+    await expect(keyInput(page)).toBeHidden()
   })
 })

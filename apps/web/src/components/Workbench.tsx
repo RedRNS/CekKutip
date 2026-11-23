@@ -136,6 +136,9 @@ export function WorkbenchCore({
   // A person's own key makes the AI reader available even where the server has none of its own.
   const aiUsable = config.aiAvailable || apiKey.key !== null
   const useRegex = noAi || !aiUsable
+  // The key panel opens by itself when the person's own key is the way to the AI reader: the server
+  // has none, or the last check could not use the model (limit reached, or a key Google refused).
+  const keyIsTheWayForward = !aiUsable || Boolean(state.summary?.aiIssue)
 
   const check = useCallback(() => {
     if (!canCheck) return
@@ -273,6 +276,7 @@ export function WorkbenchCore({
         </p>
 
         <ApiKeyPanel
+          autoOpen={keyIsTheWayForward}
           keyValue={apiKey.key}
           onSave={apiKey.save}
           onClear={apiKey.clear}

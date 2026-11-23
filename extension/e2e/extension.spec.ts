@@ -3,7 +3,16 @@ import path from 'node:path'
 import { AxeBuilder } from '@axe-core/playwright'
 import type { Page, Route } from '@playwright/test'
 import { EXAMPLES } from '../../apps/web/src/data/example-list'
-import { SITE, expect, keyStatus, openPanel, saveKey, summary, test } from './fixtures'
+import {
+  SITE,
+  ensureKeyPanelOpen,
+  expect,
+  keyStatus,
+  openPanel,
+  saveKey,
+  summary,
+  test,
+} from './fixtures'
 
 const KEY = 'AIzaSyA-1234567890abcdefghijklmnopqrstu'
 const OTHER = 'AIzaSyB-0987654321zyxwvutsrqponmlkjihgf'
@@ -290,7 +299,7 @@ test.describe('your own key in the side panel', () => {
     await openPanel(page, extensionId)
     await saveKey(page, KEY)
     await openPanel(page, extensionId)
-    await summary(page).click()
+    await ensureKeyPanelOpen(page)
     await expect(keyStatus(page)).toHaveText('Using your key: AIza...rstu')
   })
 
@@ -336,7 +345,7 @@ test.describe('the key is shared between the side panel and the website', () => 
 
     const site = await context.newPage()
     await openSite(site)
-    await summary(site).click()
+    await ensureKeyPanelOpen(site)
     await expect(keyStatus(site)).toHaveText('Using your key: AIza...rstu')
     await expect(site.getByText(/browser extension is connected/)).toBeVisible()
     const local = await site.evaluate(() =>
@@ -355,7 +364,7 @@ test.describe('the key is shared between the side panel and the website', () => 
 
     const panel = await context.newPage()
     await openPanel(panel, extensionId)
-    await summary(panel).click()
+    await ensureKeyPanelOpen(panel)
     await expect(keyStatus(panel)).toHaveText('Using your key: AIza...rstu')
   })
 
@@ -365,7 +374,7 @@ test.describe('the key is shared between the side panel and the website', () => 
     extensionId,
   }) => {
     await openSite(page)
-    await summary(page).click()
+    await ensureKeyPanelOpen(page)
     await expect(keyStatus(page)).toHaveText('No key saved. The shared reader is used.')
 
     const panel = await context.newPage()
@@ -380,7 +389,7 @@ test.describe('the key is shared between the side panel and the website', () => 
     extensionId,
   }) => {
     await openPanel(page, extensionId)
-    await summary(page).click()
+    await ensureKeyPanelOpen(page)
 
     const site = await context.newPage()
     await openSite(site)
@@ -397,7 +406,7 @@ test.describe('the key is shared between the side panel and the website', () => 
     await saveKey(page, KEY)
     const site = await context.newPage()
     await openSite(site)
-    await summary(site).click()
+    await ensureKeyPanelOpen(site)
     await expect(keyStatus(site)).toHaveText('Using your key: AIza...rstu')
 
     await site.getByRole('button', { name: 'Remove key' }).click()
@@ -405,10 +414,10 @@ test.describe('the key is shared between the side panel and the website', () => 
 
     // Opening both again: nothing returns from either side.
     await site.reload()
-    await summary(site).click()
+    await ensureKeyPanelOpen(site)
     await expect(keyStatus(site)).toHaveText('No key saved. The shared reader is used.')
     await openPanel(page, extensionId)
-    await summary(page).click()
+    await ensureKeyPanelOpen(page)
     await expect(keyStatus(page)).toHaveText('No key saved. The shared reader is used.')
   })
 
@@ -421,7 +430,7 @@ test.describe('the key is shared between the side panel and the website', () => 
     await saveKey(page, KEY)
     const panel = await context.newPage()
     await openPanel(panel, extensionId)
-    await summary(panel).click()
+    await ensureKeyPanelOpen(panel)
     await panel.getByRole('button', { name: 'Remove key' }).click()
     await expect(keyStatus(page)).toHaveText('No key saved. The shared reader is used.')
   })

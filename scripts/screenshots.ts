@@ -22,6 +22,8 @@ interface State {
   /** Stop the result stream after this many lines, to capture a check in progress. */
   holdAfter?: number
   prepare?: (page: Page) => Promise<void>
+  /** Answer /api/config as a server that has an AI key (the replay server has none). */
+  sharedReader?: boolean
 }
 
 const example = async (page: Page) => {
@@ -93,11 +95,17 @@ const states: State[] = [
         .waitFor()
     },
   },
+  // What a visitor sees on a server that has its own AI key: the key row is closed.
+  { name: 'home-key-closed', path: '/', sharedReader: true },
   {
     name: 'home-key-panel',
     path: '/',
     prepare: async (page) => {
-      await page.getByText(/^(use your own gemini api key|pakai kunci api gemini milikmu)/i).click()
+      // The panel opens by itself on a server without an AI key, so open it only if it is closed.
+      const isOpen = await page
+        .locator('details.keypanel')
+        .evaluate((el) => (el as HTMLDetailsElement).open)
+      if (!isOpen) await page.locator('details.keypanel > summary').click()
       await page
         .getByLabel(/^(gemini api key|kunci api gemini)$/i)
         .fill('AIzaSyA-1234567890abcdefghijklmnopqrstu')
@@ -138,6 +146,19 @@ for (const state of states.filter((s) => only.length === 0 || only.includes(s.na
       reducedMotion: 'reduce',
     })
     await context.addInitScript(`try { localStorage.setItem('cekkutip.lang', '${lang}') } catch {}`)
+    if (state.sharedReader) {
+      await context.route('**/api/config', (route) =>
+        route.fulfill({
+          contentType: 'application/json',
+          body: JSON.stringify({
+            maxReferences: 12,
+            maxReferenceChars: 600,
+            toolVersion: 'screenshot',
+            aiAvailable: true,
+          }),
+        }),
+      )
+    }
     if (state.holdAfter) {
       await context.addInitScript(`window.__holdAfter = ${state.holdAfter}`)
       await context.addInitScript(HOLD_SCRIPT)

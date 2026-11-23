@@ -1,5 +1,5 @@
 import { maskKey } from '@cekkutip/shared/apikey'
-import { useId, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import type { FormEvent } from 'react'
 import { fmt, useI18n } from '../i18n'
 
@@ -11,8 +11,12 @@ export interface ApiKeyPanelProps {
   onClear: () => void
   /** One sentence about how this key is shared with the website or the extension, if it is. */
   linkNote?: string | null
-  /** Open when the page first shows. */
-  defaultOpen?: boolean
+  /**
+   * True while using a key of one's own is the way forward (no shared reader, or it could not be
+   * used). The panel opens when this turns true, and the person can still close it: it never
+   * opens again on its own until this has turned false and then true again.
+   */
+  autoOpen?: boolean
 }
 
 /**
@@ -24,11 +28,15 @@ export function ApiKeyPanel({
   onSave,
   onClear,
   linkNote = null,
-  defaultOpen = false,
+  autoOpen = false,
 }: ApiKeyPanelProps) {
   const { t } = useI18n()
   const inputId = useId()
   const hintId = useId()
+  const [open, setOpen] = useState(autoOpen)
+  useEffect(() => {
+    if (autoOpen) setOpen(true)
+  }, [autoOpen])
   const [draft, setDraft] = useState('')
   const [shown, setShown] = useState(false)
   const [note, setNote] = useState<{ ok: boolean; text: string } | null>(null)
@@ -52,7 +60,11 @@ export function ApiKeyPanel({
   }
 
   return (
-    <details className="details keypanel" open={defaultOpen || undefined}>
+    <details
+      className="details keypanel"
+      open={open}
+      onToggle={(e) => setOpen(e.currentTarget.open)}
+    >
       <summary>{t.apiKey.summary}</summary>
       <p className="hint">{t.apiKey.intro}</p>
 
