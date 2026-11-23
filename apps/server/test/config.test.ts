@@ -45,3 +45,28 @@ describe('config', () => {
     expect(e.openalexApiKey).toBeUndefined()
   })
 })
+
+describe('Gemini keys', () => {
+  it('reads the three keys in order', () => {
+    const e = loadEnv({ GEMINI_API_KEY: 'a', GEMINI_API_KEY_2: 'b', GEMINI_API_KEY_3: 'c' })
+    expect(e.geminiApiKeys).toEqual(['a', 'b', 'c'])
+    expect(e.geminiApiKey).toBe('a')
+  })
+
+  it('skips blanks and merges repeats', () => {
+    const e = loadEnv({ GEMINI_API_KEY: 'a', GEMINI_API_KEY_2: '  ', GEMINI_API_KEY_3: 'a' })
+    expect(e.geminiApiKeys).toEqual(['a'])
+  })
+
+  it('uses a backup key when the first is missing', () => {
+    const e = loadEnv({ GEMINI_API_KEY: '', GEMINI_API_KEY_2: 'b' })
+    expect(e.geminiApiKeys).toEqual(['b'])
+    expect(e.geminiApiKey).toBe('b')
+  })
+
+  it('has no keys at all by default', () => {
+    const e = loadEnv({})
+    expect(e.geminiApiKeys).toEqual([])
+    expect(e.geminiApiKey).toBeUndefined()
+  })
+})

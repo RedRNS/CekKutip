@@ -1,6 +1,12 @@
 export interface Env {
   nodeEnv: string
   port: number
+  /**
+   * The server's own Gemini keys, in the order they are tried: GEMINI_API_KEY, then _2 and _3 as
+   * backups. Blanks are dropped and repeats merged.
+   */
+  geminiApiKeys: string[]
+  /** The first of `geminiApiKeys`, for code that uses a single key (the evaluation harness). */
   geminiApiKey: string | undefined
   geminiModel: string
   /** Sent to Gemini. Default 0 (brief 6.2). `GEMINI_TEMPERATURE=off` stops sending it. */
@@ -36,10 +42,18 @@ export const DEFAULT_GEMINI_MODEL = 'gemini-3.1-flash-lite'
 export function loadEnv(env: NodeJS.ProcessEnv = process.env): Env {
   const nodeEnv = text(env.NODE_ENV) ?? 'development'
   const temperature = text(env.GEMINI_TEMPERATURE)?.toLowerCase()
+  const geminiApiKeys = [
+    ...new Set(
+      [env.GEMINI_API_KEY, env.GEMINI_API_KEY_2, env.GEMINI_API_KEY_3]
+        .map(text)
+        .filter((k): k is string => k !== undefined),
+    ),
+  ]
   return {
     nodeEnv,
     port: int(env.PORT, 8787),
-    geminiApiKey: text(env.GEMINI_API_KEY),
+    geminiApiKeys,
+    geminiApiKey: geminiApiKeys[0],
     geminiModel: text(env.GEMINI_MODEL) ?? DEFAULT_GEMINI_MODEL,
     geminiTemperature:
       temperature === 'off'

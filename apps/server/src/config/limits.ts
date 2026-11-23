@@ -1,3 +1,6 @@
+/** How long a server Gemini key is skipped after it hit its limit or was refused (DECISIONS 138). */
+export const GEMINI_KEY_COOLDOWN_MS = 5 * 60 * 1000
+
 export interface Limits {
   maxReferences: number
   maxReferenceChars: number
