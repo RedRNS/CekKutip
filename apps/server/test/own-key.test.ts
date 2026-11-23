@@ -6,6 +6,7 @@ import type { StreamEvent } from '@cekkutip/shared'
 import { afterEach, describe, expect, it } from 'vitest'
 import { createApp } from '../src/app.js'
 import type { GeminiClient } from '../src/clients/gemini.js'
+import { createGeminiPool } from '../src/clients/gemini-pool.js'
 import { loadEnv } from '../src/config/env.js'
 import { loadLimits } from '../src/config/limits.js'
 import type { Limits } from '../src/config/limits.js'
@@ -226,6 +227,50 @@ describe('a key that cannot be used', () => {
     const base = await start({ createGemini, limits: { parseBatchSize: 1 } })
     const { summary } = await doneOf(await post(base, { references: [REF_OK, THESIS] }, KEY))
     expect(summary.aiIssue).toBe('rejected')
+  })
+})
+
+describe("the server's reader with backup keys", () => {
+  const COOL = { cooldownMs: 1000 }
+
+  it('still reads with the AI when the first server key is at its limit', async () => {
+    const backup = fakeFactory()
+    const pool = createGeminiPool(
+      [failing('rate_limited', 429)(), backup.createGemini('server-key-2-0123456789')],
+      COOL,
+    )
+    const base = await start({ gemini: pool })
+    const { list, summary } = await doneOf(await post(base, { references: [REF_OK] }))
+    expect(parseModes(list)).toEqual(['llm'])
+    expect(summary.aiIssue).toBeNull()
+    expect(backup.batches).toHaveLength(1)
+  })
+
+  it('finishes without the AI and says "quota" when every server key is at its limit', async () => {
+    const pool = createGeminiPool(
+      [failing('rate_limited', 429)(), failing('rate_limited', 429)()],
+      COOL,
+    )
+    const base = await start({ gemini: pool })
+    const { list, summary } = await doneOf(await post(base, { references: [REF_OK, THESIS] }))
+    expect(summary.aiIssue).toBe('quota')
+    expect(parseModes(list)).toEqual(['regex', 'regex'])
+    expect(summary.checkFailed).toBe(0)
+  })
+
+  it("a person's own key never falls back to the server's keys", async () => {
+    const server = fakeFactory()
+    const pool = createGeminiPool(
+      [
+        server.createGemini('server-key-1-0123456789'),
+        server.createGemini('server-key-2-0123456789'),
+      ],
+      COOL,
+    )
+    const base = await start({ gemini: pool, createGemini: failing('blocked', 400) })
+    const { summary } = await doneOf(await post(base, { references: [REF_OK] }, KEY))
+    expect(summary.aiIssue).toBe('rejected')
+    expect(server.batches).toHaveLength(0)
   })
 })
 

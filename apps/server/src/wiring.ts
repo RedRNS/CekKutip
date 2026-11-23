@@ -2,9 +2,11 @@ import { createCrossrefClient } from './clients/crossref.js'
 import { createDataciteClient } from './clients/datacite.js'
 import { createDoiClient } from './clients/doi.js'
 import { createGeminiClient } from './clients/gemini.js'
-import type { GeminiClient } from './clients/gemini.js'
+import type { GeminiClient, GeminiOptions } from './clients/gemini.js'
+import { createGeminiPool } from './clients/gemini-pool.js'
 import { createOpenAlexClient } from './clients/openalex.js'
 import type { Env } from './config/env.js'
+import { GEMINI_KEY_COOLDOWN_MS } from './config/limits.js'
 import type { Limits } from './config/limits.js'
 import { RetrievalCache } from './lib/cache.js'
 import { HttpClient } from './lib/http.js'
@@ -15,6 +17,22 @@ import { TOOL_VERSION } from './version.js'
 export function buildGeminiFactory(env: Env): (apiKey: string) => GeminiClient {
   return (apiKey) =>
     createGeminiClient({ apiKey, model: env.geminiModel, temperature: env.geminiTemperature })
+}
+
+/**
+ * The server's own model reader: none without keys, the client itself for one key (exactly as it
+ * was before backup keys existed), and a pool that falls back from key to key for several.
+ */
+export function buildGeminiReader(
+  env: Pick<Env, 'geminiApiKeys' | 'geminiModel' | 'geminiTemperature'>,
+  create: (opts: GeminiOptions) => GeminiClient = createGeminiClient,
+): GeminiClient | undefined {
+  const clients = env.geminiApiKeys.map((apiKey) =>
+    create({ apiKey, model: env.geminiModel, temperature: env.geminiTemperature }),
+  )
+  if (clients.length === 0) return undefined
+  if (clients.length === 1) return clients[0]
+  return createGeminiPool(clients, { cooldownMs: GEMINI_KEY_COOLDOWN_MS })
 }
 
 /** Build the real clients from the environment. */
@@ -34,12 +52,6 @@ export function buildPipelineDeps(env: Env, limits: Limits): PipelineDeps {
       datacite: createDataciteClient({ http, cache, mailto: env.crossrefMailto }),
       doi: createDoiClient({ http, cache }),
     },
-    gemini: env.geminiApiKey
-      ? createGeminiClient({
-          apiKey: env.geminiApiKey,
-          model: env.geminiModel,
-          temperature: env.geminiTemperature,
-        })
-      : undefined,
+    gemini: buildGeminiReader(env),
   }
 }

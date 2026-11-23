@@ -1,7 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { GeminiClient } from '../src/clients/gemini.js'
+import type { GeminiClient, GeminiOptions } from '../src/clients/gemini.js'
 import { createGeminiPool } from '../src/clients/gemini-pool.js'
+import { loadEnv } from '../src/config/env.js'
+import { loadLimits } from '../src/config/limits.js'
 import { ServiceUnavailableError } from '../src/lib/http.js'
+import { buildGeminiReader, buildPipelineDeps } from '../src/wiring.js'
 
 /**
  * Backup keys: the server's own Gemini keys are tried in order, and a key that is at its limit or
@@ -153,5 +156,63 @@ describe('createGeminiPool', () => {
 
   it('refuses an empty list', () => {
     expect(() => createGeminiPool([], { cooldownMs: COOL })).toThrow()
+  })
+})
+
+describe('buildGeminiReader', () => {
+  const base = { geminiModel: 'm', geminiTemperature: 0 as number | undefined }
+
+  /** Stands in for createGeminiClient: hands out the given client for each key, and records the calls. */
+  function fakeCreate(byKey: Record<string, GeminiClient>) {
+    const created: GeminiOptions[] = []
+    const create = (o: GeminiOptions): GeminiClient => {
+      created.push(o)
+      return byKey[o.apiKey as string] as GeminiClient
+    }
+    return { created, create }
+  }
+
+  it('has no reader without keys', () => {
+    const f = fakeCreate({})
+    expect(buildGeminiReader({ ...base, geminiApiKeys: [] }, f.create)).toBeUndefined()
+    expect(f.created).toHaveLength(0)
+  })
+
+  it('uses the client itself, not a pool, for one key', () => {
+    const k1 = working('k1').client
+    const f = fakeCreate({ k1 })
+    const reader = buildGeminiReader({ ...base, geminiApiKeys: ['k1'] }, f.create)
+    expect(reader).toBe(k1)
+    expect(f.created).toEqual([{ apiKey: 'k1', model: 'm', temperature: 0 }])
+  })
+
+  it('builds one client per key, in order, for several', () => {
+    const f = fakeCreate({
+      k1: working('k1').client,
+      k2: working('k2').client,
+      k3: working('k3').client,
+    })
+    const reader = buildGeminiReader({ ...base, geminiApiKeys: ['k1', 'k2', 'k3'] }, f.create)
+    expect(reader).toBeDefined()
+    expect(f.created.map((o) => o.apiKey)).toEqual(['k1', 'k2', 'k3'])
+  })
+
+  it('answers from the second key when the first is at its limit', async () => {
+    const f = fakeCreate({ k1: failing('rate_limited', 429).client, k2: working('k2').client })
+    const reader = buildGeminiReader({ ...base, geminiApiKeys: ['k1', 'k2'] }, f.create)
+    const out = await reader?.extract(ITEMS)
+    expect(out?.results).toEqual([{ tag: 'k2' }])
+  })
+})
+
+describe('the pipeline has an AI reader when any server key is set', () => {
+  it('with only the second key set', () => {
+    const deps = buildPipelineDeps(loadEnv({ GEMINI_API_KEY_2: 'k2' }), loadLimits({}))
+    expect(deps.gemini).toBeDefined()
+  })
+
+  it('and without any key it has none', () => {
+    const deps = buildPipelineDeps(loadEnv({}), loadLimits({}))
+    expect(deps.gemini).toBeUndefined()
   })
 })
