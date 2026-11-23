@@ -157,7 +157,7 @@ test.describe('checking a list', () => {
     expect(csv.charCodeAt(0)).toBe(0xfeff)
     const lines = csv.trim().split('\r\n')
     expect(lines).toHaveLength(11)
-    expect(lines[0]).toContain('no,verdict,reason_codes,explanation,reference')
+    expect(lines[0]).toContain('no,verdict,reason_codes,explanation,notes,reference')
     expect(lines[2]).toContain('Mismatch,mismatch_year mismatch_venue')
     expect(lines[1]).toContain('10.1038/s41598-023-41032-5')
   })

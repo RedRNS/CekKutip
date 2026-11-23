@@ -78,6 +78,8 @@ Tiga penyempurnaan yang disetujui pengguna pada 16 Nov 2026 (DECISIONS butir 55 
 
 Juga: `verified` butuh minimal dua dari judul, penulis, tahun yang tertulis (butir 35).
 
+Catatan di samping hasil (butir 145, `packages/shared/src/notes.ts`): tahun selisih satu, penulis lebih sedikit dari record, dan dua referensi ke record yang sama. Fungsi murni, teks dari templat tetap, dihitung di browser. **Catatan tidak pernah mengubah verdict, kode alasan, atau hitungan**; jangan menjadikannya masukan Decide. Skor CSV kosong bila bidangnya tidak dibandingkan.
+
 ## Token desain (ringkas; lengkap di docs/DESIGN.md)
 
 Warna netral: paper `#F6F8F7`, surface `#FFFFFF`, ink `#12232E`, ink-muted `#4B5B66`, rule `#C9D4D1`, rule-strong `#6B7C78`, brand `#12343B`, accent `#0B6B63`, accent-tint `#E3F0EE`.

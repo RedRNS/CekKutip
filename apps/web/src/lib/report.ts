@@ -1,4 +1,5 @@
-import type { CheckSummary, ReferenceResult } from '@cekkutip/shared'
+import { resultNotes } from '@cekkutip/shared'
+import type { CheckSummary, ReferenceResult, ResultNote } from '@cekkutip/shared'
 import type { Dict } from '../i18n/en'
 
 /** Replace {name} placeholders. Kept local so this module has no React dependency. */
@@ -16,6 +17,32 @@ export function reasonSentences(result: ReferenceResult, t: Dict): string[] {
 
 export function reasonText(result: ReferenceResult, t: Dict): string {
   return reasonSentences(result, t).join(' ')
+}
+
+/** The fixed sentences for the notes of a result, one per note. They add to the verdict and never change it. */
+export function noteSentences(notes: readonly ResultNote[] | undefined, t: Dict): string[] {
+  return (notes ?? []).map((note) => {
+    switch (note.code) {
+      case 'year_differs':
+        return fill(t.notes.year_differs, { cited: note.cited, found: note.found })
+      case 'authors_partial':
+        return fill(t.notes.authors_partial, { cited: note.cited, found: note.found })
+      case 'same_record':
+        return fill(t.notes.same_record, { others: t.results.numbers(note.others) })
+    }
+  })
+}
+
+type ScoredField = 'title' | 'authors' | 'venue'
+
+/**
+ * A score for the spreadsheet. Blank when that field was not written in the reference, or the record has
+ * none to compare, so that "0.00" always means "compared, and not alike" and never "not compared".
+ */
+function scoreCell(r: ReferenceResult, field: ScoredField): string {
+  const state = r.comparison.find((c) => c.field === field)?.state
+  if (state === 'not_cited' || (state === 'not_found' && r.record !== null)) return ''
+  return r.scores[field].toFixed(2)
 }
 
 /**
@@ -37,6 +64,7 @@ const CSV_COLUMNS = [
   'verdict',
   'reason_codes',
   'explanation',
+  'notes',
   'reference',
   'cited_title',
   'cited_authors',
@@ -58,6 +86,7 @@ const CSV_COLUMNS = [
 ] as const
 
 export function toCsv(results: ReferenceResult[], t: Dict): string {
+  const notes = resultNotes(results)
   const rows = results.map((r) => {
     const p = r.parsed
     const rec = r.record
@@ -66,6 +95,7 @@ export function toCsv(results: ReferenceResult[], t: Dict): string {
       t.verdict[r.status],
       r.reasons.join(' '),
       reasonText(r, t),
+      noteSentences(notes.get(r.index), t).join(' '),
       r.raw,
       p.title,
       p.authors.join('; ') + (p.hasEtAl ? ' et al.' : ''),
@@ -79,10 +109,10 @@ export function toCsv(results: ReferenceResult[], t: Dict): string {
       rec?.venue,
       rec?.doi,
       rec?.url,
-      r.scores.title.toFixed(2),
-      r.scores.authors.toFixed(2),
+      scoreCell(r, 'title'),
+      scoreCell(r, 'authors'),
       r.scores.yearDiff,
-      r.scores.venue.toFixed(2),
+      scoreCell(r, 'venue'),
       p.parseMode,
     ]
       .map(csvCell)
@@ -120,9 +150,11 @@ export function toReport(
   date: string,
 ): string {
   const lines: string[] = [`${t.report.title} (${date})`, '']
+  const notes = resultNotes(results)
   for (const r of results) {
     lines.push(`${r.index + 1}. [${t.verdict[r.status]}] ${r.raw}`)
     lines.push(`   ${reasonText(r, t)}`)
+    for (const note of noteSentences(notes.get(r.index), t)) lines.push(`   ${t.results.notesLabel}: ${note}`)
     const link = r.record?.doi ? `https://doi.org/${r.record.doi}` : r.record?.url
     if (link) lines.push(`   ${t.report.record}: ${link}`)
     lines.push('')

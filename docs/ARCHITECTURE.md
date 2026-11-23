@@ -36,7 +36,7 @@ ResultsLedger <-------------- runPipeline
                               buildComparison -> ReferenceResult (kode alasan, bukan prosa)
 ```
 
-Teks penjelasan untuk pengguna dibuat di klien dari templat per kode alasan (`i18n/`), bukan oleh model.
+Teks penjelasan untuk pengguna dibuat di klien dari templat per kode alasan (`i18n/`), bukan oleh model. Di samping verdict klien menambahkan **catatan** (`resultNotes` di `packages/shared/src/notes.ts`: tahun selisih satu, penulis lebih sedikit dari record, dua referensi ke record yang sama). Dihitung di browser dari hasil yang sudah ada, dari templat tetap, dan tidak pernah mengubah verdict (butir 145).
 
 ## Tahap
 

@@ -65,6 +65,14 @@ export const id: Dict = {
     out_of_index_other_registry: 'DOI ini milik registri yang belum kami cari.',
     check_failed_network: 'Layanan pencarian tidak merespons. Ini bukan verdict. Coba lagi.',
   },
+  notes: {
+    year_differs:
+      'Tahun berbeda satu: tertulis {cited}, record mencatat {found}. Record bisa memakai tanggal terbit daring, sedangkan referensi memakai tahun edisi cetak. Cek tahun yang benar di halaman jurnalnya.',
+    authors_partial:
+      'Tertulis {cited} penulis, sedangkan record mencatat {found}, dan tidak ada "dkk." atau "et al.". Periksa apakah daftar penulisnya lengkap.',
+    same_record:
+      'Referensi ini mengarah ke record yang sama dengan {others}. Periksa apakah ditulis dua kali.',
+  },
   home: {
     h1: 'Periksa daftar pustaka sebelum kamu mengumpulkannya.',
     intro:
@@ -367,6 +375,11 @@ export const id: Dict = {
     noneInFilter: 'Tidak ada referensi dengan hasil ini.',
     finished: (total: number) => `Pemeriksaan selesai. ${total} referensi diperiksa.`,
     barLabel: 'Hasil menurut verdict',
+    notesLabel: 'Catatan',
+    numbers: (nums: number[]) =>
+      nums.length === 1
+        ? `no. ${nums[0]}`
+        : `no. ${nums.slice(0, -1).join(', ')} dan ${nums[nums.length - 1]}`,
     printFiltered: 'Hanya menampilkan hasil {verdict}: {shown} dari {total}.',
     aiIssue: {
       rejectedOwn:

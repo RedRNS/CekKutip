@@ -1,4 +1,4 @@
-import type { ReasonCode } from '@cekkutip/shared'
+import type { ReasonCode, ResultNote } from '@cekkutip/shared'
 
 /**
  * English copy deck. This file defines the shape (`Dict`); id.ts must match it.
@@ -67,6 +67,15 @@ export const en = {
     out_of_index_other_registry: 'This DOI belongs to a registry we do not search yet.',
     check_failed_network: 'The lookup service did not respond. This is not a verdict. Try again.',
   } satisfies Record<ReasonCode, string>,
+  /** Notes next to a result. They add to the verdict and never change it. {others} is "no. 5" or "no. 5 and 13". */
+  notes: {
+    year_differs:
+      'The year is one off: you wrote {cited}, the record has {found}. A record may date the online release, and a reference the printed issue. Check the year on the journal page.',
+    authors_partial:
+      'The record has {found} authors, and you wrote {cited}, with no "et al." Check that the author list is complete.',
+    same_record:
+      'This reference leads to the same record as {others}. Check whether it is listed twice.',
+  } satisfies Record<ResultNote['code'], string>,
   home: {
     h1: 'Check a reference list before you submit it.',
     intro:
@@ -365,6 +374,12 @@ export const en = {
     noneInFilter: 'No references with this result.',
     finished: (total: number) => `Check finished. ${total} references checked.`,
     barLabel: 'Results by verdict',
+    notesLabel: 'Notes',
+    /** "no. 5", "no. 5 and 13", "no. 1, 3 and 7": the numbers shown beside the references. */
+    numbers: (nums: number[]) =>
+      nums.length === 1
+        ? `no. ${nums[0]}`
+        : `no. ${nums.slice(0, -1).join(', ')} and ${nums[nums.length - 1]}`,
     printFiltered: 'Showing only {verdict} results: {shown} of {total}.',
     aiIssue: {
       rejectedOwn:

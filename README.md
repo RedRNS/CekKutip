@@ -242,7 +242,8 @@ Host keluar **hanya** `api.crossref.org`, `api.openalex.org`, `api.datacite.org`
 - **Pratinjau pemisahan** yang bisa diedit: gabung dengan sebelumnya, ubah, atau hapus.
 - **Unggah `.txt` atau `.bib`**, dibaca di browser (sampai 256 KB). Pembaca BibTeX deterministik (`packages/shared/src/bibtex.ts`) dan tidak menambah informasi: `eprint` arXiv tanpa DOI tidak diubah menjadi DOI karena itu menebak yang tidak dikutip penulisnya.
 - **Salin referensi yang dikoreksi (APA 7)** dari record, untuk `Mismatch` yang recordnya karya yang sama. Ditulis dengan aturan tetap di `packages/shared/src/apa.ts`, tanpa model. Tidak ditawarkan untuk `mismatch_doi_other_work`, karena itu akan menyalin referensi karya lain.
-- **Ekspor CSV** (dengan BOM dan CRLF, sel yang diawali `=`, `+`, `-`, `@` dinetralkan agar tidak dijalankan sebagai rumus), **salin laporan**, dan **cetak** (hanya hasil, verdict tetap terbaca tanpa warna).
+- **Ekspor CSV** (dengan BOM dan CRLF, sel yang diawali `=`, `+`, `-`, `@` dinetralkan agar tidak dijalankan sebagai rumus; skor yang tidak dibandingkan dikosongkan, bukan ditulis 0.00), **salin laporan**, dan **cetak** (hanya hasil, verdict tetap terbaca tanpa warna).
+- **Catatan di samping hasil** (butir 145): tahun yang selisih satu dari record, penulis tertulis lebih sedikit dari record tanpa "et al.", dan dua referensi yang mengarah ke record yang sama. Catatan menambah keterangan dan **tidak mengubah verdict**; teksnya dari templat tetap, dihitung di browser, dan ikut ke CSV dan laporan.
 - **Kunci Gemini sendiri** dan **ekstensi browser** (di bawah).
 
 **Halaman situs:** Check (`/`), How it works, Evaluation, Extension, About, Privacy.

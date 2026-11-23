@@ -1,3 +1,4 @@
+import { resultNotes } from '@cekkutip/shared'
 import type { ReferenceResult } from '@cekkutip/shared'
 import { Copy, Download } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
@@ -58,6 +59,7 @@ export function ResultsLedger({ state, limits, onRetry }: Props) {
       ),
     [state.results],
   )
+  const notes = useMemo(() => resultNotes(ordered), [ordered])
 
   // A new check starts with every result showing.
   useEffect(() => {
@@ -170,7 +172,7 @@ export function ResultsLedger({ state, limits, onRetry }: Props) {
       <ol className="ledger">
         {visible.map((r) =>
           r.result ? (
-            <ResultRow key={r.index} result={r.result} />
+            <ResultRow key={r.index} result={r.result} notes={notes.get(r.index)} />
           ) : waiting ? (
             <PendingRow key={r.index} index={r.index} text={r.text} />
           ) : null,

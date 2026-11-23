@@ -98,6 +98,35 @@ describe('parseWithRegex: journal articles', () => {
     expect(p.title).toBe('Citing well: a practical guide')
   })
 
+  it('keeps a plain sentence after a question mark in the title, as the subtitle', () => {
+    const p = parse(
+      'Liu, Y., et al. (2024). Are LLMs good at structured outputs? A benchmark for evaluating structured output capabilities in LLMs. Inf. Process. Manag., 61(5), 103809. https://doi.org/10.1016/j.ipm.2024.103809',
+    )
+    expect(p.title).toBe(
+      'Are LLMs good at structured outputs? A benchmark for evaluating structured output capabilities in LLMs',
+    )
+    expect(p.venue).toBe('Inf. Process. Manag')
+    expect(p.volume).toBe('61')
+    expect(p.issue).toBe('5')
+  })
+
+  it('keeps the subtitle after an exclamation mark, and when no full stop follows it', () => {
+    expect(parse('Doe, J. (2021). Stop the presses! A history of the printing press in Java').title).toBe(
+      'Stop the presses! A history of the printing press in Java',
+    )
+  })
+
+  it('still ends the title at a question mark when a journal follows', () => {
+    // APA writes no full stop after "?": the journal name comes next, with a volume or a comma after it.
+    expect(parse('Doe, J. (2021). Why do we sleep? Sleep Medicine Reviews, 5(2), 1-10.')).toMatchObject({
+      title: 'Why do we sleep?',
+      venue: 'Sleep Medicine Reviews',
+      volume: '5',
+    })
+    expect(parse('Doe, J. (2021). Is it real? Nature. 12(3).').title).toBe('Is it real?')
+    expect(parse('Doe, J. (2021). Is it real? Journal of Things 12, 3-9.').title).toBe('Is it real?')
+  })
+
   it('accepts a year with a letter suffix', () => {
     expect(parse('Doe, J. (2020a). Some title here. Journal of Things, 1(1), 1-2.').year).toBe(2020)
   })

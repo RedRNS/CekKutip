@@ -7,6 +7,8 @@ export { DOI_PATTERN, MIN_YEAR } from './patterns.js'
 export { extractDoi, normalizeDoi } from './doi.js'
 export { checkLimits, splitReferences } from './split.js'
 export type { LimitError, Limits } from './split.js'
+export { resultNotes } from './notes.js'
+export type { ResultNote } from './notes.js'
 
 export const VerdictSchema = z.enum(['verified', 'mismatch', 'suspect', 'out_of_index'])
 export type Verdict = z.infer<typeof VerdictSchema>

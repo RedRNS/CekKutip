@@ -287,6 +287,19 @@
   flex: 1;
 }
 
+/* What the verdict does not say: a year a year off, authors left out, the same record twice. */
+.row__notes {
+  margin: var(--s-8) 0 0;
+  padding: 0 0 0 var(--s-12);
+  list-style: none;
+  border-left: 2px solid var(--rule-strong);
+  font-size: var(--fs-14);
+}
+
+.row__notes li + li {
+  margin-top: var(--s-4);
+}
+
 .row--pending .row__raw {
   color: var(--ink-muted);
 }

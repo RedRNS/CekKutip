@@ -56,12 +56,28 @@ function cleanTitle(s: string): string {
     .trim()
 }
 
+/**
+ * "Are LLMs good at structured outputs? A benchmark for ...": a plain sentence after "?" or "!" is the
+ * rest of the title. A journal after "?" has a volume or a comma after it, or is one or two words.
+ * Same rule as the formatting page (refformat/parse.ts).
+ */
+function isSubtitle(afterMark: string): boolean {
+  const next = afterMark.trimStart()
+  if (!/^[\p{Lu}\p{N}"'([]/u.test(next)) return false
+  const stop = next.indexOf('. ')
+  const sentence = stop < 0 ? next.replace(/\.$/, '') : next.slice(0, stop)
+  return sentence !== '' && !/[\d,]/.test(sentence) && sentence.split(' ').length >= 3
+}
+
 /** End index of the first sentence of `s`: the first full stop that is not an initial or a known abbreviation. */
 function sentenceEnd(s: string): number {
   for (let i = 0; i < s.length; i++) {
     const c = s[i]
     const next = s[i + 1]
-    if ((c === '?' || c === '!') && (next === undefined || /\s/.test(next))) return i + 1
+    if ((c === '?' || c === '!') && (next === undefined || /\s/.test(next))) {
+      if (isSubtitle(s.slice(i + 1))) continue
+      return i + 1
+    }
     if (c !== '.') continue
     if (next !== undefined && !/\s/.test(next)) continue // 3.5, U.S, file.txt
     const prev = /(\S+)$/.exec(s.slice(0, i))?.[1] ?? ''
