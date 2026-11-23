@@ -329,6 +329,11 @@ export function parseReference(raw: string): ParseResult {
   }
 
   const source = parseSource(rest)
+  // A chapter or a paper in proceedings is written "In Title (pp. 1-2)". Without a volume or an issue that
+  // is no journal, whatever the title is called ("Advances in Neural Information Processing Systems 35").
+  if (/^In\s+\p{Lu}/u.test(source.journal) && source.volume === null && source.issue === null) {
+    return refuse('not_journal_article')
+  }
   const hasLocator = source.volume !== null || source.issue !== null || source.pages !== null
   if (source.journal === '' || !hasLocator || /^\d+$/.test(source.journal)) {
     return refuse('not_journal_article')

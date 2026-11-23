@@ -256,6 +256,25 @@ describe('parseReference: what it will not rewrite', () => {
   })
 })
 
+describe('parseReference: a paper in a book or proceedings, written with "In"', () => {
+  it.each([
+    [
+      'Wei, J., et al. (2022). Chain-Of-Thought Prompting Elicits Reasoning in Large Language Models. In Advances in Neural Information Processing Systems 35 (pp. 24824-24837).',
+    ],
+    [
+      'Wang, N., et al. (2024). RoleLLM: Benchmarking abilities. In Findings of the Association for Computational Linguistics ACL 2024 (pp. 14743-14777).',
+    ],
+    ['Doe, J. (2020). A chapter title. In Handbook of Things, 12-30.'],
+  ])('is not a journal article: %s', (raw) => {
+    expect(fail(raw).reason).toBe('not_journal_article')
+  })
+
+  it('still reads a journal whose name starts with "In" when it has a volume', () => {
+    const { ref } = ok('Doe, J. (2020). A title. In Vitro Cellular & Developmental Biology, 55(3), 1-10.')
+    expect(ref).toMatchObject({ journal: 'In Vitro Cellular & Developmental Biology', volume: '55', issue: '3' })
+  })
+})
+
 describe('parseReference: titles with a question mark and a subtitle', () => {
   it('keeps a plain subtitle after "?" in the title', () => {
     expect(
