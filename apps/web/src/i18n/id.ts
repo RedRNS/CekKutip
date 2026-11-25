@@ -351,7 +351,7 @@ export const id: Dict = {
     items: [
       'Secara bawaan, teks referensimu dikirim ke Google Gemini, hanya untuk membaca field: penulis, tahun, judul. Pilih "Jangan kirim teksku ke layanan AI" untuk menghindarinya. Hasilnya jadi kurang akurat.',
       'Google menyatakan bahwa konten yang dikirim lewat tier gratisnya dapat dipakai untuk meningkatkan produknya dan dibaca peninjau manusia.',
-      'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu, untuk mencari karyanya. Judul yang tidak ditemukan cukup dekat oleh kedua layanan pertama dikirim juga, sendirian, ke Garuda, indeks nasional jurnal Indonesia.',
+      'Judul, penulis, dan DOI yang dibaca dari referensimu dikirim ke Crossref dan OpenAlex, serta ke DataCite bila perlu (untuk sebuah DOI, atau DOI yang dibentuk dari ID arXiv), untuk mencari karyanya. Judul yang tidak ditemukan cukup dekat oleh kedua layanan pertama dikirim juga, sendirian, ke Garuda, indeks nasional jurnal Indonesia.',
       'Kalau kamu menambahkan kunci Gemini sendiri, kunci itu tetap di browsermu. Kunci dikirim pada setiap pemeriksaan, hanya dipakai untuk meminta Google membaca referensimu, dan tidak pernah disimpan atau dicatat di log. Ekstensi browser membaginya dengan situs di perangkatmu.',
       'Berkas .txt atau .bib yang kamu pilih atau lepas di halaman dibaca di browsermu, seperti teks yang ditempel. Tidak ada yang dikirim sampai kamu memilih Periksa referensi.',
       'Halaman Format menulis ulang referensimu di browsermu dengan aturan tetap. Tidak ada model bahasa yang membacanya, dan tidak ada yang kamu tempel di sana dikirim ke kami atau ke layanan mana pun.',

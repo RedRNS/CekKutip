@@ -350,7 +350,7 @@ export const en = {
     items: [
       'By default, your reference text is sent to Google Gemini, only to read the fields: authors, year, title. Choose "Do not send my text to an AI service" to avoid this. Results are then less accurate.',
       'Google states that content sent through its free tier can be used to improve its products and read by human reviewers.',
-      'The title, authors, and DOI read from your references go to Crossref and OpenAlex, and to DataCite when needed, to look the work up. A title that neither of the first two finds close is also sent, alone, to Garuda, the national index of Indonesian journals.',
+      'The title, authors, and DOI read from your references go to Crossref and OpenAlex, and to DataCite when needed (for a DOI, or for the DOI made from an arXiv ID), to look the work up. A title that neither of the first two finds close is also sent, alone, to Garuda, the national index of Indonesian journals.',
       'If you add your own Gemini key, it stays in your browser. It is sent with each check, used only to ask Google to read your references, and never stored or logged. The browser extension shares it with the site on your device.',
       'A .txt or .bib file you choose or drop on the page is read in your browser, like pasted text. Nothing is sent until you choose Check references.',
       'The Format page rewrites your references in your browser by fixed rules. No language model reads them, and nothing you paste there is sent to us or to any service.',

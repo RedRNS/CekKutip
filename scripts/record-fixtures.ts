@@ -111,6 +111,8 @@ if (want('datacite')) {
   for (const [file, d] of [
     ['datacite-zenodo.json', '10.5281/zenodo.3233821'],
     ['datacite-arxiv-vaswani.json', '10.48550/arXiv.1706.03762'],
+    // A reference that names only "arXiv:2407.12994v2": its DOI is made from the ID (DECISIONS 146).
+    ['datacite-arxiv-dubey.json', '10.48550/arXiv.2407.12994'],
     ['datacite-404.json', '10.9999/this-doi-does-not-exist-12345'],
   ] as const) {
     const r = await get(`https://api.datacite.org/dois/${d}`)

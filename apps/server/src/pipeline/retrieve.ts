@@ -1,3 +1,4 @@
+import { arxivDoi, extractArxivId } from '@cekkutip/shared'
 import type { MatchedRecord, ParsedReference } from '@cekkutip/shared'
 import type { CrossrefClient } from '../clients/crossref.js'
 import type { DataciteClient } from '../clients/datacite.js'
@@ -29,9 +30,10 @@ const recordKey = (r: MatchedRecord) =>
  * Look the work up (brief section 6.3).
  * - With a DOI: Crossref by DOI. If Crossref has no record, ask doi.org who registered it;
  *   a DataCite DOI (arXiv, Zenodo) is then fetched from DataCite.
- * - Without a DOI: Crossref bibliographic search; OpenAlex only when Crossref has no candidate
- *   whose title reaches TAU_L; then Garuda (the national index of Indonesian journals), only when
- *   neither has one, and only for a reference cited like a journal article (DECISIONS 140).
+ * - Without a DOI: Crossref bibliographic search; then, for a reference that names an arXiv ID, the
+ *   DataCite record of that paper (DECISIONS 146); OpenAlex only when no candidate's title reaches
+ *   TAU_L; then Garuda (the national index of Indonesian journals), only when none has one, and only
+ *   for a reference cited like a journal article (DECISIONS 140).
  *
  * Throws ServiceUnavailableError when a service fails. The caller reports `check_failed`;
  * a service failure is never turned into "not found".
@@ -80,6 +82,15 @@ export async function retrieve(
 
   let all = candidates
   let openAlexUsed = false
+  // The reference names an arXiv paper ("arXiv:2407.12994v2") but writes no DOI. Its DOI follows from the
+  // ID and DataCite holds it, so look it up there as one more candidate, unless a search already found a
+  // title that agrees. The ID is never taken as a DOI the reference cited: a wrong or unknown ID just adds
+  // no candidate, and a DataCite outage throws like any other (check_failed, never a verdict).
+  const arxivId = extractArxivId(parsed.raw)
+  if (arxivId !== null && bestTitle(all) < opts.thresholds.tauT) {
+    const found = await deps.datacite.getByDoi(arxivDoi(arxivId))
+    if (found.found) all = merge(all, [found.record])
+  }
   // No Crossref candidate reaches the minimum: try OpenAlex.
   if (opts.useOpenAlex && bestTitle(all) < opts.thresholds.tauL) {
     all = merge(all, await deps.openalex.searchTitle(title))

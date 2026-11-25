@@ -25,6 +25,17 @@ export const REF_DATACITE =
 export const DATACITE_ARXIV_DOI = '10.48550/arXiv.1706.03762'
 /** A correct citation of an arXiv preprint, whose DOI is registered with DataCite. */
 export const REF_ARXIV_OK = `Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, L., & Polosukhin, I. (2017). Attention is all you need. arXiv. https://doi.org/${DATACITE_ARXIV_DOI}`
+/** A preprint cited by its arXiv ID only, with no DOI written (DECISIONS 146). */
+export const REF_ARXIV_ID_ONLY =
+  'Dubey, H., & Vatsal, S. (2024). A Survey of Prompt Engineering Methods in Large Language Models for Different NLP Tasks. arXiv preprint arXiv:2407.12994v2.'
+export const DUBEY_TITLE =
+  'A Survey of Prompt Engineering Methods in Large Language Models for Different NLP Tasks'
+/** DataCite answers for the DOI that follows from that ID. Put it before FIXTURE_RULES: the first match wins. */
+export const DATACITE_DUBEY: Rule = {
+  repeat: true,
+  match: urlHas('api.datacite.org/dois/10.48550/arXiv.2407.12994'),
+  respond: () => ok(fixtureText('datacite-arxiv-dubey.json')),
+}
 /** Same preprint, wrong year. */
 export const REF_ARXIV_WRONG_YEAR = REF_ARXIV_OK.replace('(2017)', '(2019)')
 export const THESIS =

@@ -24,6 +24,7 @@ ResultsLedger <-------------- runPipeline
                                    |   DOI:  Crossref /works/{doi}
                                    |           404 -> doi.org/doiRA -> tidak terdaftar | DataCite -> api.datacite.org | registri lain
                                    |   tanpa DOI: Crossref bibliographic ---------------> Crossref
+                                   |           menulis ID arXiv, judul belum cocok -> DOI 10.48550/arXiv.<id> -> DataCite
                                    |           bila tidak ada kandidat >= TAU_L -> OpenAlex  -> OpenAlex
                                    |           masih tidak ada, dikutip seperti artikel jurnal -> Garuda (HTML)
                                    v

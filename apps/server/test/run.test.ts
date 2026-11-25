@@ -8,9 +8,12 @@ import type { PipelineOptions } from '../src/pipeline/types.js'
 import { fixtureText, ok, status, urlHas } from './helpers.js'
 import type { Rule } from './helpers.js'
 import {
+  DATACITE_DUBEY,
   DOI,
+  DUBEY_TITLE,
   FAKE_JOURNAL,
   FIXTURE_RULES,
+  REF_ARXIV_ID_ONLY,
   REF_ARXIV_OK,
   REF_ARXIV_WRONG_YEAR,
   REF_DATACITE,
@@ -383,6 +386,129 @@ describe('Garuda, the third source for Indonesian journals', () => {
       expect([...url.searchParams.keys()].sort()).toEqual(['q', 'select'])
       expect(c.url).not.toMatch(/Wantoro|Polinema|2025/i)
     }
+  })
+})
+
+describe('an arXiv ID without a DOI (DECISIONS 146)', () => {
+  const dataciteCalls = (w: ReturnType<typeof world>) =>
+    w.calls.filter((c) => c.url.includes('api.datacite.org'))
+  const unavailable = (match: Rule['match']): Rule => ({
+    repeat: true,
+    match,
+    respond: () => status(503),
+  })
+
+  it('Verified: the paper is found in DataCite through the DOI that follows from the ID', async () => {
+    const w = world([DATACITE_DUBEY, ...NOTHING_IN_CROSSREF_AND_OPENALEX, ...FIXTURE_RULES])
+    const r = await only(REF_ARXIV_ID_ONLY, w)
+    expect(r).toMatchObject({ status: 'verified', reasons: ['verified_all_match'] })
+    expect(r.record).toMatchObject({
+      source: 'datacite',
+      title: DUBEY_TITLE,
+      year: 2024,
+      authors: ['Vatsal', 'Dubey'],
+    })
+    // The version "v2" is not part of the DOI.
+    expect(dataciteCalls(w).map((c) => c.url)).toEqual([
+      'https://api.datacite.org/dois/10.48550/arXiv.2407.12994',
+    ])
+    // The reference named no DOI, so it is not read as having cited one.
+    expect(r.parsed.doi).toBeNull()
+    expect(r.comparison.find((c) => c.field === 'doi')?.state).toBe('not_cited')
+  })
+
+  it('Verified: also when a search finds only a poor candidate (the reference was Out-of-index before)', async () => {
+    const w = world([
+      DATACITE_DUBEY,
+      { repeat: true, match: urlHas('query.bibliographic'), respond: () => ok({ message: { items: [] } }) },
+      // OpenAlex answers with an unrelated paper, as a title search can.
+      { repeat: true, match: urlHas('api.openalex.org'), respond: () => ok(fixtureText('openalex-search-walters.json')) },
+      ...FIXTURE_RULES,
+    ])
+    const r = await only(REF_ARXIV_ID_ONLY, w)
+    expect(r.status).toBe('verified')
+    expect(r.record?.source).toBe('datacite')
+    expect(r.record?.title).toBe(DUBEY_TITLE)
+  })
+
+  it('works the same when a model read the fields: the ID is taken from the reference text itself', async () => {
+    const gemini: GeminiClient = {
+      extract: async (items) => ({
+        usage: { inputTokens: 0, outputTokens: 0 },
+        results: items.map((it) => ({
+          i: it.i,
+          authors: ['Dubey', 'Vatsal'],
+          hasEtAl: false,
+          year: 2024,
+          title: DUBEY_TITLE,
+          venue: 'arXiv',
+          volume: null,
+          issue: null,
+          pages: null,
+          doi: null,
+          type: 'other',
+        })),
+      }),
+    }
+    const w = world([DATACITE_DUBEY, ...NOTHING_IN_CROSSREF_AND_OPENALEX, ...FIXTURE_RULES], gemini)
+    const r = await only(REF_ARXIV_ID_ONLY, w, { ...DEFAULT_OPTIONS, parseMode: 'llm' })
+    expect(r).toMatchObject({ status: 'verified' })
+    expect(r.parsed.parseMode).toBe('llm')
+  })
+
+  it('a wrong year is still a Mismatch: the record is compared like any other', async () => {
+    const w = world([DATACITE_DUBEY, ...NOTHING_IN_CROSSREF_AND_OPENALEX, ...FIXTURE_RULES])
+    const r = await only(REF_ARXIV_ID_ONLY.replace('(2024)', '(2019)'), w)
+    expect(r).toMatchObject({ status: 'mismatch', reasons: ['mismatch_year'] })
+  })
+
+  it('an ID that DataCite does not know changes nothing: Out-of-index, not Suspect', async () => {
+    const w = world([
+      { repeat: true, match: urlHas('api.datacite.org'), respond: () => status(404) },
+      ...NOTHING_IN_CROSSREF_AND_OPENALEX,
+      ...FIXTURE_RULES,
+    ])
+    const r = await only(REF_ARXIV_ID_ONLY, w)
+    expect(r).toMatchObject({ status: 'out_of_index', reasons: ['out_of_index_type'], record: null })
+  })
+
+  it('an ID that leads to a different paper does not make the reference match', async () => {
+    // The reference says arXiv:1706.03762 (Attention is all you need) but names the Dubey title.
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, ...FIXTURE_RULES])
+    const r = await only(REF_ARXIV_ID_ONLY.replace('2407.12994v2', '1706.03762'), w)
+    expect(r.status).toBe('out_of_index')
+    expect(r.record).toBeNull()
+  })
+
+  it('DataCite down for this lookup gives check_failed, never Out-of-index or Suspect', async () => {
+    const w = world([
+      unavailable(urlHas('api.datacite.org')),
+      ...NOTHING_IN_CROSSREF_AND_OPENALEX,
+      ...FIXTURE_RULES,
+    ])
+    const r = await only(REF_ARXIV_ID_ONLY, w)
+    expect(r).toMatchObject({ status: 'check_failed', record: null })
+    expect(w.errors).toEqual(['server_error'])
+  })
+
+  it('is not asked when a search already found the work with a title that agrees', async () => {
+    const w = world()
+    const r = await only(`${REF_OK} arXiv:2301.00001`, w)
+    expect(r.status).toBe('verified')
+    expect(dataciteCalls(w)).toHaveLength(0)
+  })
+
+  it('is not asked when the reference wrote a DOI: the DOI is looked up as it was written', async () => {
+    const w = world()
+    const r = await only(`${REF_WITH_DOI} arXiv:2407.12994`, w)
+    expect(r.status).toBe('verified')
+    expect(dataciteCalls(w)).toHaveLength(0)
+  })
+
+  it('a reference with no arXiv ID causes no extra DataCite request', async () => {
+    const w = world([...NOTHING_IN_CROSSREF_AND_OPENALEX, ...FIXTURE_RULES])
+    await only(REF_ARXIV_ID_ONLY.replace('arXiv preprint arXiv:2407.12994v2.', 'arXiv preprint.'), w)
+    expect(dataciteCalls(w)).toHaveLength(0)
   })
 })
 

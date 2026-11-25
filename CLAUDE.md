@@ -78,6 +78,8 @@ Tiga penyempurnaan yang disetujui pengguna pada 16 Nov 2026 (DECISIONS butir 55 
 
 Juga: `verified` butuh minimal dua dari judul, penulis, tahun yang tertulis (butir 35).
 
+ID arXiv tanpa DOI (butir 146, `packages/shared/src/arxiv.ts`): bila referensi menulis `arXiv:<id>` atau alamat arxiv.org dan belum ada judul yang cocok, DOI `10.48550/arXiv.<id>` dicari di DataCite sebagai **kandidat tambahan** (host yang sudah diizinkan, tanpa host baru). ID itu bukan DOI yang dikutip: ID yang salah atau tidak dikenal tidak menambah kandidat, dan DataCite yang gagal menjadi `check_failed`. API arXiv sendiri (`export.arxiv.org`) sengaja tidak dipakai; menambahnya butuh permintaan pemilik produk.
+
 Catatan di samping hasil (butir 145, `packages/shared/src/notes.ts`): tahun selisih satu, penulis lebih sedikit dari record, dan dua referensi ke record yang sama. Fungsi murni, teks dari templat tetap, dihitung di browser. **Catatan tidak pernah mengubah verdict, kode alasan, atau hitungan**; jangan menjadikannya masukan Decide. Skor CSV kosong bila bidangnya tidak dibandingkan.
 
 ## Token desain (ringkas; lengkap di docs/DESIGN.md)

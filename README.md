@@ -1,6 +1,6 @@
 # CekKutip
 
-Pemeriksa daftar pustaka untuk mahasiswa Indonesia. Kamu menempelkan referensi, CekKutip mencari tiap referensi di Crossref dan OpenAlex (Garuda untuk jurnal Indonesia, dan DataCite untuk DOI arXiv dan Zenodo), lalu memberi satu dari empat verdict. **Verdict adalah ajakan memeriksa ulang, bukan tuduhan.**
+Pemeriksa daftar pustaka untuk mahasiswa Indonesia. Kamu menempelkan referensi, CekKutip mencari tiap referensi di Crossref dan OpenAlex (Garuda untuk jurnal Indonesia, dan DataCite untuk DOI arXiv dan Zenodo, juga untuk ID arXiv yang ditulis tanpa DOI), lalu memberi satu dari empat verdict. **Verdict adalah ajakan memeriksa ulang, bukan tuduhan.**
 
 - Situs: <https://cekkutip.onrender.com> (layanan gratis Render: tidur setelah 15 menit tanpa kunjungan dan butuh sekitar satu menit untuk bangun, jadi kunjungan pertama bisa lambat)
 - Kode: <https://github.com/RedRNS/CekKutip>
@@ -264,7 +264,7 @@ Panduan lengkap (pemasangan, izin, privasi, pengembangan): [extension/README.md]
 **Privasi**
 
 - Teks referensi dikirim ke Google Gemini **hanya** untuk membaca field, kecuali kamu memilih mode tanpa AI. Google menyatakan konten yang dikirim lewat tier gratis dapat dipakai untuk meningkatkan produknya.
-- Judul, penulis, dan DOI hasil bacaan dikirim ke Crossref, OpenAlex, dan DataCite untuk pencarian. Judul saja dikirim ke Garuda, dan hanya bila Crossref dan OpenAlex tidak menemukannya.
+- Judul, penulis, dan DOI hasil bacaan dikirim ke Crossref, OpenAlex, dan DataCite untuk pencarian (ke DataCite juga DOI yang dibentuk dari ID arXiv, butir 146). Judul saja dikirim ke Garuda, dan hanya bila Crossref dan OpenAlex tidak menemukannya.
 - Server **tidak menyimpan teks pengguna**. `AppLogger` hanya punya metode bertipe tetap (id, jumlah, waktu, kode galat), jadi teks tidak bisa masuk log. Tes memastikan teks penanda tidak muncul di log pada pemeriksaan sukses, layanan gagal, masukan tidak valid, dan batas terlampaui.
 - Cache hanya memuat metadata publik dengan kunci berupa hash.
 - Berkas yang diunggah dibaca di browser dan tidak diunggah ke server.
